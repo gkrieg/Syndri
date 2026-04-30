@@ -1,0 +1,10 @@
+dataset_name: pancreas
+
+preprocess_args:
+  data_path: ${data_path}/cell_type_annotation/processed/pancreas.h5ad
+  top_n_genes: false
+  normalize: true
+  log_1p: true
+  scale_data: false
+  get_medians: true
+  species: human

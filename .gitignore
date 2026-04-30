@@ -209,3 +209,4 @@ __marimo__/
 # ignore large files
 *.pickle
 *.h5ad
+*.pt

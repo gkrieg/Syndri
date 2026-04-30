@@ -1,0 +1,20 @@
+dataset_name: "admixture_nsclc"
+
+preprocess_args:
+  # data_path: "/work/magroup/skrieger/Syndri/data/label_transfer/SC_NSCLC_labeltransfer_admixed_10reps.h5ad"
+  data_path: "/work/magroup/skrieger/Syndri/data/processed_adata/NSCLC_ST_labeltransfer_consolidated_formatted.h5ad"
+  top_n_genes: false
+  normalize: false
+  log_1p: false
+  scale_data: false
+  admixture: true
+  admix_layer: "admixed"
+  binary_layer: "is_transcript_added"
+  species: "human"
+
+  admixture_args:
+    k_neighbors: 3
+    frac: 0.05
+    n_repeats: 1
+    min_sampled_transcript_threshold: 0
+    min_source_transcript_count: 400

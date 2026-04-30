@@ -1,0 +1,14 @@
+dataset_name: "admixture_nsclc_inference"
+
+preprocess_args:
+  # data_path: "/compute/oven-0-13/jwinchel/processed_adata/NSCLC_ST_withneighbors.h5ad"
+  # data_path: "/work/magroup/skrieger/Syndri/data/processed_adata/NSCLC_ST_labeltransfer_consolidated_formatted.h5ad"
+  data_path: '/compute/oven-0-13/jwinchel/processed_adata/SC_NSCLC_TRAIN_FIRSTREP_10reps.h5ad'
+  top_n_genes: false
+  normalize: false
+  log_1p: false
+  scale_data: false
+  admixture: true
+  admix_layer: "admixed"
+  binary_layer: "is_transcript_added"
+  species: "human"
