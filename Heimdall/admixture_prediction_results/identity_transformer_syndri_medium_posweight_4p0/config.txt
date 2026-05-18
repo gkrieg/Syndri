@@ -1,0 +1,136 @@
+project_name: admixture_prediction
+run_name: admixture_identity_transformer_syndri_medium_posweight_4p0
+work_dir: admixture_prediction_results/identity_transformer_syndri_medium_posweight_4p0
+float_dtype: float32
+seed: 54
+data_path: /work/magroup/shared/Heimdall/data
+ensembl_dir: ${data_path}
+cache_preprocessed_dataset_dir: null
+entity: Heimdall
+model:
+  type: Heimdall.models.Transformer
+  name: transformer_syndri_medium
+  args:
+    d_model: 256
+    pos_enc: BERT
+    num_encoder_layers: 4
+    nhead: 8
+    hidden_act: gelu
+    hidden_dropout_prob: 0.1
+    attention_probs_dropout_prob: 0.1
+    use_flash_attn: false
+    pooling: cls_pooling
+dataset:
+  dataset_name: admixture_nsclc_augmented
+  preprocess_args:
+    data_path: /compute/oven-0-13/jwinchel/scRNA-seq/adata/GSE127465_tumor_integrated.h5ad
+    top_n_genes: false
+    normalize: false
+    log_1p: false
+    scale_data: false
+    admixture: true
+    admix_layer: admixed_0
+    binary_layer: is_transcript_added_0
+    species: human
+    admixture_args:
+      k_neighbors: 3
+      frac_transcript_per_cell: 0.05
+      min_sampled_transcript_threshold: 0
+      min_source_transcript_count: 400
+      mask_out_random_genes: false
+      mask_out_frac: 0.0
+      tau_range:
+      - 0.0
+      - 0.15
+      n_repeats: 1
+tasks:
+  args:
+    task_type: admixture_binary
+    context_length: 509
+    label_obsm_name: is_transcript_added_0
+    splits:
+      type: predefined
+      keys_:
+        train: train
+        val: val
+        test: val
+      col: split
+    metrics:
+    - F1Score
+    - Accuracy
+    - ConfusionMatrix
+    track_metric: F1Score
+    shuffle: true
+    batchsize: 32
+    epochs: 50
+    dataset_config:
+      type: Heimdall.datasets.AdmixtureInstanceDataset
+    head_config:
+      type: Heimdall.models.LinearCellPredHead
+scheduler:
+  name: cosine
+  lr_schedule_type: cosine
+  warmup_ratio: 0.1
+  num_epochs: 20
+trainer:
+  accelerator: cuda
+  precision: 32-true
+  random_seed: ${seed}
+  per_device_batch_size: 64
+  accumulate_grad_batches: 5
+  grad_norm_clip: 1.0
+  fastdev: false
+optimizer:
+  name: AdamW
+  args:
+    lr: 0.0002
+    weight_decay: 0.1
+    betas:
+    - 0.9
+    - 0.95
+    foreach: false
+fc:
+  type: Heimdall.fc.AdmixtureFc
+  args:
+    max_input_length: 512
+    species: ${dataset.preprocess_args.species}
+    ensembl_dir: ${data_path}
+    gene_metadata_filepath: ${data_path}/gene_metadata/species_chrom.csv
+    embedding_parameters:
+      type: Heimdall.embedding.GaussianInitEmbedding
+      args:
+        num_embeddings: 100
+        embedding_dim: ${fg.args.d_embedding}
+    tailor_config:
+      type: Heimdall.tailor.AdmixtureTailor
+      args:
+        sample_size: 509
+    order_config:
+      type: Heimdall.order.ExpressionOrder
+    reduce_config:
+      type: Heimdall.reduce.AdmixtureSumReduce
+fe:
+  type: Heimdall.fe.IdentityFe
+  name: Heimdall.fe.IdentityFe
+  args:
+    embedding_parameters:
+      type: Heimdall.embedding.FlexibleTypeLinear
+      args:
+        in_features: 1
+        out_features: ${fe.args.d_embedding}
+    d_embedding: ${model.args.d_model}
+    drop_zeros: true
+fg:
+  type: Heimdall.fg.IdentityFg
+  args:
+    embedding_parameters:
+      type: Heimdall.embedding.FlexibleTypeEmbedding
+      args:
+        num_embeddings: vocab_size
+        embedding_dim: ${fg.args.d_embedding}
+    d_embedding: ${model.args.d_model}
+    frozen: false
+loss:
+  name: MaskedBCEWithLogitsLoss
+  args:
+    pos_weight: 4.0

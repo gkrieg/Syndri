@@ -210,3 +210,4 @@ __marimo__/
 *.pickle
 *.h5ad
 *.pt
+*.npz

@@ -1,0 +1,33 @@
+command:
+- accelerate
+- launch
+- --mixed_precision=bf16
+- ${program}
+- ${args_no_hyphens}
+- model=transformer_flash
+- fg=identity
+- fg.args.frozen=TRUE
+- fe=identity
+- fc=geneformer
+- model.args.pos_enc=BERT
+- fc.args.max_input_length=2048
+- user=ehaber
+- seed=55
+- project_name=geneformer_finetune
+- pretrained_ckpt_path=/work/magroup/ehaber/Heimdall/pretraining_geneformer_100k_results/Heimdall.fg.IdentityFg_Heimdall.fe.IdentityFe_Heimdall.fc.Fc_pretrain_100k_lr0.0002_bz128_seed55_agTrue/model-9.pt
+- +experiments=sctab_split1_all.yaml
+method: grid
+metric:
+  goal: maximize
+  name: valid_MatthewsCorrCoef
+parameters:
+  optimizer.args.lr:
+    values:
+    - 1e-2
+    - 1e-3
+    - 3e-4
+  tasks.args.batchsize:
+    values:
+    - 32
+    - 64
+program: train.py

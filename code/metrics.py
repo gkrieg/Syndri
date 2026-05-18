@@ -1,6 +1,6 @@
 from sklearn.metrics import davies_bouldin_score, calinski_harabasz_score, silhouette_score, adjusted_rand_score
 from sklearn.metrics.pairwise import cosine_similarity
-from sklearn import linear_model import LogisticRegression
+from sklearn.linear_model import LogisticRegression
 
 # --------------------------------------------------
 # cell type separation
