@@ -7,6 +7,7 @@ preprocess_args:
   log_1p: false
   scale_data: false
   admixture: true
+  fix_admixture: false
   admix_layer: "admixed_0"
   binary_layer: "is_transcript_added_0"
   species: "human"

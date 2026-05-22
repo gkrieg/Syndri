@@ -14,7 +14,16 @@ from accelerate import Accelerator
 from accelerate.utils import set_seed
 from anndata import AnnData
 from omegaconf import OmegaConf
-from torchmetrics.classification import Accuracy, ConfusionMatrix, F1Score, MatthewsCorrCoef, Precision, Recall
+from torchmetrics import Metric
+from torchmetrics.classification import (
+    Accuracy,
+    ConfusionMatrix,
+    F1Score,
+    MatthewsCorrCoef,
+    Precision,
+    Recall,
+)
+from torchmetrics.functional.classification import binary_auroc, binary_average_precision
 from torchmetrics.regression import MeanSquaredError, R2Score
 from tqdm import tqdm
 from transformers import get_scheduler
@@ -28,6 +37,42 @@ from Heimdall.admixture_sampling import sample_admixture_from_neighbor_dict
 import wandb
 torch.autograd.set_detect_anomaly(True)
 
+
+class MeanCellwiseBinaryRankingMetric(Metric):
+    """Average a binary ranking metric across cells, skipping undefined rows."""
+
+    def __init__(self, metric_fn):
+        super().__init__()
+        self.metric_fn = metric_fn
+        self.add_state("metric_sum", default=torch.tensor(0.0), dist_reduce_fx="sum")
+        self.add_state("metric_count", default=torch.tensor(0), dist_reduce_fx="sum")
+
+    def update(self, logits, labels):
+        logits = logits.detach()
+        labels = labels.detach()
+        if logits.ndim == 1:
+            logits = logits.unsqueeze(0)
+            labels = labels.unsqueeze(0)
+        elif logits.ndim > 2:
+            logits = logits.flatten(start_dim=1)
+            labels = labels.flatten(start_dim=1)
+
+        labels = labels.to(logits.device)
+        valid = torch.isfinite(labels)
+        for row_logits, row_labels, row_valid in zip(logits, labels, valid):
+            row_logits = row_logits[row_valid]
+            row_labels = row_labels[row_valid].to(torch.int)
+            if row_labels.numel() == 0 or row_labels.unique().numel() < 2:
+                continue
+            score = self.metric_fn(row_logits, row_labels)
+            if torch.isfinite(score):
+                self.metric_sum += score
+                self.metric_count += 1
+
+    def compute(self):
+        if self.metric_count == 0:
+            return torch.tensor(float("nan"), device=self.metric_sum.device)
+        return self.metric_sum / self.metric_count
 
 class HeimdallTrainer:
     def __init__(
@@ -272,6 +317,8 @@ class HeimdallTrainer:
         elif task_type == "binary" or task_type == "admixture_binary":
             # num_labels = self.num_labels
             num_labels = 2
+            metrics["AUROC"] = MeanCellwiseBinaryRankingMetric(binary_auroc)
+            metrics["AUPRC"] = MeanCellwiseBinaryRankingMetric(binary_average_precision)
             for metric_name in self.cfg.tasks.args.metrics:
                 if metric_name not in metrics:
                     if metric_name == "Accuracy":
@@ -284,6 +331,10 @@ class HeimdallTrainer:
                         metrics[metric_name] = F1Score(task="binary", num_labels=num_labels, average="macro")
                     elif metric_name == "MatthewsCorrCoef":
                         metrics[metric_name] = MatthewsCorrCoef(task="binary", num_labels=num_labels)
+                    elif metric_name == "AUROC":
+                        metrics[metric_name] = MeanCellwiseBinaryRankingMetric(binary_auroc)
+                    elif metric_name == "AUPRC":
+                        metrics[metric_name] = MeanCellwiseBinaryRankingMetric(binary_average_precision)
 
         return {k: v.to(self.accelerator.device) if hasattr(v, "to") else v for k, v in metrics.items()}
 
@@ -300,6 +351,19 @@ class HeimdallTrainer:
             logits = flattened_logits[mask]
 
         return logits, labels
+
+    def _prepare_cellwise_logits_and_labels_for_metrics(self, logits, labels, masks=None):
+        task_type = self.cfg.tasks.args.task_type
+        if task_type not in ["binary", "admixture_binary"]:
+            return logits, labels
+        if masks is None:
+            return logits, labels
+
+        if masks.shape == labels.shape:
+            masked_labels = labels.float().masked_fill(~masks.bool(), float("nan"))
+            return logits, masked_labels
+
+        return logits[masks], labels[masks]
 
     def _get_adata_from_dataloader(self, dl):
         ds = dl.dataset
@@ -513,6 +577,11 @@ class HeimdallTrainer:
                     loss = self.get_loss(outputs.logits, labels, masks=masks)
                     metric_logits = outputs.logits
                     metric_labels = labels
+                    cellwise_metric_logits, cellwise_metric_labels = self._prepare_cellwise_logits_and_labels_for_metrics(
+                        metric_logits,
+                        metric_labels,
+                        masks=masks,
+                    )
                     if masks is not None:
                         metric_logits, metric_labels = metric_logits[masks], metric_labels[masks]
                     metric_logits, metric_labels = self._prepare_logits_and_labels_for_metrics(
@@ -521,7 +590,10 @@ class HeimdallTrainer:
                     )
                     for metric_name, metric in metrics.items():
                         if metric_name != "ConfusionMatrix":
-                            metric.update(metric_logits.detach(), metric_labels.detach())
+                            if metric_name in ["AUROC", "AUPRC"]:
+                                metric.update(cellwise_metric_logits, cellwise_metric_labels)
+                            else:
+                                metric.update(metric_logits.detach(), metric_labels.detach())
                     
                     # if torch.isnan(loss):
                     #     print("NaN loss at step", self.step)
@@ -801,9 +873,9 @@ class HeimdallTrainer:
                 else:
                     raise ValueError(f"Unsupported task_type: {self.cfg.tasks.args.task_type}")
 
-                if b == 0:
-                    print('printing syndri outputs:', labels[:,:20],labels[:,-20:])
-                    print('output shape:', probs.shape,labels.shape)
+                # if b == 0:
+                #     print('printing syndri outputs:', labels[:,:20],labels[:,-20:])
+                #     print('output shape:', probs.shape,labels.shape)
                 y_true_batches.append(labels.cpu())
                 preds_batches.append(preds.cpu())
 
@@ -812,6 +884,12 @@ class HeimdallTrainer:
 
                 if (masks := batch.get("masks")) is not None:
                     masks = masks.to(outputs.device)
+                cellwise_metric_logits, cellwise_metric_labels = self._prepare_cellwise_logits_and_labels_for_metrics(
+                    logits,
+                    labels,
+                    masks=masks,
+                )
+                if masks is not None:
                     logits, labels = logits[masks], labels[masks]
 
                 # perform a .clone() so that the labels are not updated in-place
@@ -835,8 +913,11 @@ class HeimdallTrainer:
                     # Built-in metric
                     # print(metric)
                     # print(metric_name)
-                    metric_logits, metric_labels = self._prepare_logits_and_labels_for_metrics(logits, labels)
-                    metric.update(metric_logits, metric_labels)
+                    if metric_name in ["AUROC", "AUPRC"]:
+                        metric.update(cellwise_metric_logits, cellwise_metric_labels)
+                    else:
+                        metric_logits, metric_labels = self._prepare_logits_and_labels_for_metrics(logits, labels)
+                        metric.update(metric_logits, metric_labels)
                 if self.cfg.trainer.fastdev:
                     break
 

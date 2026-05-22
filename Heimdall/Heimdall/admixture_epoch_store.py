@@ -25,6 +25,7 @@ class AdmixtureEpochStore:
         split_col="split",
         train_key="train",
         rng_seed=0,
+        fixed_epoch=None,
     ):
         self.cache_dir = Path(cache_dir)
         self.cache_dir.mkdir(parents=True, exist_ok=True)
@@ -33,6 +34,7 @@ class AdmixtureEpochStore:
         self.rng_seed = int(rng_seed)
         self.split_col = split_col
         self.train_key = train_key
+        self.fixed_epoch = None if fixed_epoch is None else int(fixed_epoch)
 
         self.obs_names = pd.Index(adata.obs_names.astype(str))
         self.var_names = pd.Index(adata.var_names.astype(str))
@@ -65,6 +67,8 @@ class AdmixtureEpochStore:
 
     def _get_full_epoch(self, epoch):
         epoch = int(epoch)
+        if self.fixed_epoch is not None:
+            epoch = self.fixed_epoch
         if self._current_epoch == epoch and self._current_matrix is not None:
             return self._current_matrix
 

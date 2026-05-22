@@ -6,7 +6,7 @@ args:
   num_encoder_layers: 4
   nhead: 8
   hidden_act: gelu
-  hidden_dropout_prob: 0.1
-  attention_probs_dropout_prob: 0.1
+  hidden_dropout_prob: 0.0
+  attention_probs_dropout_prob: 0.0
   use_flash_attn: false
   pooling: cls_pooling # or "mean_pooling"

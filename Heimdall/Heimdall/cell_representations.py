@@ -289,14 +289,19 @@ class CellRepresentation(SpecialTokenMixin):
 
             if apply_admixture:
                 cache_dir = Path(self._cfg.work_dir) / "admixture_epochs"
+                fix_admixture = get_value(self.dataset_preproc_cfg, "fix_admixture", False)
+                fixed_epoch = 0 if fix_admixture else None
                 self.admixture_epoch_store = AdmixtureEpochStore(
                     self.adata,
                     self._cfg.dataset.preprocess_args.admixture_args,
                     cache_dir=cache_dir,
                     split_col=get_value(self.dataset_task_cfg.get("splits", {}), "col", "split"),
                     rng_seed=self._cfg.seed,
+                    fixed_epoch=fixed_epoch,
                 )
                 print(f"> Initialized lazy admixture epoch store at {cache_dir}")
+                if fix_admixture:
+                    print("> Fixed admixture sampling to epoch 0 for all epochs.")
             else:
                 print("> Skipping admixture sampling; using nearest-neighbor cell types for inference.")
 

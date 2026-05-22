@@ -84,6 +84,11 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--cell-type-col", default="cell_type")
     parser.add_argument("--prob-layer", default="admix_probs")
+    parser.add_argument(
+        "--admixture-layer",
+        default="admixed_counts",
+        help="Layer name for exact sampled admixture counts when --apply-admixture is enabled.",
+    )
     parser.add_argument("--batch-size", type=int, default=None)
     parser.add_argument(
         "--coord-cols",
@@ -373,6 +378,14 @@ def run_inference(args: argparse.Namespace, prepared_path: Path) -> Path:
 
     output_adata = trainer.data.adata[prediction_indices].copy()
     output_adata.layers[args.prob_layer] = csr_matrix(probs)
+    if args.apply_admixture:
+        admixture_matrix = trainer.data.fe.current_admixture_matrix
+        if admixture_matrix is None:
+            raise RuntimeError(
+                "apply_admixture=True, but no current admixture matrix was materialized for inference."
+            )
+        output_adata.layers[args.admixture_layer] = csr_matrix(admixture_matrix[prediction_indices])
+        print(f"> Added exact sampled admixture counts to layer {args.admixture_layer!r}.")
 
     output_path = args.output_dir / args.output_name
     output_adata.write_h5ad(output_path)

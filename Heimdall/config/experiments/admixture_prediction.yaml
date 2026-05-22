@@ -6,7 +6,7 @@
 
 defaults:
   - override /model: transformer_syndri_medium #transformer # the chosen model
-  - override /dataset: admixture_nsclc_augmented # dataset for the relevant task
+  - override /dataset: admixture_nsclc_tiny # dataset for the relevant task
   - override /tasks: admixture_correction # dataset for the relevant task
   - override /scheduler: cosine # contains scheduler
   - override /trainer: default # contains optimizer and trainer details
@@ -28,10 +28,18 @@ defaults:
 
 seed: 54
 
-run_name: ${fg.type}_${fe.type}_${fc.type}_${model.type}_lr${optimizer.args.lr}_bz${tasks.args.batchsize}  ## what is set for WandB
-work_dir: '${project_name}_results/${fg.type}_${fe.name}_${fc.type}_${dataset.dataset_name}_lr${optimizer.args.lr}_bz${tasks.args.batchsize}_seed${seed}_ag${fe.args.drop_zeros}'  ## set your custom working directory
+# run_name: ${fg.type}_${fe.type}_${fc.type}_${model.type}_lr${optimizer.args.lr}_bz${tasks.args.batchsize}  ## what is set for WandB
+# work_dir: '${project_name}_results/${fg.type}_${fe.name}_${fc.type}_${dataset.dataset_name}_lr${optimizer.args.lr}_bz${tasks.args.batchsize}_seed${seed}_ag${fe.args.drop_zeros}'  ## set your custom working directory
+
+run_name: nsclc_overfit_test_upweightpos_nodropout ## what is set for WandB
+work_dir: '${project_name}_results/nsclc_overfit_test_upweightpos_nodropout'  ## set your custom working directory
+
 
 project_name: 'admixture_prediction' #project name for WandB
+dataset:
+  preprocess_args:
+    fix_admixture: false
+
 tasks:
   args:
     splits:
@@ -39,7 +47,7 @@ tasks:
 
 loss:
   args:
-    pos_weight: 9.7
+    pos_weight: 4.0
 
 
 
@@ -48,5 +56,6 @@ trainer:
 
 optimizer:
   args: 
-    lr: 2e-4
+    lr: 2e-2
+    # warmup_ratio: 0.1
  
