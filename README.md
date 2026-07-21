@@ -1,8 +1,6 @@
 # Syndri
 
 
-
-
 New structure for reorganization
 ```
 Syndri/
