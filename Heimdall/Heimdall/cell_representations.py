@@ -269,6 +269,7 @@ class CellRepresentation(SpecialTokenMixin):
                 )
             )
             tissue_col = get_value(admix_params, "tissue_col", "harmony_spatial_tissue" if apply_admixture else None)
+            cell_type_col = get_value(admix_params, "cell_type_col", "cell_type")
             if 'neighbor_dict' not in self.adata.uns:
                 print(f"> Getting nearest neighbors using coordinates: {coord_cols}")
                 # create .uns with neighbors based on mapped spatial coordinates
@@ -277,13 +278,18 @@ class CellRepresentation(SpecialTokenMixin):
                                                 k_neighbors=admix_params['k_neighbors'],
                                                 coord_cols=coord_cols,
                                                 tissue_col=tissue_col,
+                                                cell_type_col=cell_type_col,
                                                 min_source_counts=admix_params['min_source_transcript_count'],
                                                 initial_query_k=64,
                                                 query_k_growth=2,
                                                 batch_size=1024)
                 
             if 'neighbor_celltype_dict' not in self.adata.uns:
-                self.adata = build_neighbor_celltype_dict(self.adata, tissue_col=tissue_col)
+                self.adata = build_neighbor_celltype_dict(
+                    self.adata,
+                    tissue_col=tissue_col,
+                    cell_type_col=cell_type_col,
+                )
 
             self.adata = self.adata[self.adata.obs[list(coord_cols)].notna().all(axis=1)].copy()
 

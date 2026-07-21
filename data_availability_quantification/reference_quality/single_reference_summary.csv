@@ -1,0 +1,21 @@
+metric,value
+n_spatial_datasets,7659.0
+n_reference_candidates,2096.0
+n_spatial_with_score_gt_0,5362.0
+n_spatial_with_same_tissue_reference,4875.0
+n_spatial_without_same_tissue_reference,2784.0
+fraction_spatial_without_same_tissue_reference,0.36349392871132
+fraction_spatial_with_score_gt_0,0.7000913957435697
+fraction_spatial_with_score_ge_0.35,0.7000913957435697
+fraction_spatial_with_score_ge_0.60,0.6466901684292988
+fraction_spatial_with_score_ge_0.80,0.3013448230839535
+mean_best_score,0.5492867398470935
+median_best_score,0.6853571428571428
+tier_count__B: usable reference,2645.0
+tier_count__A: strong matched reference,2308.0
+tier_count__E: no metadata-supported reference,2297.0
+tier_count__C: partial reference,409.0
+spatial_source_count__museum_of_spatial_transcriptomics,6987.0
+spatial_source_count__hubmap,672.0
+reference_source_count__hubmap,1451.0
+reference_source_count__cellxgene,645.0

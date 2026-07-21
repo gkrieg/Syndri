@@ -15,6 +15,7 @@ def integrate_single_st_file_with_harmony(
     tissue_filter="tumor",
     n_pcs=30,
     tissue_name=None,
+    max_iter_harmony=30,
 ):
     """
     Read one spatial AnnData file and one single-cell reference AnnData, preprocess,
@@ -49,7 +50,10 @@ def integrate_single_st_file_with_harmony(
     embedding_key = f"X_pca_harmony_{tissue_name}"
 
     # filter single-cell
-    sc_data = sc_data_orig[sc_data_orig.obs["Tissue"] == tissue_filter, :].copy()
+    if tissue_filter is not None:
+        sc_data = sc_data_orig[sc_data_orig.obs["Tissue"] == tissue_filter, :].copy()
+    else:
+        sc_data = sc_data_orig.copy()
     sc_data.obs["batch"] = "sc"
 
     # read spatial
@@ -74,7 +78,7 @@ def integrate_single_st_file_with_harmony(
     print(adata.obsm["X_pca"].shape)
 
     # Harmony integration in PCA space
-    sc.external.pp.harmony_integrate(adata, "batch", basis="X_pca")
+    sc.external.pp.harmony_integrate(adata, "batch", basis="X_pca",max_iter_harmony=max_iter_harmony)
 
     is_st = adata.obs["batch"] == "st"
     is_sc = adata.obs["batch"] == "sc"
@@ -166,6 +170,40 @@ def compute_top_st_matches(
     }
 
 
+def compute_top_sc_matches(
+    st_emb,
+    sc_emb,
+    sc_ids,
+    n_matches=3,
+):
+    """
+    Compute top-k nearest SC matches for each ST/Xenium embedding row.
+
+    Returns
+    -------
+    result : dict
+        {
+          "ids":   (n_st, n_matches) array of SC IDs
+          "dists": (n_st, n_matches) array of distances
+          "indices": (n_st, n_matches) array of integer neighbor indices
+        }
+    """
+    if st_emb.shape[1] != sc_emb.shape[1]:
+        raise ValueError(
+            f"Embedding dimension mismatch: st_emb.shape={st_emb.shape}, sc_emb.shape={sc_emb.shape}"
+        )
+
+    nn = NearestNeighbors(n_neighbors=n_matches, metric="euclidean")
+    nn.fit(sc_emb)
+    distances, indices = nn.kneighbors(st_emb)
+
+    return {
+        "ids": sc_ids[indices].astype(str),
+        "dists": distances,
+        "indices": indices,
+    }
+
+
 def compute_match_weights(distances, top1_ids=None, eps=1e-8):
     """
     Convert distances to weights and optionally penalize reuse based on the
@@ -204,7 +242,7 @@ def compute_match_weights(distances, top1_ids=None, eps=1e-8):
     return w
 
 
-def apply_reuse_penalty(weights, match_ids, counts, eps=1e-6):
+def apply_reuse_penalty(weights, match_ids, counts, reuse_penalty=1.0, eps=1e-6):
     """
     Apply per-candidate reuse penalties to weights.
 
@@ -216,6 +254,11 @@ def apply_reuse_penalty(weights, match_ids, counts, eps=1e-6):
         Shape (n_cells, k), string IDs for candidate ST matches
     counts : dict
         Frequency dictionary, usually based on top-1 IDs
+    reuse_penalty : float
+        Strength of the reuse penalty. Current default behavior is 1.0,
+        applying penalties as 1 / count. Set to 0.0 to disable the
+        penalty, use values between 0 and 1 to soften it, and values
+        greater than 1 to penalize reused ST cells more aggressively.
     eps : float
         Numerical stability constant.
 
@@ -224,8 +267,14 @@ def apply_reuse_penalty(weights, match_ids, counts, eps=1e-6):
     w : np.ndarray
         Penalized and re-normalized weights.
     """
+    if reuse_penalty < 0:
+        raise ValueError("reuse_penalty must be non-negative.")
+
     w = weights.copy()
-    penalties = np.vectorize(lambda x: 1.0 / (counts.get(str(x), 1) + eps))(match_ids)
+    if reuse_penalty == 0:
+        penalties = 1.0
+    else:
+        penalties = np.vectorize(lambda x: 1.0 / ((counts.get(str(x), 1) + eps) ** reuse_penalty))(match_ids)
     w *= penalties
 
     row_sums = w.sum(axis=1, keepdims=True)
@@ -246,6 +295,89 @@ def sample_match_indices(weights, rng=None):
     return np.array([rng.choice(choices, p=weights[i]) for i in range(weights.shape[0])])
 
 
+def sample_match_indices_with_reuse_cap(
+    weights,
+    match_ids,
+    max_reuse_per_st,
+    rng=None,
+    shuffle_order=True,
+    on_exhausted="best_available",
+):
+    """
+    Sample one column index per row while enforcing a hard cap per ST ID.
+
+    Parameters
+    ----------
+    weights : np.ndarray
+        Shape (n_cells, k), row-normalized candidate weights.
+    match_ids : np.ndarray
+        Shape (n_cells, k), string IDs for candidate ST matches.
+    max_reuse_per_st : int
+        Maximum number of SC rows that can sample the same ST ID.
+    rng : np.random.Generator or None
+        Random generator for weighted sampling.
+    shuffle_order : bool
+        If True, process SC rows in random order to reduce row-order bias.
+    on_exhausted : {"best_available", "raise"}
+        Behavior when all candidate ST IDs for a row are already at capacity.
+        "best_available" picks the highest-weight candidate even though it
+        exceeds the cap. "raise" raises a ValueError.
+
+    Returns
+    -------
+    selected_idx : np.ndarray
+        Length n_cells, selected candidate column index per row.
+    """
+    if rng is None:
+        rng = np.random.default_rng()
+    if max_reuse_per_st is None:
+        return sample_match_indices(weights, rng=rng)
+    if max_reuse_per_st < 1:
+        raise ValueError("max_reuse_per_st must be at least 1.")
+    if on_exhausted not in {"best_available", "raise"}:
+        raise ValueError("on_exhausted must be either 'best_available' or 'raise'.")
+
+    weights = np.asarray(weights, dtype=float)
+    match_ids = np.asarray(match_ids).astype(str)
+    if weights.shape != match_ids.shape:
+        raise ValueError(f"weights and match_ids must have the same shape; got {weights.shape} and {match_ids.shape}.")
+
+    n_cells, k = weights.shape
+    choices = np.arange(k)
+    selected_idx = np.full(n_cells, -1, dtype=int)
+    reuse_counts = {}
+
+    order = np.arange(n_cells)
+    if shuffle_order:
+        order = rng.permutation(order)
+
+    for row in order:
+        available = np.array([reuse_counts.get(st_id, 0) < max_reuse_per_st for st_id in match_ids[row]])
+
+        if not available.any():
+            if on_exhausted == "raise":
+                raise ValueError(
+                    "All candidate ST IDs are already at capacity for at least one SC row. "
+                    "Increase max_reuse_per_st or n_matches.",
+                )
+            selected = int(np.argmax(weights[row]))
+        else:
+            row_weights = weights[row].copy()
+            row_weights[~available] = 0.0
+            total = row_weights.sum()
+            if total <= 0:
+                row_weights = available.astype(float) / available.sum()
+            else:
+                row_weights = row_weights / total
+            selected = int(rng.choice(choices, p=row_weights))
+
+        selected_idx[row] = selected
+        selected_id = match_ids[row, selected]
+        reuse_counts[selected_id] = reuse_counts.get(selected_id, 0) + 1
+
+    return selected_idx
+
+
 def build_sampled_match_df(match_result, selected_idx):
     """
     Turn selected match indices into per-cell sampled outputs.
@@ -264,17 +396,26 @@ def initialize_match_columns(sc_data, n_matches=3, prefix="st_match"):
     """
     Ensure match columns exist in sc_data.obs.
     """
+    new_data = sc_data.copy()
     for j in range(1, n_matches + 1):
         for suffix in ["id", "dist", "x", "y"]:
             col = f"{prefix}_{j}_{suffix}"
-            if col not in sc_data.obs.columns:
-                sc_data.obs[col] = np.nan
+            if col not in new_data.obs.columns:
+                new_data.obs[col] = np.nan
 
     for col in ["sampled_st_id", "sampled_st_x", "sampled_st_y", "selected_match_idx"]:
-        if col not in sc_data.obs.columns:
-            sc_data.obs[col] = np.nan
+        if col not in new_data.obs.columns:
+            new_data.obs[col] = np.nan
 
-    return sc_data
+    return new_data
+
+
+def _prepare_obs_column_for_assignment(obs, col):
+    """
+    Convert categorical columns to object so new IDs/values can be assigned.
+    """
+    if str(obs[col].dtype) == "category":
+        obs[col] = obs[col].astype(object)
 
 
 def write_match_results_to_obs(sc_data, mask, match_result, sampled_result, prefix="st_match"):
@@ -285,16 +426,208 @@ def write_match_results_to_obs(sc_data, mask, match_result, sampled_result, pref
     row_idx = np.where(mask)[0]
 
     for j in range(match_result["ids"].shape[1]):
-        sc_data.obs.iloc[row_idx, sc_data.obs.columns.get_loc(f"{prefix}_{j+1}_id")] = match_result["ids"][:, j]
-        sc_data.obs.iloc[row_idx, sc_data.obs.columns.get_loc(f"{prefix}_{j+1}_dist")] = match_result["dists"][:, j]
-        sc_data.obs.iloc[row_idx, sc_data.obs.columns.get_loc(f"{prefix}_{j+1}_x")] = match_result["x"][:, j]
-        sc_data.obs.iloc[row_idx, sc_data.obs.columns.get_loc(f"{prefix}_{j+1}_y")] = match_result["y"][:, j]
+        for suffix, values in [
+            ("id", match_result["ids"][:, j]),
+            ("dist", match_result["dists"][:, j]),
+            ("x", match_result["x"][:, j]),
+            ("y", match_result["y"][:, j]),
+        ]:
+            col = f"{prefix}_{j+1}_{suffix}"
+            _prepare_obs_column_for_assignment(sc_data.obs, col)
+            sc_data.obs.loc[sc_data.obs.index[row_idx], col] = values
 
     for key, values in sampled_result.items():
         if key in sc_data.obs.columns:
-            sc_data.obs.iloc[row_idx, sc_data.obs.columns.get_loc(key)] = values
+            _prepare_obs_column_for_assignment(sc_data.obs, key)
+            sc_data.obs.loc[sc_data.obs.index[row_idx], key] = values
 
     return sc_data
+
+
+def _get_unique_spatial_rows(st_data, spatial_cols):
+    """
+    Return first row indices for all unique spatial coordinate pairs.
+    """
+    for col in spatial_cols:
+        if col not in st_data.obs:
+            raise KeyError(f"{col!r} not found in st_data.obs")
+
+    coords = st_data.obs.loc[:, list(spatial_cols)]
+    unique_mask = ~coords.duplicated(keep="first")
+    unique_row_idx = np.flatnonzero(unique_mask.to_numpy())
+    return unique_row_idx, coords.iloc[unique_row_idx].to_numpy()
+
+
+def build_spatially_mapped_sc_adata(
+    sc_data,
+    unique_row_idx,
+    match_result,
+    selected_idx,
+    st_data,
+    spatial_cols,
+    prefix="sc_match",
+):
+    """
+    Build an SC AnnData with one selected SC row per unique ST/Xenium coordinate.
+    """
+    rows = np.arange(match_result["ids"].shape[0])
+    selected_sc_indices = match_result["indices"][rows, selected_idx]
+    selected_sc_ids = match_result["ids"][rows, selected_idx]
+
+    mapped_sc_data = sc_data[selected_sc_indices, :].copy()
+    mapped_sc_data.obs_names = st_data.obs_names[unique_row_idx].astype(str)
+
+    mapped_sc_data.obs["source_sc_id"] = selected_sc_ids
+    mapped_sc_data.obs["sampled_sc_id"] = selected_sc_ids
+    mapped_sc_data.obs["matched_st_id"] = st_data.obs_names[unique_row_idx].astype(str)
+    mapped_sc_data.obs["matched_st_index"] = unique_row_idx
+    mapped_sc_data.obs["selected_match_idx"] = selected_idx
+
+    for i, col in enumerate(spatial_cols):
+        mapped_sc_data.obs[col] = match_result["coords"][:, i]
+
+    if len(spatial_cols) >= 2:
+        mapped_sc_data.obsm["spatial"] = match_result["coords"][:, :2]
+
+    for j in range(match_result["ids"].shape[1]):
+        mapped_sc_data.obs[f"{prefix}_{j+1}_id"] = match_result["ids"][:, j]
+        mapped_sc_data.obs[f"{prefix}_{j+1}_dist"] = match_result["dists"][:, j]
+        mapped_sc_data.obs[f"{prefix}_{j+1}_index"] = match_result["indices"][:, j]
+
+    return mapped_sc_data
+
+
+def map_sc_reference_to_unique_xenium_cells(
+    sc_data,
+    st_data,
+    embedding_key="X_pca_harmony",
+    spatial_cols=("x_centroid", "y_centroid"),
+    n_matches=3,
+    reuse_penalty=1.0,
+    max_reuse_per_sc=None,
+    shuffle_capped_sampling_order=True,
+    capped_sampling_on_exhausted="best_available",
+    rng=None,
+    prefix="sc_match",
+):
+    """
+    Map one single-cell reference row to each unique Xenium spatial coordinate.
+
+    Parameters
+    ----------
+    sc_data : AnnData
+        Single-cell reference AnnData with embeddings in `.obsm[embedding_key]`.
+    st_data : AnnData
+        Spatial/Xenium AnnData with embeddings in `.obsm[embedding_key]`.
+    embedding_key : str
+        Key in both `.obsm` matrices used for nearest-neighbor matching.
+    spatial_cols : tuple[str, str]
+        Names of x/y coordinate columns in st_data.obs. Unique coordinate
+        pairs define the Xenium cells to map.
+    n_matches : int
+        Number of top SC reference candidates per unique Xenium coordinate.
+    reuse_penalty : float
+        Strength of the SC-cell reuse penalty used when sampling among
+        candidate matches. The default 1.0 penalizes by 1 / count.
+        Set to 0.0 to disable reuse penalization.
+    max_reuse_per_sc : int or None
+        If provided, use capped sequential sampling so each SC reference cell
+        can be sampled at most this many times, unless all candidates for a
+        row are exhausted and capped_sampling_on_exhausted="best_available".
+    shuffle_capped_sampling_order : bool
+        If True, process Xenium coordinates in random order when
+        max_reuse_per_sc is set.
+    capped_sampling_on_exhausted : {"best_available", "raise"}
+        Behavior when all candidate SC IDs for a coordinate are at capacity.
+    rng : np.random.Generator or None
+        Random generator for weighted sampling.
+    prefix : str
+        Prefix for stored top-match columns in the returned `.obs`.
+
+    Returns
+    -------
+    mapped_sc_data : AnnData
+        Copy of selected rows from sc_data, allowing duplicate SC source rows,
+        with one row per unique spatial coordinate in st_data. The output
+        `.obs_names` are the corresponding st_data row names, while
+        `.obs["source_sc_id"]` and `.obs["sampled_sc_id"]` identify the
+        original SC row copied into each spatial position.
+    """
+    if embedding_key not in sc_data.obsm:
+        raise KeyError(f"{embedding_key!r} not found in sc_data.obsm")
+    if embedding_key not in st_data.obsm:
+        raise KeyError(f"{embedding_key!r} not found in st_data.obsm")
+
+    if n_matches < 1:
+        raise ValueError("n_matches must be at least 1.")
+    if n_matches > sc_data.n_obs:
+        raise ValueError(
+            f"n_matches={n_matches} exceeds the number of SC reference cells ({sc_data.n_obs})."
+        )
+
+    unique_row_idx, unique_coords = _get_unique_spatial_rows(st_data, spatial_cols)
+    if len(unique_row_idx) == 0:
+        raise ValueError("No unique spatial coordinates found in st_data.obs.")
+
+    sc_emb = np.asarray(sc_data.obsm[embedding_key])
+    st_emb = np.asarray(st_data.obsm[embedding_key])[unique_row_idx]
+    sc_ids = sc_data.obs_names.to_numpy().astype(str)
+
+    match_result = compute_top_sc_matches(
+        st_emb=st_emb,
+        sc_emb=sc_emb,
+        sc_ids=sc_ids,
+        n_matches=n_matches,
+    )
+    match_result["coords"] = unique_coords
+    match_result["st_indices"] = unique_row_idx
+
+    base_weights, counts = compute_match_weights(
+        match_result["dists"],
+        top1_ids=match_result["ids"][:, 0],
+    )
+    weights = apply_reuse_penalty(
+        base_weights,
+        match_ids=match_result["ids"],
+        counts=counts,
+        reuse_penalty=reuse_penalty,
+    )
+
+    if max_reuse_per_sc is None:
+        selected_idx = sample_match_indices(weights, rng=rng)
+    else:
+        selected_idx = sample_match_indices_with_reuse_cap(
+            weights,
+            match_ids=match_result["ids"],
+            max_reuse_per_st=max_reuse_per_sc,
+            rng=rng,
+            shuffle_order=shuffle_capped_sampling_order,
+            on_exhausted=capped_sampling_on_exhausted,
+        )
+
+    mapped_sc_data = build_spatially_mapped_sc_adata(
+        sc_data=sc_data,
+        unique_row_idx=unique_row_idx,
+        match_result=match_result,
+        selected_idx=selected_idx,
+        st_data=st_data,
+        spatial_cols=spatial_cols,
+        prefix=prefix,
+    )
+
+    sampled_ids = match_result["ids"][np.arange(match_result["ids"].shape[0]), selected_idx].astype(str)
+    mapped_sc_data.uns["sc_reference_to_xenium_mapping"] = {
+        "embedding_key": embedding_key,
+        "spatial_cols": tuple(spatial_cols),
+        "n_matches": int(n_matches),
+        "reuse_penalty": float(reuse_penalty),
+        "max_reuse_per_sc": max_reuse_per_sc,
+        "n_unique_spatial_coordinates": int(len(unique_row_idx)),
+        "n_sc_reference_cells": int(sc_data.n_obs),
+        "sc_coverage": float(np.unique(sampled_ids).shape[0] / sc_data.n_obs),
+    }
+
+    return mapped_sc_data
 
 
 def map_sc_subset_to_st(
@@ -305,6 +638,10 @@ def map_sc_subset_to_st(
     tissue_col="harmony_spatial_tissue",
     spatial_cols=("CenterX_global_px", "CenterY_global_px"),
     n_matches=3,
+    reuse_penalty=1.0,
+    max_reuse_per_st=None,
+    shuffle_capped_sampling_order=True,
+    capped_sampling_on_exhausted="best_available",
     rng=None,
     prefix="st_match",
 ):
@@ -327,6 +664,23 @@ def map_sc_subset_to_st(
         Names of x/y coordinate columns in st_data.obs.
     n_matches : int
         Number of top ST matches per SC row.
+    reuse_penalty : float
+        Strength of the ST-cell reuse penalty used when sampling among
+        candidate matches. The default 1.0 preserves the previous behavior
+        of penalizing by 1 / count. Set to 0.0 to disable reuse penalization,
+        use values between 0 and 1 to soften it, and values greater than 1
+        to penalize reused ST cells more aggressively.
+    max_reuse_per_st : int or None
+        If provided, use capped sequential sampling so each ST ID can be
+        sampled at most this many times, unless all candidates for a row are
+        exhausted and capped_sampling_on_exhausted="best_available".
+    shuffle_capped_sampling_order : bool
+        If True, process SC rows in random order when max_reuse_per_st is set
+        to reduce row-order bias.
+    capped_sampling_on_exhausted : {"best_available", "raise"}
+        Behavior when all candidate ST IDs for a row are already at capacity.
+        "best_available" picks the highest-weight candidate even though it
+        exceeds the cap. "raise" raises a ValueError.
     rng : np.random.Generator or None
         Random generator for weighted sampling.
     prefix : str
@@ -386,9 +740,20 @@ def map_sc_subset_to_st(
         base_weights,
         match_ids=match_result["ids"],
         counts=counts,
+        reuse_penalty=reuse_penalty,
     )
 
-    selected_idx = sample_match_indices(weights, rng=rng)
+    if max_reuse_per_st is None:
+        selected_idx = sample_match_indices(weights, rng=rng)
+    else:
+        selected_idx = sample_match_indices_with_reuse_cap(
+            weights,
+            match_ids=match_result["ids"],
+            max_reuse_per_st=max_reuse_per_st,
+            rng=rng,
+            shuffle_order=shuffle_capped_sampling_order,
+            on_exhausted=capped_sampling_on_exhausted,
+        )
     sampled_result = build_sampled_match_df(match_result, selected_idx)
 
     sc_data = write_match_results_to_obs(
@@ -403,5 +768,3 @@ def map_sc_subset_to_st(
     coverage = np.unique(sampled_ids).shape[0] / st_data.n_obs
 
     return sc_data, coverage, match_result
-
-

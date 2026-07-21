@@ -5,7 +5,7 @@ import scanpy as sc
 import pandas as pd
 import pickle
 import sys
-sys.path.append('/home/jwinchel/Heimdall/')
+sys.path.append('/home/jwinchel/Syndri/Heimdall/')
 from Heimdall.utils import convert_to_ensembl_ids
 
 def load_GSE127465(file_path,st_file='/compute/oven-0-13/jwinchel/Lung5_Rep1/Lung5_Rep1-Flat_files_and_images/Lung5_Rep1_exprMat_file.csv'):

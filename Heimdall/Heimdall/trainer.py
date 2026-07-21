@@ -27,12 +27,14 @@ from torchmetrics.functional.classification import binary_auroc, binary_average_
 from torchmetrics.regression import MeanSquaredError, R2Score
 from tqdm import tqdm
 from transformers import get_scheduler
-from torch.utils.data import Subset
+from torch.utils.data import DataLoader, Subset
 from scipy.sparse import csr_matrix,issparse
+from sklearn.metrics import silhouette_score
 
 import Heimdall.datasets
 import Heimdall.losses
 from Heimdall.admixture_sampling import sample_admixture_from_neighbor_dict
+from Heimdall.utils import heimdall_collate_fn
 
 import wandb
 torch.autograd.set_detect_anomaly(True)
@@ -375,6 +377,161 @@ class HeimdallTrainer:
         full_dataset = self.data.datasets.get("full")
         if isinstance(full_dataset, Heimdall.datasets.AdmixtureInstanceDataset):
             full_dataset.set_epoch(epoch)
+
+    @staticmethod
+    def _dataset_row_indices(dataset):
+        if isinstance(dataset, Subset):
+            parent_indices = HeimdallTrainer._dataset_row_indices(dataset.dataset)
+            return parent_indices[np.asarray(dataset.indices, dtype=np.int64)]
+        if hasattr(dataset, "idx"):
+            return np.asarray(dataset.idx, dtype=np.int64)
+        return np.arange(len(dataset), dtype=np.int64)
+
+    @staticmethod
+    def _as_csr(matrix):
+        if issparse(matrix):
+            return matrix.tocsr().astype(np.float32)
+        return csr_matrix(np.asarray(matrix, dtype=np.float32))
+
+    def _get_epoch_admixture_matrix(self, epoch: int):
+        if self.data.admixture_epoch_store is not None:
+            return self.data.admixture_epoch_store.get(
+                epoch,
+                obs_names=self.data.adata.obs_names,
+                var_names=self.data.adata.var_names,
+            )
+
+        configured_layer = self.data.dataset_preproc_cfg.get("admix_layer", None)
+        candidate_layers = []
+        if configured_layer is not None:
+            layer_parts = configured_layer.rsplit("_", 1)
+            layer_prefix = (
+                layer_parts[0]
+                if len(layer_parts) == 2 and layer_parts[1].isdigit()
+                else configured_layer
+            )
+            candidate_layers.extend([f"{layer_prefix}_{epoch}", configured_layer])
+        candidate_layers.extend(["admixed_counts", "admixed"])
+
+        for layer in candidate_layers:
+            if layer in self.data.adata.layers:
+                return self.data.adata.layers[layer]
+        return None
+
+    def _preprocess_for_silhouette(self, X, metric_cfg):
+        metric_adata = AnnData(X=X.copy())
+        normalize_total = metric_cfg.get("normalize_total", 10000)
+        if normalize_total is not None:
+            sc.pp.normalize_total(metric_adata, target_sum=float(normalize_total))
+        if metric_cfg.get("log1p", True):
+            sc.pp.log1p(metric_adata)
+
+        n_pcs = int(metric_cfg.get("n_pcs", 50))
+        n_comps = min(n_pcs, metric_adata.n_obs - 1, metric_adata.n_vars - 1)
+        if n_comps < 1:
+            return None
+        sc.pp.pca(
+            metric_adata,
+            n_comps=n_comps,
+            random_state=int(metric_cfg.get("random_state", self.cfg.seed)),
+        )
+        return metric_adata.obsm["X_pca"]
+
+    def compute_silhouette_delta_metric(self, epoch: int):
+        if not self.accelerator.is_main_process:
+            return None
+
+        metric_cfg = self.cfg.tasks.args.get("silhouette_delta", {})
+        if not metric_cfg.get("enabled", False):
+            return None
+        if self.cfg.tasks.args.task_type != "admixture_binary":
+            self.print_r0("> Skipping silhouette delta metric; task_type is not 'admixture_binary'.")
+            return None
+
+        split = metric_cfg.get("split", "val")
+        if split not in self.data.datasets:
+            self.print_r0(f"> Skipping silhouette delta metric; split {split!r} is not available.")
+            return None
+
+        label_col = metric_cfg.get("label_col_name", "cell_type")
+        if label_col not in self.data.adata.obs:
+            self.print_r0(f"> Skipping silhouette delta metric; obs column {label_col!r} is not available.")
+            return None
+
+        admixture_matrix = self._get_epoch_admixture_matrix(epoch)
+        if admixture_matrix is None:
+            self.print_r0("> Skipping silhouette delta metric; no admixture matrix/layer is available.")
+            return None
+
+        dataloader = DataLoader(
+            self.data.datasets[split],
+            batch_size=self.cfg.tasks.args.batchsize,
+            shuffle=False,
+            collate_fn=heimdall_collate_fn,
+            num_workers=0,
+        )
+
+        row_indices = self._dataset_row_indices(self.data.datasets[split])
+        labels = pd.Series(self.data.adata.obs[label_col].iloc[row_indices].to_numpy()).astype("category")
+        valid = ~labels.isna().to_numpy()
+        row_indices = row_indices[valid]
+        labels = labels[valid].cat.remove_unused_categories().to_numpy()
+        if len(row_indices) < 3 or len(np.unique(labels)) < 2:
+            self.print_r0("> Skipping silhouette delta metric; not enough labeled cells/classes.")
+            return None
+
+        probs = np.vstack(self.get_predictions(dataloader))
+        probs = probs[valid]
+        if probs.shape[0] != len(row_indices):
+            self.print_r0(
+                "> Skipping silhouette delta metric; prediction rows do not match split rows "
+                f"({probs.shape[0]} vs {len(row_indices)}).",
+            )
+            return None
+
+        max_cells = metric_cfg.get("max_cells", None)
+        if max_cells is not None and len(row_indices) > int(max_cells):
+            rng = np.random.default_rng(int(metric_cfg.get("random_state", self.cfg.seed)))
+            keep = np.sort(rng.choice(len(row_indices), size=int(max_cells), replace=False))
+            row_indices = row_indices[keep]
+            labels = labels[keep]
+            probs = probs[keep]
+            if len(np.unique(labels)) < 2:
+                self.print_r0("> Skipping silhouette delta metric; subsample has fewer than two classes.")
+                return None
+
+        original = self._as_csr(self.data.adata.X[row_indices])
+        admixed = original + self._as_csr(admixture_matrix[row_indices])
+        cleaned = admixed.tocoo(copy=True)
+        remove_mask = probs[cleaned.row, cleaned.col] >= float(metric_cfg.get("prediction_threshold", 0.5))
+        cleaned.data[remove_mask] = 0
+        cleaned = cleaned.tocsr()
+        cleaned.eliminate_zeros()
+
+        original_embedding = self._preprocess_for_silhouette(original, metric_cfg)
+        cleaned_embedding = self._preprocess_for_silhouette(cleaned, metric_cfg)
+        if original_embedding is None or cleaned_embedding is None:
+            self.print_r0("> Skipping silhouette delta metric; PCA preprocessing produced no components.")
+            return None
+
+        silhouette_metric = metric_cfg.get("metric", "cosine")
+        original_score = silhouette_score(original_embedding, labels, metric=silhouette_metric)
+        cleaned_score = silhouette_score(cleaned_embedding, labels, metric=silhouette_metric)
+        prefix = f"{split}_silhouette_delta"
+        log = {
+            f"{prefix}_original": float(original_score),
+            f"{prefix}_cleaned": float(cleaned_score),
+            f"{prefix}_cleaned_minus_original": float(cleaned_score - original_score),
+            f"{prefix}_n_cells": int(len(row_indices)),
+            f"{prefix}_prediction_threshold": float(metric_cfg.get("prediction_threshold", 0.5)),
+            "epoch": epoch,
+        }
+
+        if self.run_wandb and self.accelerator.is_main_process:
+            self.accelerator.log(log, step=self.step)
+        if not self.run_wandb and self.accelerator.is_main_process:
+            print(log)
+        return log
     
     def fit(self, resume_from_checkpoint=True, checkpoint_every_n_epochs=1):
         """Train the model with automatic checkpointing and resumption."""
@@ -441,6 +598,7 @@ class HeimdallTrainer:
             # self.accelerator.wait_for_everyone()
                 
             # Validation and test evaluation
+            self.validate_model(self.dataloader_train, dataset_type="train_eval")
             valid_log, val_embed = self.validate_model(self.dataloader_val, dataset_type="valid")
             test_log, test_embed = self.validate_model(self.dataloader_test, dataset_type="test")
 
@@ -483,6 +641,7 @@ class HeimdallTrainer:
 
             # Train for one epoch
             self.train_epoch(epoch)
+            self.compute_silhouette_delta_metric(epoch)
 
             # Save checkpoint at regular intervals if requested
             if (epoch + 1) % checkpoint_every_n_epochs == 0:
@@ -533,7 +692,6 @@ class HeimdallTrainer:
         self.model.train()
         step = len(self.dataloader_train) * epoch
         log_every = self.cfg.trainer.get("log_every", 50)
-        metrics = self._initialize_metrics()
 
         with tqdm(self.dataloader_train, disable=not self.accelerator.is_main_process) as t:
             for batch in t:
@@ -575,25 +733,6 @@ class HeimdallTrainer:
                     
 
                     loss = self.get_loss(outputs.logits, labels, masks=masks)
-                    metric_logits = outputs.logits
-                    metric_labels = labels
-                    cellwise_metric_logits, cellwise_metric_labels = self._prepare_cellwise_logits_and_labels_for_metrics(
-                        metric_logits,
-                        metric_labels,
-                        masks=masks,
-                    )
-                    if masks is not None:
-                        metric_logits, metric_labels = metric_logits[masks], metric_labels[masks]
-                    metric_logits, metric_labels = self._prepare_logits_and_labels_for_metrics(
-                        metric_logits,
-                        metric_labels,
-                    )
-                    for metric_name, metric in metrics.items():
-                        if metric_name != "ConfusionMatrix":
-                            if metric_name in ["AUROC", "AUPRC"]:
-                                metric.update(cellwise_metric_logits, cellwise_metric_labels)
-                            else:
-                                metric.update(metric_logits.detach(), metric_labels.detach())
                     
                     # if torch.isnan(loss):
                     #     print("NaN loss at step", self.step)
@@ -642,12 +781,6 @@ class HeimdallTrainer:
                         "epoch": epoch,
                         "grad_norm": grad_norm,
                     }
-                    for metric_name, metric in metrics.items():
-                        if metric_name != "ConfusionMatrix":
-                            log[f"train_{metric_name}"] = metric.compute().item()
-                            if metric_name in ["Accuracy", "Precision", "Recall", "F1Score", "MathewsCorrCoef"]:
-                                log[f"train_{metric_name}"] *= 100
-                            metric.reset()
                     if self.run_wandb and self.accelerator.is_main_process:
                         self.accelerator.log(log, step=self.step)
 
@@ -989,15 +1122,29 @@ class HeimdallTrainer:
     def get_predictions(self, dataloader):
         self.model.eval()
         all_probs_batches = []
+        device = self.accelerator.device
+
+        def move_to_device(value):
+            if isinstance(value, torch.Tensor):
+                return value.to(device)
+            if isinstance(value, tuple):
+                return tuple(move_to_device(v) for v in value)
+            if isinstance(value, list):
+                return [move_to_device(v) for v in value]
+            return value
+
         with torch.no_grad():
             for batch in tqdm(dataloader, disable=not self.accelerator.is_main_process):
-                inputs = (batch["identity_inputs"], batch["expression_inputs"])
+                inputs = (
+                    move_to_device(batch["identity_inputs"]),
+                    move_to_device(batch["expression_inputs"]),
+                )
 
-                gene_reorderings = batch['gene_order']
+                gene_reorderings = move_to_device(batch['gene_order'])
                 
                 outputs = self.model(
                     inputs=inputs,
-                    attention_mask=batch.get("expression_padding"),
+                    attention_mask=move_to_device(batch.get("expression_padding")),
                 )
 
                 logits = outputs.logits

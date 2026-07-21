@@ -1,0 +1,23 @@
+dataset_name: "admixture_nsclc_tiny_hardcap"
+
+preprocess_args:
+  data_path: "/compute/oven-0-13/jwinchel/scRNA-seq/adata/GSE127465_tumor_integrated_hardcap_100th.h5ad"
+  top_n_genes: false
+  normalize: false
+  log_1p: false
+  scale_data: false
+  admixture: true
+  fix_admixture: false
+  admix_layer: "admixed_0"
+  binary_layer: "is_transcript_added_0"
+  species: "human"
+
+  admixture_args:
+    k_neighbors: 3
+    frac_transcript_per_cell: 0.05
+    min_sampled_transcript_threshold: 0
+    min_source_transcript_count: 400
+    mask_out_random_genes: False
+    mask_out_frac: 0.0
+    tau_range: [0.10,0.15]
+    n_repeats: 1

@@ -4,8 +4,6 @@
 from __future__ import annotations
 
 import argparse
-import ast
-import json
 import shlex
 import sys
 from pathlib import Path
@@ -13,9 +11,10 @@ from pathlib import Path
 import anndata as ad
 import hydra
 import numpy as np
+import pandas as pd
 import torch
 from omegaconf import OmegaConf
-from scipy.sparse import csr_matrix, issparse
+from scipy.sparse import coo_matrix, csr_matrix, issparse
 from torch.utils.data import DataLoader, Dataset
 from tqdm import tqdm
 
@@ -45,10 +44,10 @@ def parse_args() -> argparse.Namespace:
         help="Reference AnnData used for cell_type_dict and gene consistency.",
     )
     parser.add_argument(
-        "--notebook",
+        "--gene-list",
         type=Path,
-        default=Path("/home/jwinchel/Syndri/seg_cleaner/InferenceTest.ipynb"),
-        help="Notebook containing the canonical genes list.",
+        default=None,
+        help="Optional text file containing one gene per line. Defaults to all spatial AnnData genes.",
     )
     parser.add_argument(
         "--output-dir",
@@ -113,28 +112,11 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def genes_from_notebook(notebook_path: Path) -> list[str]:
-    nb = json.loads(notebook_path.read_text())
-    for cell in nb.get("cells", []):
-        if cell.get("cell_type") != "code":
-            continue
-        src = "".join(cell.get("source", []))
-        if "genes" not in src:
-            continue
-        try:
-            tree = ast.parse(src)
-        except SyntaxError:
-            continue
-        for node in tree.body:
-            if not isinstance(node, ast.Assign):
-                continue
-            for target in node.targets:
-                if isinstance(target, ast.Name) and target.id == "genes":
-                    genes = ast.literal_eval(node.value)
-                    if not isinstance(genes, list) or not all(isinstance(g, str) for g in genes):
-                        raise ValueError("Notebook variable 'genes' is not a list[str].")
-                    return genes
-    raise ValueError(f"Could not find a literal genes = [...] assignment in {notebook_path}")
+def genes_from_txt(gene_list_path: Path) -> list[str]:
+    genes = [line.strip() for line in gene_list_path.read_text().splitlines() if line.strip()]
+    if not genes:
+        raise ValueError(f"Gene list is empty: {gene_list_path}")
+    return genes
 
 
 def build_cell_type_dict(adata: ad.AnnData, cell_type_col: str) -> dict[str, int]:
@@ -143,9 +125,14 @@ def build_cell_type_dict(adata: ad.AnnData, cell_type_col: str) -> dict[str, int
 
 
 def prepare_spatial_adata(args: argparse.Namespace) -> Path:
-    genes = genes_from_notebook(args.notebook)
     st_data = ad.read_h5ad(args.st_data)
     ref_data = ad.read_h5ad(args.reference_data)
+    if args.gene_list is None:
+        genes = st_data.var_names.astype(str).tolist()
+        print(f"> Using all {len(genes):,} spatial AnnData genes.")
+    else:
+        genes = genes_from_txt(args.gene_list)
+        print(f"> Loaded {len(genes):,} genes from {args.gene_list}.")
 
     if args.cell_type_col not in st_data.obs:
         raise KeyError(f"{args.cell_type_col!r} not found in spatial adata.obs")
@@ -159,9 +146,9 @@ def prepare_spatial_adata(args: argparse.Namespace) -> Path:
     missing_genes = [gene for gene in genes if gene not in st_data.var_names]
     if missing_genes:
         preview = missing_genes[:20]
-        raise ValueError(f"{len(missing_genes)} notebook genes are missing from spatial AnnData. First 20: {preview}")
+        raise ValueError(f"{len(missing_genes)} gene-list genes are missing from spatial AnnData. First 20: {preview}")
     st_data = st_data[:, genes].copy()
-    print(f"> Subset spatial AnnData to {len(genes):,} notebook genes in notebook order.")
+    print(f"> Prepared spatial AnnData with {len(genes):,} genes.")
 
     if "cell_type_dict" in ref_data.uns:
         st_data.uns["cell_type_dict"] = dict(ref_data.uns["cell_type_dict"])
@@ -228,6 +215,7 @@ def _runtime_overrides(args: argparse.Namespace, prepared_path: Path) -> list[st
         f"dataset.preprocess_args.data_path={prepared_path}",
         f"++dataset.preprocess_args.apply_admixture={str(args.apply_admixture).lower()}",
         f"++dataset.preprocess_args.admixture_args.coord_cols=[{coord_cols[0]},{coord_cols[1]}]",
+        f"++dataset.preprocess_args.admixture_args.cell_type_col={args.cell_type_col}",
         f"tasks.args.splits.col={args.split_col}",
         f"tasks.args.splits.keys_.test={args.split_value}",
     ]
@@ -346,6 +334,59 @@ def build_fast_inference_loader(cr: CellRepresentation, batch_size: int, split: 
     return DataLoader(dataset, batch_size=batch_size, shuffle=False, num_workers=0)
 
 
+def _prediction_var_names(model_adata: ad.AnnData) -> pd.Index:
+    return pd.Index(model_adata.var_names.astype(str), name=model_adata.var_names.name)
+
+
+def _expand_matrix_to_input_genes(
+    matrix,
+    model_adata: ad.AnnData,
+    input_var_names: pd.Index,
+    layer_name: str,
+) -> csr_matrix:
+    matrix = matrix.tocsr() if issparse(matrix) else csr_matrix(matrix)
+    prediction_var_names = _prediction_var_names(model_adata)
+    input_index = pd.Index(input_var_names.astype(str))
+    output_cols = input_index.get_indexer(prediction_var_names)
+    valid = output_cols >= 0
+
+    if not valid.all():
+        missing = prediction_var_names[~valid].tolist()
+        preview = missing[:20]
+        raise ValueError(
+            f"{len(missing)} {layer_name!r} prediction genes are missing from the original input AnnData. "
+            f"First 20: {preview}"
+        )
+
+    matrix = matrix[:, valid]
+    matrix = matrix.tocoo()
+    expanded = coo_matrix(
+        (matrix.data, (matrix.row, output_cols[valid][matrix.col])),
+        shape=(matrix.shape[0], len(input_index)),
+        dtype=matrix.dtype,
+    ).tocsr()
+    print(
+        f"> Expanded {layer_name!r} from {matrix.shape[1]:,} model genes "
+        f"to {len(input_index):,} input genes; unmodeled genes are zero."
+    )
+    return expanded
+
+
+def build_output_adata_with_input_genes(args: argparse.Namespace, model_adata: ad.AnnData) -> ad.AnnData:
+    input_adata = ad.read_h5ad(args.st_data)
+    output_obs_names = pd.Index(model_adata.obs_names.astype(str))
+    missing_obs = output_obs_names.difference(pd.Index(input_adata.obs_names.astype(str)))
+    if len(missing_obs):
+        preview = missing_obs[:20].tolist()
+        raise ValueError(f"{len(missing_obs)} prediction cells are missing from input AnnData. First 20: {preview}")
+
+    output_adata = input_adata[output_obs_names, :].copy()
+    for column in model_adata.obs.columns:
+        output_adata.obs[column] = model_adata.obs[column].reindex(output_adata.obs_names).values
+    output_adata.uns.update(model_adata.uns)
+    return output_adata
+
+
 def run_inference(args: argparse.Namespace, prepared_path: Path) -> Path:
     if args.apply_admixture and args.fast_inference:
         print("> Disabling fast inference because apply_admixture=true requires the standard dataset path.")
@@ -376,15 +417,26 @@ def run_inference(args: argparse.Namespace, prepared_path: Path) -> Path:
     if probs.shape != expected_shape:
         raise ValueError(f"Prediction shape {probs.shape} does not match selected split shape {expected_shape}")
 
-    output_adata = trainer.data.adata[prediction_indices].copy()
-    output_adata.layers[args.prob_layer] = csr_matrix(probs)
+    model_output_adata = trainer.data.adata[prediction_indices].copy()
+    output_adata = build_output_adata_with_input_genes(args, model_output_adata)
+    output_adata.layers[args.prob_layer] = _expand_matrix_to_input_genes(
+        probs,
+        model_output_adata,
+        output_adata.var_names,
+        args.prob_layer,
+    )
     if args.apply_admixture:
         admixture_matrix = trainer.data.fe.current_admixture_matrix
         if admixture_matrix is None:
             raise RuntimeError(
                 "apply_admixture=True, but no current admixture matrix was materialized for inference."
             )
-        output_adata.layers[args.admixture_layer] = csr_matrix(admixture_matrix[prediction_indices])
+        output_adata.layers[args.admixture_layer] = _expand_matrix_to_input_genes(
+            admixture_matrix[prediction_indices],
+            model_output_adata,
+            output_adata.var_names,
+            args.admixture_layer,
+        )
         print(f"> Added exact sampled admixture counts to layer {args.admixture_layer!r}.")
 
     output_path = args.output_dir / args.output_name

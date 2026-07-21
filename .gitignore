@@ -211,3 +211,10 @@ __marimo__/
 *.h5ad
 *.pt
 *.npz
+*.pkl
+*.mtx
+*.rds
+
+data/brca_xenium_chromium/
+Heimdall/admixture_prediction_results/
+logs/

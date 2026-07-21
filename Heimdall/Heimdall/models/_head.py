@@ -110,3 +110,37 @@ class ExpressionOnlyCellPredHead(ExpressionPredHeadMixin, LinearDecoderMixin):
 
 class LinearSeqPredHead(SeqPredHeadMixin, LinearDecoderMixin):
     """Linear sequence prediction head."""
+
+
+class AdmixtureGeneTokenPredHead(nn.Module):
+    """Predict one admixture logit for each gene token embedding."""
+
+    def __init__(
+        self,
+        dim_in: int,
+        dim_out: Optional[int] = None,
+        dropout: float = 0.0,
+        num_prefix_tokens: Optional[int] = None,
+        **kwargs,
+    ):
+        super().__init__()
+        self.num_output_tokens = dim_out
+        self.num_prefix_tokens = num_prefix_tokens
+        self.decoder = nn.Sequential(
+            nn.Linear(dim_in, 1, **kwargs),
+            nn.Dropout(dropout),
+        )
+
+    def forward(self, encoder_output) -> TransformerOutput:
+        cls_emb = encoder_output[:, 0, :]
+        gene_embeddings = encoder_output[:, 1:, :]
+        if self.num_prefix_tokens is not None:
+            gene_embeddings = gene_embeddings[:, self.num_prefix_tokens :, :]
+        elif self.num_output_tokens is not None and gene_embeddings.size(1) > self.num_output_tokens:
+            gene_embeddings = gene_embeddings[:, -self.num_output_tokens :, :]
+        logits = self.decoder(gene_embeddings).squeeze(-1)
+        return TransformerOutput(
+            logits=logits,
+            sequence_embeddings=encoder_output,
+            cls_embeddings=cls_emb,
+        )

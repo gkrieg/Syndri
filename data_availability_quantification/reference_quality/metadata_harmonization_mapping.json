@@ -1,0 +1,454 @@
+{
+  "description": "Mappings used by HarmonizeDatabases.ipynb to harmonize organism names, general tissues, and specific tissues across CELLxGENE, HuBMAP, and Museum of Spatial Transcriptomics metadata.",
+  "normalization_rules": {
+    "list_columns": [
+      "parse Python-list-like strings",
+      "drop empty/null values",
+      "deduplicate values while preserving order"
+    ],
+    "text": [
+      "strip leading/trailing whitespace",
+      "replace underscores with spaces",
+      "collapse repeated whitespace",
+      "casefold for matching"
+    ],
+    "unmapped_values": {
+      "organisms": "Use normalized snake_case text when no explicit alias is listed.",
+      "tissue_general": "Use exact aliases, then tissue_general_keyword_rules, then normalized text when no rule matches.",
+      "tissues": "Use exact aliases, then normalized text when no explicit alias is listed."
+    }
+  },
+  "organisms": {
+    "ambystoma mexicanum": "ambystoma_mexicanum",
+    "arabidopsis thaliana": "arabidopsis_thaliana",
+    "caenorhabditis elegans": "caenorhabditis_elegans",
+    "callithrix jacchus": "callithrix_jacchus",
+    "callithrix_jacchus": "callithrix_jacchus",
+    "chimpanzee": "pan_troglodytes",
+    "common marmoset": "callithrix_jacchus",
+    "danio rerio": "danio_rerio",
+    "drosophila melanogaster": "drosophila_melanogaster",
+    "drosophila melanogaster x drosophila simulans": "drosophila_melanogaster_x_drosophila_simulans",
+    "drosophila simulans": "drosophila_simulans",
+    "homo sapiens": "homo_sapiens",
+    "homo_sapiens": "homo_sapiens",
+    "human": "homo_sapiens",
+    "macaca mulatta": "macaca_mulatta",
+    "macaca_mulatta": "macaca_mulatta",
+    "mouse": "mus_musculus",
+    "mus musculus": "mus_musculus",
+    "mus_musculus": "mus_musculus",
+    "oryza sativa": "oryza_sativa",
+    "pan troglodytes": "pan_troglodytes",
+    "pan_troglodytes": "pan_troglodytes",
+    "physarum polycepha": "physarum_polycephalum",
+    "physarum polycephalum": "physarum_polycephalum",
+    "pig": "sus_scrofa",
+    "pogona vitticeps": "pogona_vitticeps",
+    "potato": "solanum_tuberosum",
+    "pristionchus pacificus": "pristionchus_pacificus",
+    "rat": "rattus_norvegicus",
+    "rattus norvegicus": "rattus_norvegicus",
+    "rhesus macaque": "macaca_mulatta",
+    "rice": "oryza_sativa",
+    "solanum lycopersicum": "solanum_lycopersicum",
+    "solanum tuberosum": "solanum_tuberosum",
+    "sus scrofa": "sus_scrofa",
+    "tomato": "solanum_lycopersicum",
+    "xenopus laevis": "xenopus_laevis",
+    "xenopus tropicalis": "xenopus_tropicalis",
+    "zebrafish": "danio_rerio"
+  },
+  "tissue_general": {
+    "adipose": "adipose tissue",
+    "adipose tissue": "adipose tissue",
+    "aorta": "vasculature",
+    "ascending aorta": "vasculature",
+    "ascending colon": "colon",
+    "blood": "blood",
+    "blood vasculature": "vasculature",
+    "bone marrow": "bone marrow",
+    "bone_marrow": "bone marrow",
+    "brain": "brain",
+    "breast": "breast",
+    "bronchopulmonary lymph node": "lymph node",
+    "bronchus": "lung",
+    "cerebellum": "brain",
+    "cerebral cortex": "brain",
+    "cerebral nuclei": "brain",
+    "cervical spinal motor neurons": "spinal cord",
+    "colon": "colon",
+    "cornea": "eye",
+    "descending colon": "colon",
+    "diaphyseal bone marrow": "bone marrow",
+    "dorsal root ganglia": "peripheral nervous system",
+    "dorsal root ganglion": "peripheral nervous system",
+    "duodenum": "small intestine",
+    "embryo": "embryo",
+    "endometrium": "female reproductive system",
+    "esophagus": "esophagus",
+    "eye": "eye",
+    "fallopian tube": "female reproductive system",
+    "forebrain": "brain",
+    "forelimb": "limb",
+    "forelimbs": "limb",
+    "fovea centralis": "eye",
+    "frontal lobe": "brain",
+    "heart": "heart",
+    "heart left ventricle": "heart",
+    "hypothalamus": "brain",
+    "ileum": "small intestine",
+    "intestine": "intestine",
+    "jejunum": "small intestine",
+    "kidney": "kidney",
+    "large intestine": "colon",
+    "leaf": "leaf",
+    "leaf with flg22 infiltration": "leaf",
+    "leaf with milder flg22 stimulation": "leaf",
+    "left fallopian tube": "female reproductive system",
+    "left kidney": "kidney",
+    "left lung": "lung",
+    "left ovary": "female reproductive system",
+    "liver": "liver",
+    "lower lobe of left lung": "lung",
+    "lumbar spinal motor neurons": "spinal cord",
+    "lumblar spinal motor neurons": "spinal cord",
+    "lung": "lung",
+    "lymph node": "lymph node",
+    "lymphatic vasculature": "vasculature",
+    "macula lutea proper": "eye",
+    "medial ganglionic eminence": "brain",
+    "midbrain": "brain",
+    "muscle": "muscle",
+    "neocortex": "brain",
+    "nucleus accumbens": "brain",
+    "oesophagus": "esophagus",
+    "ovary": "female reproductive system",
+    "pancreas": "pancreas",
+    "pbmc": "blood",
+    "peripheral region of retina": "eye",
+    "placenta": "placenta",
+    "posterior end": "embryo",
+    "prostate": "male reproductive system",
+    "retina": "eye",
+    "right fallopian tube": "female reproductive system",
+    "right kidney": "kidney",
+    "right lung": "lung",
+    "right ovary": "female reproductive system",
+    "scn": "brain",
+    "skeletal muscle": "muscle",
+    "small intestine": "small intestine",
+    "spinal cord": "spinal cord",
+    "spinal motor neurons": "spinal cord",
+    "spinal_cord": "spinal cord",
+    "spleen": "spleen",
+    "stomach": "stomach",
+    "suprachiasmatic nucleus": "brain",
+    "testis": "male reproductive system",
+    "thymus": "thymus",
+    "transverse colon": "colon",
+    "trigeminal ganglia": "peripheral nervous system",
+    "trigeminal ganglion": "peripheral nervous system",
+    "uterus": "female reproductive system",
+    "venous blood": "blood"
+  },
+  "tissue_general_keyword_rules": [
+    {
+      "canonical": "spinal cord",
+      "contains": [
+        "spinal cord",
+        "spinal_cord",
+        "spinal motor",
+        "cervical spinal",
+        "lumbar spinal",
+        "lumblar spinal"
+      ]
+    },
+    {
+      "canonical": "peripheral nervous system",
+      "contains": [
+        "trigeminal gangl",
+        "dorsal root gangl",
+        "peripheral gangl"
+      ]
+    },
+    {
+      "canonical": "brain",
+      "contains": [
+        "brain",
+        "cortex",
+        "cortical",
+        "cerebral",
+        "cerebell",
+        "hypothalam",
+        "thalam",
+        "hippocamp",
+        "amygdala",
+        "striat",
+        "midbrain",
+        "hindbrain",
+        "forebrain",
+        "scn",
+        "ganglionic eminence",
+        "nucleus accumbens",
+        "dopamine neuron"
+      ]
+    },
+    {
+      "canonical": "bone marrow",
+      "contains": [
+        "bone marrow",
+        "bone_marrow",
+        "marrow"
+      ]
+    },
+    {
+      "canonical": "blood",
+      "contains": [
+        "blood",
+        "pbmc",
+        "plasma"
+      ]
+    },
+    {
+      "canonical": "lymph node",
+      "contains": [
+        "lymph node",
+        "lymph_node"
+      ]
+    },
+    {
+      "canonical": "spleen",
+      "contains": [
+        "spleen"
+      ]
+    },
+    {
+      "canonical": "thymus",
+      "contains": [
+        "thymus"
+      ]
+    },
+    {
+      "canonical": "lung",
+      "contains": [
+        "lung",
+        "airway",
+        "bronch",
+        "alveol"
+      ]
+    },
+    {
+      "canonical": "heart",
+      "contains": [
+        "heart",
+        "cardiac",
+        "ventricle",
+        "atrium",
+        "myocard"
+      ]
+    },
+    {
+      "canonical": "vasculature",
+      "contains": [
+        "aorta",
+        "artery",
+        "arterial",
+        "vascular",
+        "vasculature",
+        "vein",
+        "venous",
+        "vessel"
+      ]
+    },
+    {
+      "canonical": "colon",
+      "contains": [
+        "colon",
+        "colonic",
+        "large intestine",
+        "cecum",
+        "caecum",
+        "rectum"
+      ]
+    },
+    {
+      "canonical": "small intestine",
+      "contains": [
+        "small intestine",
+        "duodenum",
+        "ileum",
+        "jejunum",
+        "villi"
+      ]
+    },
+    {
+      "canonical": "intestine",
+      "contains": [
+        "intestine",
+        "intestinal"
+      ]
+    },
+    {
+      "canonical": "stomach",
+      "contains": [
+        "stomach",
+        "gastric"
+      ]
+    },
+    {
+      "canonical": "esophagus",
+      "contains": [
+        "esophagus",
+        "oesophagus"
+      ]
+    },
+    {
+      "canonical": "kidney",
+      "contains": [
+        "kidney",
+        "renal",
+        "glomerul"
+      ]
+    },
+    {
+      "canonical": "liver",
+      "contains": [
+        "liver",
+        "hepatic"
+      ]
+    },
+    {
+      "canonical": "pancreas",
+      "contains": [
+        "pancreas",
+        "pancreatic",
+        "islet"
+      ]
+    },
+    {
+      "canonical": "skin",
+      "contains": [
+        "skin",
+        "dermis",
+        "epiderm"
+      ]
+    },
+    {
+      "canonical": "breast",
+      "contains": [
+        "breast",
+        "mammary"
+      ]
+    },
+    {
+      "canonical": "eye",
+      "contains": [
+        "eye",
+        "retina",
+        "cornea",
+        "fovea",
+        "macula"
+      ]
+    },
+    {
+      "canonical": "placenta",
+      "contains": [
+        "placenta",
+        "decidua"
+      ]
+    },
+    {
+      "canonical": "female reproductive system",
+      "contains": [
+        "uterus",
+        "endometrium",
+        "fallopian",
+        "ovary",
+        "ovarian"
+      ]
+    },
+    {
+      "canonical": "male reproductive system",
+      "contains": [
+        "testis",
+        "testes",
+        "prostate"
+      ]
+    },
+    {
+      "canonical": "adipose tissue",
+      "contains": [
+        "adipose",
+        "fat"
+      ]
+    },
+    {
+      "canonical": "muscle",
+      "contains": [
+        "skeletal muscle",
+        "muscle"
+      ]
+    },
+    {
+      "canonical": "skeletal system",
+      "contains": [
+        "cartilage",
+        "bone"
+      ]
+    },
+    {
+      "canonical": "limb",
+      "contains": [
+        "forelimb",
+        "limb"
+      ]
+    },
+    {
+      "canonical": "embryo",
+      "contains": [
+        "embryo",
+        "posterior end"
+      ]
+    },
+    {
+      "canonical": "leaf",
+      "contains": [
+        "leaf"
+      ]
+    }
+  ],
+  "tissues": {
+    "blood vasculature": "blood vasculature",
+    "bone_marrow": "bone marrow",
+    "bronchus": "bronchus",
+    "cervical spinal motor neurons": "spinal cord",
+    "forelimbs": "forelimb",
+    "intestine": "intestine",
+    "leaf with flg22 infiltration": "leaf",
+    "leaf with milder flg22 stimulation": "leaf",
+    "left eye": "eye",
+    "left fallopian tube": "fallopian tube",
+    "left kidney": "kidney",
+    "left lung": "lung",
+    "left ovary": "ovary",
+    "lower lobe of left lung": "lung",
+    "lumbar spinal motor neurons": "spinal cord",
+    "lumblar spinal motor neurons": "spinal cord",
+    "lymphatic vasculature": "lymphatic vasculature",
+    "midbrain dopamine (mda) neurons": "midbrain",
+    "nondilated ascending aortas (aortic regurgitation)": "ascending aorta",
+    "nondilated ascending aortas (aortic stenosis)": "ascending aorta",
+    "nondilated ascending aortas (organ donors)": "ascending aorta",
+    "posterior end": "posterior end",
+    "right fallopian tube": "fallopian tube",
+    "right kidney": "kidney",
+    "right lung": "lung",
+    "right ovary": "ovary",
+    "scn": "suprachiasmatic nucleus",
+    "small intestine": "small intestine",
+    "spinal motor neurons": "spinal cord",
+    "spinal_cord": "spinal cord",
+    "trigeminal ganglia": "trigeminal ganglion"
+  }
+}

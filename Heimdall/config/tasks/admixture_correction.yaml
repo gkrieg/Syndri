@@ -14,13 +14,28 @@ args:
     - Recall
     - Accuracy
     - ConfusionMatrix
+  silhouette_delta:
+    enabled: false
+    split: train
+    label_col_name: cell_type
+    prediction_threshold: 0.5
+    n_pcs: 50
+    normalize_total: 10000
+    log1p: true
+    metric: cosine
+    max_cells: 5000
+    random_state: 0
   track_metric: F1Score
   # train_split: 0.8
   # prediction_dim: 14
+  admixture_pred_head_type: Heimdall.models.AdmixtureGeneTokenPredHead
+  # Alternative: Heimdall.models.LinearCellPredHead
   shuffle: true
   batchsize: 32
   epochs: 1000
   dataset_config:
     type: Heimdall.datasets.AdmixtureInstanceDataset
   head_config:
-    type: Heimdall.models.LinearCellPredHead
+    type: ${tasks.args.admixture_pred_head_type}
+    args:
+      num_prefix_tokens: 3
