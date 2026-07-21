@@ -218,3 +218,5 @@ __marimo__/
 data/brca_xenium_chromium/
 Heimdall/admixture_prediction_results/
 logs/
+data_availability_quantification/reference_quality/*.csv
+data_availability_quantification/transcript_level/*.csv
