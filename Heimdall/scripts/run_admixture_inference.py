@@ -50,6 +50,11 @@ def parse_args() -> argparse.Namespace:
         help="Optional text file containing one gene per line. Defaults to all spatial AnnData genes.",
     )
     parser.add_argument(
+        "--expression-layer",
+        default=None,
+        help="Optional layer to use as model input expression instead of adata.X.",
+    )
+    parser.add_argument(
         "--output-dir",
         type=Path,
         default=Path("/compute/oven-0-13/jwinchel/spatial_adata/heimdall_inference"),
@@ -127,6 +132,11 @@ def build_cell_type_dict(adata: ad.AnnData, cell_type_col: str) -> dict[str, int
 def prepare_spatial_adata(args: argparse.Namespace) -> Path:
     st_data = ad.read_h5ad(args.st_data)
     ref_data = ad.read_h5ad(args.reference_data)
+    if args.expression_layer is not None:
+        if args.expression_layer not in st_data.layers:
+            raise KeyError(f"{args.expression_layer!r} not found in spatial adata.layers")
+        st_data.X = st_data.layers[args.expression_layer].copy()
+        print(f"> Using spatial AnnData layer {args.expression_layer!r} as model input expression.")
     if args.gene_list is None:
         genes = st_data.var_names.astype(str).tolist()
         print(f"> Using all {len(genes):,} spatial AnnData genes.")

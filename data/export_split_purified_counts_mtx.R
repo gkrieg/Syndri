@@ -5,7 +5,7 @@ args <- commandArgs(trailingOnly = TRUE)
 output_root <- if (length(args) >= 1 && nzchar(args[[1]])) {
   args[[1]]
 } else {
-  "/home/jwinchel/Syndri/data/brca_split_output_by_sample"
+  "/work/magroup/skrieger/Syndri/data/xenium_noise_experiment/brca_split_output_by_sample"
 }
 
 overwrite <- if (length(args) >= 2 && nzchar(args[[2]])) {
@@ -15,9 +15,11 @@ overwrite <- if (length(args) >= 2 && nzchar(args[[2]])) {
 }
 
 input_name <- "split_purified_counts.rds"
+metadata_input_name <- "split_cell_metadata.rds"
 mtx_name <- "split_purified_counts.mtx"
 genes_name <- "split_purified_counts_genes.txt"
 cells_name <- "split_purified_counts_cells.txt"
+metadata_name <- "split_cell_metadata.csv"
 
 find_count_files <- function(root) {
   list.files(
@@ -35,7 +37,11 @@ export_one <- function(counts_path, overwrite) {
   mtx_path <- file.path(sample_dir, mtx_name)
   genes_path <- file.path(sample_dir, genes_name)
   cells_path <- file.path(sample_dir, cells_name)
+  metadata_path <- file.path(sample_dir, metadata_name)
   output_paths <- c(mtx_path, genes_path, cells_path)
+  if (file.exists(file.path(sample_dir, metadata_input_name))) {
+    output_paths <- c(output_paths, metadata_path)
+  }
 
   if (!overwrite && all(file.exists(output_paths))) {
     message("[", sample_id, "] outputs already exist; skipping")
@@ -68,6 +74,12 @@ export_one <- function(counts_path, overwrite) {
   writeMM(counts, mtx_path)
   writeLines(rownames(counts), genes_path)
   writeLines(colnames(counts), cells_path)
+
+  split_metadata_path <- file.path(sample_dir, metadata_input_name)
+  if (file.exists(split_metadata_path) && (overwrite || !file.exists(metadata_path))) {
+    metadata <- readRDS(split_metadata_path)
+    write.csv(metadata, metadata_path, row.names = FALSE)
+  }
 
   data.frame(
     sample_id = sample_id,

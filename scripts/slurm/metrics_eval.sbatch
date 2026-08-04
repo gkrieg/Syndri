@@ -14,7 +14,7 @@ source /home/jwinchel/miniconda3/etc/profile.d/conda.sh
 conda activate "${CONDA_ENV:-heimdall}"
 
 SPATIAL_DIR=${SPATIAL_DIR:-/compute/oven-0-13/jwinchel/spatial_adata/heimdall_inference}
-INPUT_GLOB=${INPUT_GLOB:-GSM*rctd_annotated_val_worstadj_med_with_admix_probs.h5ad}
+INPUT_GLOB=${INPUT_GLOB:-GSM*rctd_annotated_val_med_with_admix_probs.h5ad}
 INPUT_LIST_FILE=${INPUT_LIST_FILE:-}
 INPUT_FILES=${INPUT_FILES:-}
 OUTPUT_DIR=${OUTPUT_DIR:-/compute/oven-0-13/jwinchel/spatial_adata/metrics_eval}
@@ -57,10 +57,22 @@ TCELL_MAX_CELLS_PER_LABEL=${TCELL_MAX_CELLS_PER_LABEL:-25000}
 TCELL_EXACT_ZSCORE=${TCELL_EXACT_ZSCORE:-auto}
 TCELL_DENSE_SIZE_LIMIT_ENTRIES=${TCELL_DENSE_SIZE_LIMIT_ENTRIES:-100000000}
 TCELL_LR_GENE_OUTPUT=${TCELL_LR_GENE_OUTPUT:-tcell_lr_top_genes.csv}
+TCELL_COSINE_OUTPUT=${TCELL_COSINE_OUTPUT:-tcell_cosine_similarity.csv}
 CELL_TYPE_PROFILE_OUTPUT=${CELL_TYPE_PROFILE_OUTPUT:-tissue_cell_type_profiles.csv}
+
+REFERENCE_DATA=${REFERENCE_DATA:-}
+REFERENCE_CELL_TYPE_KEY=${REFERENCE_CELL_TYPE_KEY:-cell_type}
+REFERENCE_COUNTS_LAYER=${REFERENCE_COUNTS_LAYER:-}
+TCELL_COSINE_CELL_TYPE_PATTERN=${TCELL_COSINE_CELL_TYPE_PATTERN:-(?i)(^|\b)(t cells?|cd4|cd8|treg|t[- ]?regulatory|regulatory t|cytotoxic t)(\b|$)}
+TCELL_COSINE_CELL_TYPES=${TCELL_COSINE_CELL_TYPES:-}
+TCELL_COSINE_CELL_TYPE_MAP=${TCELL_COSINE_CELL_TYPE_MAP:-}
+TCELL_COSINE_MIN_SPATIAL_CELLS=${TCELL_COSINE_MIN_SPATIAL_CELLS:-1}
+TCELL_COSINE_MIN_REFERENCE_CELLS=${TCELL_COSINE_MIN_REFERENCE_CELLS:-1}
 
 SKIP_CELL_TYPE_SEPARATION=${SKIP_CELL_TYPE_SEPARATION:-0}
 SKIP_TCELL_CONTAMINATION=${SKIP_TCELL_CONTAMINATION:-0}
+SKIP_TCELL_NEIGHBORHOOD_METRICS=${SKIP_TCELL_NEIGHBORHOOD_METRICS:-0}
+SKIP_TCELL_COSINE_SIMILARITY=${SKIP_TCELL_COSINE_SIMILARITY:-0}
 SKIP_CELL_TYPE_PROFILES=${SKIP_CELL_TYPE_PROFILES:-0}
 ADDITIONAL_COUNTS_ZERO_HIGH_PROB=${ADDITIONAL_COUNTS_ZERO_HIGH_PROB:-0}
 EXTRA_ARGS=${EXTRA_ARGS:-}
@@ -124,6 +136,12 @@ fi
 if [[ "$SKIP_TCELL_CONTAMINATION" == "1" || "$SKIP_TCELL_CONTAMINATION" == "true" || "$SKIP_TCELL_CONTAMINATION" == "TRUE" ]]; then
   OPTIONAL_ARGS+=(--skip-tcell-contamination)
 fi
+if [[ "$SKIP_TCELL_NEIGHBORHOOD_METRICS" == "1" || "$SKIP_TCELL_NEIGHBORHOOD_METRICS" == "true" || "$SKIP_TCELL_NEIGHBORHOOD_METRICS" == "TRUE" ]]; then
+  OPTIONAL_ARGS+=(--skip-tcell-neighborhood-metrics)
+fi
+if [[ "$SKIP_TCELL_COSINE_SIMILARITY" == "1" || "$SKIP_TCELL_COSINE_SIMILARITY" == "true" || "$SKIP_TCELL_COSINE_SIMILARITY" == "TRUE" ]]; then
+  OPTIONAL_ARGS+=(--skip-tcell-cosine-similarity)
+fi
 if [[ "$SKIP_CELL_TYPE_PROFILES" == "1" || "$SKIP_CELL_TYPE_PROFILES" == "true" || "$SKIP_CELL_TYPE_PROFILES" == "TRUE" ]]; then
   OPTIONAL_ARGS+=(--skip-cell-type-profiles)
 fi
@@ -149,6 +167,9 @@ echo "  probability transform: $PROBABILITY_TRANSFORM"
 echo "  additional counts layer: ${ADDITIONAL_COUNTS_LAYER:-<disabled>}"
 echo "  tcell cell type key: $TCELL_CELL_TYPE_KEY"
 echo "  tcell LR gene output: $TCELL_LR_GENE_OUTPUT"
+echo "  tcell cosine output: $TCELL_COSINE_OUTPUT"
+echo "  reference data: ${REFERENCE_DATA:-<unset>}"
+echo "  skip tcell neighborhood metrics: $SKIP_TCELL_NEIGHBORHOOD_METRICS"
 echo "  cell type profile output: $CELL_TYPE_PROFILE_OUTPUT"
 echo "  cpus: ${SLURM_CPUS_PER_TASK:-1}"
 
@@ -185,6 +206,15 @@ python /home/jwinchel/Syndri/eval/metrics_eval.py \
   --tcell-radius-um "$TCELL_RADIUS_UM" \
   --tcell-top-n "$TCELL_TOP_N" \
   --tcell-lr-gene-output "$TCELL_LR_GENE_OUTPUT" \
+  --tcell-cosine-output "$TCELL_COSINE_OUTPUT" \
+  --reference-data "$REFERENCE_DATA" \
+  --reference-cell-type-key "$REFERENCE_CELL_TYPE_KEY" \
+  --reference-counts-layer "$REFERENCE_COUNTS_LAYER" \
+  --tcell-cosine-cell-type-pattern "$TCELL_COSINE_CELL_TYPE_PATTERN" \
+  --tcell-cosine-cell-types "$TCELL_COSINE_CELL_TYPES" \
+  --tcell-cosine-cell-type-map "$TCELL_COSINE_CELL_TYPE_MAP" \
+  --tcell-cosine-min-spatial-cells "$TCELL_COSINE_MIN_SPATIAL_CELLS" \
+  --tcell-cosine-min-reference-cells "$TCELL_COSINE_MIN_REFERENCE_CELLS" \
   --cell-type-profile-output "$CELL_TYPE_PROFILE_OUTPUT" \
   --tcell-min-cells-per-label "$TCELL_MIN_CELLS_PER_LABEL" \
   --tcell-downsample-if-n-cells "$TCELL_DOWNSAMPLE_IF_N_CELLS" \

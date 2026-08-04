@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import argparse
+import copy
 import json
 import re
 import sys
 from pathlib import Path
+from typing import Sequence
 
 import anndata as ad
 import numpy as np
@@ -65,12 +67,13 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--input-files", nargs="*", default=None)
     parser.add_argument("--input-list-file", default=None)
     parser.add_argument("--output-dir", default=DEFAULT_OUTPUT_DIR)
-    parser.add_argument("--cell-type-output", default="cell_type_separation_metrics_worstadj.csv")
-    parser.add_argument("--tcell-output", default="tcell_contamination_metrics_worstadj.csv")
-    parser.add_argument("--tcell-effect-output", default="tcell_contamination_effects_worstadj.csv")
-    parser.add_argument("--tcell-lr-gene-output", default="tcell_lr_top_genes_worstadj.csv")
-    parser.add_argument("--cell-type-profile-output", default="tissue_cell_type_profiles_worstadj.csv")
-    parser.add_argument("--config-output", default="metrics_eval_config_worstadj.json")
+    parser.add_argument("--cell-type-output", default="cell_type_separation_metrics.csv")
+    parser.add_argument("--tcell-output", default="tcell_contamination_metrics.csv")
+    parser.add_argument("--tcell-effect-output", default="tcell_contamination_effects.csv")
+    parser.add_argument("--tcell-lr-gene-output", default="tcell_lr_top_genes.csv")
+    parser.add_argument("--tcell-cosine-output", default="tcell_cosine_similarity.csv")
+    parser.add_argument("--cell-type-profile-output", default="tissue_cell_type_profilesj.csv")
+    parser.add_argument("--config-output", default="metrics_eval_config.json")
     parser.add_argument("--sample-frac", type=float, default=1.0)
     parser.add_argument("--sample-random-state", type=int, default=0)
 
@@ -102,6 +105,52 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--additional-counts-case-label", default="SPLIT")
     parser.add_argument("--additional-counts-zero-high-prob", action="store_true")
 
+    parser.add_argument(
+        "--evaluation-layers",
+        default="",
+        help=(
+            "Comma-separated count layers to evaluate in layered mode, e.g. trial_0,trial_1,trial_2. "
+            "For each layer, evaluates Syndri-cleaned, MLP-cleaned, and SPLIT-purified counts."
+        ),
+    )
+    parser.add_argument(
+        "--layered-baseline-only",
+        action="store_true",
+        help="In layered mode, compute only the shared .X uncorrected baseline rows.",
+    )
+    parser.add_argument(
+        "--append-output",
+        action="store_true",
+        help="Append new rows to existing output CSVs and de-duplicate by metric identity columns.",
+    )
+    parser.add_argument(
+        "--replace-layer-count-baselines",
+        action="store_true",
+        help=(
+            "When appending, remove older method-specific *_uncorrected rows so the shared "
+            ".X uncorrected rows are the only uncorrected baselines."
+        ),
+    )
+    parser.add_argument(
+        "--deduplicate-zero-dropout-inputs",
+        action="store_true",
+        help=(
+            "In layered mode, evaluate the X/0pct condition once per sample-replicate "
+            "instead of once for every dropout file in a pooled task."
+        ),
+    )
+    parser.add_argument("--syndri-probs-template", default="admix_probs_{layer}")
+    parser.add_argument("--mlp-probs-template", default="mlp_admix_probs_{layer}")
+    parser.add_argument("--split-counts-template", default="split_purified_counts_{layer}")
+    parser.add_argument("--syndri-case-label", default="syndri")
+    parser.add_argument("--mlp-case-label", default="mlp")
+    parser.add_argument("--split-case-label", default="split")
+    parser.add_argument(
+        "--sample-replicate-regex",
+        default=r"(B\d+_B\d+(?:_\d+)?)",
+        help="Regex used to extract original sample-replicate names from input filenames.",
+    )
+
     parser.add_argument("--leiden-resolution", type=float, default=1.0)
     parser.add_argument("--leiden-optimize-resolution", type=str_to_bool, default=False)
     parser.add_argument("--leiden-n-neighbors", type=int, default=15)
@@ -112,7 +161,46 @@ def build_parser() -> argparse.ArgumentParser:
 
     parser.add_argument("--skip-cell-type-separation", action="store_true")
     parser.add_argument("--skip-tcell-contamination", action="store_true")
+    parser.add_argument(
+        "--skip-tcell-neighborhood-metrics",
+        action="store_true",
+        help="Skip the existing T-cell neighborhood/LR assessment while still allowing cosine similarity.",
+    )
+    parser.add_argument("--skip-tcell-cosine-similarity", action="store_true")
     parser.add_argument("--skip-cell-type-profiles", action="store_true")
+
+    parser.add_argument(
+        "--reference-data",
+        default="",
+        help="Single-cell reference AnnData used for T-cell pseudo-bulk cosine similarity.",
+    )
+    parser.add_argument(
+        "--reference-cell-type-key",
+        default="",
+        help="Cell type column in the single-cell reference. Defaults to --tcell-cell-type-key.",
+    )
+    parser.add_argument(
+        "--reference-counts-layer",
+        default="",
+        help="Counts layer in the single-cell reference for pseudo-bulk profiles. Defaults to .X.",
+    )
+    parser.add_argument(
+        "--tcell-cosine-cell-type-pattern",
+        default=r"(?i)(^|\b)(t cells?|cd4|cd8|treg|t[- ]?regulatory|regulatory t|cytotoxic t)(\b|$)",
+        help="Regex selecting spatial cell types to include in the T-cell cosine metric. Empty means all.",
+    )
+    parser.add_argument(
+        "--tcell-cosine-cell-types",
+        default="",
+        help="Comma-separated exact spatial cell types to include. Overrides --tcell-cosine-cell-type-pattern.",
+    )
+    parser.add_argument(
+        "--tcell-cosine-cell-type-map",
+        default="",
+        help="Optional comma-separated spatial=reference cell type name mapping.",
+    )
+    parser.add_argument("--tcell-cosine-min-spatial-cells", type=int, default=1)
+    parser.add_argument("--tcell-cosine-min-reference-cells", type=int, default=1)
 
     parser.add_argument("--tcell-cell-type-key", default="rctd_first_type")
     parser.add_argument("--tcell-sample-key", default="batch")
@@ -179,6 +267,50 @@ def tissue_name_from_path(path: Path, regex: str | None = None) -> str:
     return name
 
 
+def sample_replicate_from_path(path: Path, regex: str | None = None) -> str:
+    if regex:
+        match = re.search(regex, path.name)
+        if match:
+            return match.group(1) if match.groups() else match.group(0)
+    return tissue_name_from_path(path)
+
+
+def dropout_from_path(path: Path) -> tuple[str, float]:
+    match = re.search(r"dropout_([0-9]+(?:\.[0-9]+)?)pct", path.name)
+    if not match:
+        return "", np.nan
+    value = float(match.group(1))
+    return f"{match.group(1)}pct", value / 100.0
+
+
+def format_layer_template(template: str, layer: str) -> str:
+    if "{layer}" in template:
+        return template.format(layer=layer)
+    return f"{template}{layer}"
+
+
+def resolve_layer_key(
+    adata: ad.AnnData,
+    key: str,
+    *,
+    fallback_keys: Sequence[str] = (),
+) -> str | None:
+    for candidate in [key, *fallback_keys]:
+        if candidate == "X" or candidate in adata.layers:
+            return candidate
+    return None
+
+
+def layer_dropout_metadata(
+    input_layer: str,
+    dropout_label: str,
+    dropout_fraction: float,
+) -> tuple[str, float]:
+    if input_layer == "X":
+        return "0pct", 0.0
+    return dropout_label, dropout_fraction
+
+
 def sanitize_numeric_matrix(X):
     if sparse.issparse(X):
         X = X.copy()
@@ -208,7 +340,7 @@ def sample_adata(adata: ad.AnnData, args: argparse.Namespace) -> ad.AnnData:
 
 
 def counts_from_layer(adata: ad.AnnData, layer_key: str | None):
-    if layer_key is None or layer_key == "":
+    if layer_key is None or layer_key == "" or layer_key == "X":
         return adata.X
     if layer_key not in adata.layers:
         raise KeyError(f"Layer {layer_key!r} not found in adata.layers.")
@@ -989,6 +1121,238 @@ def compute_cell_type_profiles(
     return pd.DataFrame(rows)
 
 
+def parse_cell_type_map(value: str) -> dict[str, str]:
+    mapping: dict[str, str] = {}
+    for item in parse_str_list(value):
+        if "=" in item:
+            left, right = item.split("=", 1)
+        elif ":" in item:
+            left, right = item.split(":", 1)
+        else:
+            raise ValueError(
+                "Cell type map entries must use spatial=reference or spatial:reference syntax."
+            )
+        mapping[left.strip()] = right.strip()
+    return mapping
+
+
+def selected_tcell_types(cell_types: Sequence[str], args: argparse.Namespace) -> set[str]:
+    exact = set(parse_str_list(args.tcell_cosine_cell_types))
+    if exact:
+        return {cell_type for cell_type in cell_types if cell_type in exact}
+
+    pattern = args.tcell_cosine_cell_type_pattern
+    if not pattern:
+        return set(cell_types)
+
+    regex = re.compile(pattern)
+    return {cell_type for cell_type in cell_types if regex.search(str(cell_type))}
+
+
+def select_matrix_columns(X, column_indices: np.ndarray):
+    if sparse.issparse(X):
+        return X[:, column_indices]
+
+    column_indices = np.asarray(column_indices)
+    try:
+        order = np.argsort(column_indices)
+        sorted_columns = column_indices[order]
+        selected = X[:, sorted_columns]
+        if hasattr(selected, "to_memory"):
+            selected = selected.to_memory()
+        if not sparse.issparse(selected):
+            selected = np.asarray(selected)
+        return selected[:, np.argsort(order)]
+    except Exception:
+        return np.asarray(X)[:, column_indices]
+
+
+def pseudobulk_log_profiles(
+    adata: ad.AnnData,
+    *,
+    cell_type_key: str,
+    genes: Sequence[str],
+    counts_layer: str | None,
+    min_cells: int,
+    target_sum: float,
+) -> tuple[pd.DataFrame, pd.Series]:
+    if cell_type_key not in adata.obs:
+        raise KeyError(f"Missing cell type key {cell_type_key!r}.")
+
+    genes = [str(gene) for gene in genes if gene in adata.var_names]
+    if not genes:
+        raise ValueError("No shared genes available for pseudo-bulk profiles.")
+
+    gene_indices = adata.var_names.get_indexer(genes)
+    X = select_matrix_columns(counts_from_layer(adata, counts_layer), gene_indices)
+    cell_types = adata.obs[cell_type_key].astype(str).to_numpy()
+
+    rows = []
+    index = []
+    n_cells: dict[str, int] = {}
+    for cell_type in pd.unique(cell_types):
+        row_idx = np.flatnonzero(cell_types == cell_type)
+        if row_idx.size < min_cells:
+            continue
+        X_group = X[row_idx]
+        if sparse.issparse(X_group):
+            summed = np.asarray(X_group.sum(axis=0)).ravel()
+        else:
+            summed = np.asarray(X_group).sum(axis=0)
+        rows.append(summed)
+        index.append(str(cell_type))
+        n_cells[str(cell_type)] = int(row_idx.size)
+
+    if not rows:
+        return (
+            pd.DataFrame(columns=genes, index=pd.Index([], name=cell_type_key)),
+            pd.Series(dtype=int, name="n_cells"),
+        )
+
+    values = np.vstack(rows).astype(float, copy=False)
+    totals = values.sum(axis=1, keepdims=True)
+    totals[totals == 0] = 1.0
+    values = np.log1p(values / totals * target_sum)
+
+    return (
+        pd.DataFrame(
+            values,
+            index=pd.Index(index, name=cell_type_key),
+            columns=genes,
+        ),
+        pd.Series(n_cells, name="n_cells"),
+    )
+
+
+def cached_reference_pseudobulk_log_profiles(
+    reference_adata: ad.AnnData,
+    *,
+    cell_type_key: str,
+    genes: Sequence[str],
+    counts_layer: str | None,
+    min_cells: int,
+    target_sum: float,
+    cache: dict,
+) -> tuple[pd.DataFrame, pd.Series]:
+    cache_key = (
+        tuple(str(gene) for gene in genes),
+        cell_type_key,
+        counts_layer or "X",
+        int(min_cells),
+        float(target_sum),
+    )
+    if cache_key not in cache:
+        cache[cache_key] = pseudobulk_log_profiles(
+            reference_adata,
+            cell_type_key=cell_type_key,
+            genes=genes,
+            counts_layer=counts_layer,
+            min_cells=min_cells,
+            target_sum=target_sum,
+        )
+    return cache[cache_key]
+
+
+def cosine_between_vectors(x: np.ndarray, y: np.ndarray) -> float:
+    x = np.asarray(x, dtype=float).ravel()
+    y = np.asarray(y, dtype=float).ravel()
+    denom = float(np.linalg.norm(x) * np.linalg.norm(y))
+    if denom == 0.0:
+        return np.nan
+    return float(np.dot(x, y) / denom)
+
+
+def compute_tcell_cosine_similarity(
+    adata: ad.AnnData,
+    reference_adata: ad.AnnData,
+    *,
+    spatial_counts_layer: str | None,
+    tissue: str,
+    source_file: str,
+    condition: str,
+    args: argparse.Namespace,
+    reference_profile_cache: dict,
+) -> pd.DataFrame:
+    reference_cell_type_key = args.reference_cell_type_key or args.tcell_cell_type_key
+    reference_counts_layer = args.reference_counts_layer or None
+    spatial_layer_label = spatial_counts_layer or "X"
+    reference_layer_label = reference_counts_layer or "X"
+
+    base_error = {
+        "tissue": tissue,
+        "source_file": source_file,
+        "condition": condition,
+        "spatial_counts_layer": spatial_layer_label,
+        "reference_counts_layer": reference_layer_label,
+        "reference_cell_type_key": reference_cell_type_key,
+        "cosine_similarity": np.nan,
+        "n_spatial_cells": np.nan,
+        "n_reference_cells": np.nan,
+        "n_shared_genes": np.nan,
+    }
+
+    try:
+        shared_genes = adata.var_names.intersection(reference_adata.var_names).astype(str)
+        if len(shared_genes) == 0:
+            raise ValueError("No shared genes between spatial AnnData and reference AnnData.")
+
+        spatial_pb, spatial_n = pseudobulk_log_profiles(
+            adata,
+            cell_type_key=args.tcell_cell_type_key,
+            genes=shared_genes,
+            counts_layer=spatial_counts_layer,
+            min_cells=args.tcell_cosine_min_spatial_cells,
+            target_sum=args.library_size_target_sum,
+        )
+        reference_pb, reference_n = cached_reference_pseudobulk_log_profiles(
+            reference_adata,
+            cell_type_key=reference_cell_type_key,
+            genes=shared_genes,
+            counts_layer=reference_counts_layer,
+            min_cells=args.tcell_cosine_min_reference_cells,
+            target_sum=args.library_size_target_sum,
+            cache=reference_profile_cache,
+        )
+        if spatial_pb.empty:
+            raise ValueError("No spatial cell type pseudo-bulk profiles passed filters.")
+        if reference_pb.empty:
+            raise ValueError("No reference cell type pseudo-bulk profiles passed filters.")
+
+        cell_type_map = parse_cell_type_map(args.tcell_cosine_cell_type_map)
+        tcell_types = selected_tcell_types(spatial_pb.index.astype(str).tolist(), args)
+        if not tcell_types:
+            raise ValueError("No spatial cell types matched the T-cell cosine selection.")
+
+        rows = []
+        for spatial_cell_type in spatial_pb.index.astype(str):
+            if spatial_cell_type not in tcell_types:
+                continue
+            reference_cell_type = cell_type_map.get(spatial_cell_type, spatial_cell_type)
+            row = {
+                **base_error,
+                "spatial_cell_type": spatial_cell_type,
+                "reference_cell_type": reference_cell_type,
+                "n_shared_genes": int(len(shared_genes)),
+                "error": "",
+            }
+            if reference_cell_type not in reference_pb.index:
+                row["error"] = f"Missing reference cell type {reference_cell_type!r}."
+                rows.append(row)
+                continue
+
+            row["cosine_similarity"] = cosine_between_vectors(
+                spatial_pb.loc[spatial_cell_type].to_numpy(),
+                reference_pb.loc[reference_cell_type].to_numpy(),
+            )
+            row["n_spatial_cells"] = int(spatial_n.loc[spatial_cell_type])
+            row["n_reference_cells"] = int(reference_n.loc[reference_cell_type])
+            rows.append(row)
+
+        return pd.DataFrame(rows)
+    except Exception as exc:
+        return pd.DataFrame([{**base_error, "error": repr(exc)}])
+
+
 def safe_layer_suffix(value: str) -> str:
     return re.sub(r"[^A-Za-z0-9_]+", "_", value).strip("_")
 
@@ -998,7 +1362,10 @@ def run_tcell_contamination(
     tissue: str,
     source_file: str,
     args: argparse.Namespace,
-) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    reference_adata: ad.AnnData | None = None,
+    reference_profile_cache: dict | None = None,
+) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    empty_outputs = (pd.DataFrame(), pd.DataFrame(), pd.DataFrame())
     if args.tcell_cell_type_key not in adata.obs:
         return pd.DataFrame(
             [
@@ -1009,7 +1376,7 @@ def run_tcell_contamination(
                     "error": f"Missing T-cell label key {args.tcell_cell_type_key!r}.",
                 }
             ]
-        ), pd.DataFrame(), pd.DataFrame()
+        ), *empty_outputs
     if args.admix_probs_layer not in adata.layers:
         return pd.DataFrame(
             [
@@ -1020,7 +1387,7 @@ def run_tcell_contamination(
                     "error": f"Missing admixture probability layer {args.admix_probs_layer!r}.",
                 }
             ]
-        ), pd.DataFrame(), pd.DataFrame()
+        ), *empty_outputs
 
     try:
         ensure_tcell_inputs(adata, tissue, args)
@@ -1034,7 +1401,7 @@ def run_tcell_contamination(
                     "error": repr(exc),
                 }
             ]
-        ), pd.DataFrame(), pd.DataFrame()
+        ), *empty_outputs
 
     lognorm_uncorrected = "_metrics_lognorm_uncorrected"
     lognorm_purified = "_metrics_lognorm_purified"
@@ -1049,10 +1416,12 @@ def run_tcell_contamination(
     specificity_results: list[pd.DataFrame] = []
     coefficient_results: list[pd.DataFrame] = []
     profile_results: list[pd.DataFrame] = []
+    cosine_results: list[pd.DataFrame] = []
     specificity_layers: list[dict] = [
         {
             "condition": args.uncorrected_condition_label,
             "layer": lognorm_uncorrected,
+            "counts_layer": None,
             "target_removed_fraction": np.nan,
             "admix_prob_threshold": np.nan,
             "achieved_removed_fraction": np.nan,
@@ -1076,7 +1445,7 @@ def run_tcell_contamination(
                         "error": f"Missing removal group key {removal_group_key!r}.",
                     }
                 ]
-            ), pd.DataFrame(), pd.DataFrame()
+            ), *empty_outputs
         removal_labels = adata.obs[removal_group_key]
 
     admix_probs = adata.layers[args.admix_probs_layer]
@@ -1111,6 +1480,7 @@ def run_tcell_contamination(
                 {
                     "condition": condition,
                     "layer": lognorm_layer,
+                    "counts_layer": raw_layer,
                     "target_removed_fraction": target_removed_fraction,
                     "admix_prob_threshold": thresh,
                     "achieved_removed_fraction": achieved_removed_fraction,
@@ -1147,6 +1517,7 @@ def run_tcell_contamination(
                 {
                     "condition": args.purified_condition_label,
                     "layer": lognorm_purified,
+                    "counts_layer": args.additional_counts_layer,
                     "target_removed_fraction": np.nan,
                     "admix_prob_threshold": np.nan,
                     "achieved_removed_fraction": np.nan,
@@ -1190,6 +1561,7 @@ def run_tcell_contamination(
                             {
                                 "condition": condition,
                                 "layer": lognorm_layer,
+                                "counts_layer": raw_layer,
                                 "target_removed_fraction": target_removed_fraction,
                                 "admix_prob_threshold": thresh,
                                 "achieved_removed_fraction": achieved_removed_fraction,
@@ -1229,6 +1601,48 @@ def run_tcell_contamination(
     for layer_info in specificity_layers:
         condition = layer_info["condition"]
         layer = layer_info["layer"]
+        if (
+            reference_adata is not None
+            and not args.skip_tcell_cosine_similarity
+        ):
+            if reference_profile_cache is None:
+                reference_profile_cache = {}
+            cosine = compute_tcell_cosine_similarity(
+                adata,
+                reference_adata,
+                spatial_counts_layer=layer_info.get("counts_layer"),
+                tissue=tissue,
+                source_file=source_file,
+                condition=condition,
+                args=args,
+                reference_profile_cache=reference_profile_cache,
+            )
+            if not cosine.empty:
+                cosine["target_removed_fraction"] = layer_info["target_removed_fraction"]
+                cosine["admix_prob_threshold"] = layer_info["admix_prob_threshold"]
+                cosine["achieved_removed_fraction"] = layer_info["achieved_removed_fraction"]
+                cosine["cleaning_mode"] = args.cleaning_mode
+                cosine["probability_transform"] = (
+                    args.probability_transform
+                    if args.cleaning_mode == "probability_scale"
+                    else ""
+                )
+                cosine["probability_removal_scale"] = layer_info["probability_removal_scale"]
+                cosine["cell_type_specific_removal"] = args.cell_type_specific_removal
+                cosine["group_admix_prob_thresholds"] = layer_info[
+                    "group_admix_prob_thresholds"
+                ]
+                cosine["group_probability_removal_scales"] = layer_info[
+                    "group_probability_removal_scales"
+                ]
+                cosine["group_achieved_removed_fractions"] = layer_info[
+                    "group_achieved_removed_fractions"
+                ]
+                cosine_results.append(cosine)
+
+        if args.skip_tcell_neighborhood_metrics:
+            continue
+
         try:
             res, coefficients, _ = run_specificity_contamination_assessment(
                 adata,
@@ -1359,8 +1773,13 @@ def run_tcell_contamination(
                 )
             )
 
+    cosine_df = (
+        pd.concat(cosine_results, ignore_index=True)
+        if cosine_results
+        else pd.DataFrame()
+    )
     if not specificity_results:
-        return pd.DataFrame(), pd.DataFrame(), pd.DataFrame()
+        return pd.DataFrame(), pd.DataFrame(), pd.DataFrame(), cosine_df
 
     specificity_df = jsonize_list_columns(pd.concat(specificity_results, ignore_index=True))
     coefficient_df = (
@@ -1373,7 +1792,7 @@ def run_tcell_contamination(
         if profile_results
         else pd.DataFrame()
     )
-    return specificity_df, coefficient_df, profile_df
+    return specificity_df, coefficient_df, profile_df, cosine_df
 
 
 def summarize_tcell_effects(tcell_metrics: pd.DataFrame, args: argparse.Namespace) -> pd.DataFrame:
@@ -1392,25 +1811,55 @@ def summarize_tcell_effects(tcell_metrics: pd.DataFrame, args: argparse.Namespac
     if metric_rows.empty:
         return pd.DataFrame()
 
+    metadata_cols = [
+        col
+        for col in [
+            "sample_replicate",
+            "dropout_label",
+            "dropout_fraction",
+            "input_layer",
+        ]
+        if col in metric_rows.columns
+    ]
+    group_cols = [
+        "tissue",
+        "source_file",
+        *metadata_cols,
+        "condition",
+        "target_cell_type_i",
+        "contaminating_cell_type_j",
+    ]
+    index_cols_list = [
+        "tissue",
+        "source_file",
+        *metadata_cols,
+        "target_cell_type_i",
+        "contaminating_cell_type_j",
+    ]
+
     effect = (
-        metric_rows.groupby(
-            ["tissue", "source_file", "condition", "target_cell_type_i", "contaminating_cell_type_j"],
-            dropna=False,
-        )["marker_overlap_n"]
+        metric_rows.groupby(group_cols, dropna=False)["marker_overlap_n"]
         .mean()
         .reset_index()
         .pivot(
-            index=["tissue", "source_file", "target_cell_type_i", "contaminating_cell_type_j"],
+            index=index_cols_list,
             columns="condition",
             values="marker_overlap_n",
         )
         .reset_index()
     )
 
-    uncorrected = args.uncorrected_condition_label
-    index_cols = {"tissue", "source_file", "target_cell_type_i", "contaminating_cell_type_j"}
+    index_cols = set(index_cols_list)
     condition_cols = [col for col in effect.columns if col not in index_cols]
-    if uncorrected in condition_cols:
+    if args.uncorrected_condition_label in condition_cols:
+        baseline_cols = [args.uncorrected_condition_label]
+    else:
+        baseline_cols = [
+            col for col in condition_cols if str(col).endswith("_uncorrected")
+        ]
+    for uncorrected in baseline_cols:
+        if uncorrected not in condition_cols:
+            continue
         safe_uncorrected = safe_layer_suffix(str(uncorrected)).lower()
         for condition in condition_cols:
             if condition == uncorrected:
@@ -1423,10 +1872,710 @@ def summarize_tcell_effects(tcell_metrics: pd.DataFrame, args: argparse.Namespac
     return effect
 
 
-def write_csv(df: pd.DataFrame, path: Path) -> None:
+def add_layered_metadata(
+    data,
+    *,
+    input_layer: str,
+    evaluation_method: str,
+    probability_layer: str = "",
+    counts_layer: str = "",
+    sample_replicate: str = "",
+    dropout_label: str = "",
+    dropout_fraction=np.nan,
+):
+    if isinstance(data, list):
+        for row in data:
+            row["input_layer"] = input_layer
+            row["evaluation_method"] = evaluation_method
+            row["probability_layer"] = probability_layer
+            row["counts_layer"] = counts_layer
+            row["sample_replicate"] = sample_replicate
+            row["dropout_label"] = dropout_label
+            row["dropout_fraction"] = dropout_fraction
+        return data
+
+    if data is None or data.empty:
+        return data
+    data = data.copy()
+    data["input_layer"] = input_layer
+    data["evaluation_method"] = evaluation_method
+    data["probability_layer"] = probability_layer
+    data["counts_layer"] = counts_layer
+    data["sample_replicate"] = sample_replicate
+    data["dropout_label"] = dropout_label
+    data["dropout_fraction"] = dropout_fraction
+    return data
+
+
+def layered_work_adata(
+    adata: ad.AnnData,
+    counts_layer: str,
+    *,
+    probability_layer: str | None = None,
+    split_counts_layer: str | None = None,
+    args: argparse.Namespace,
+) -> ad.AnnData:
+    if counts_layer != "X" and counts_layer not in adata.layers:
+        raise KeyError(f"Missing count layer {counts_layer!r}.")
+
+    work = ad.AnnData(
+        X=sanitize_numeric_matrix(counts_from_layer(adata, counts_layer).copy()),
+        obs=adata.obs.copy(),
+        var=adata.var.copy(),
+    )
+
+    if args.coord_key in adata.obsm:
+        work.obsm[args.coord_key] = adata.obsm[args.coord_key].copy()
+
+    if probability_layer is not None:
+        if probability_layer not in adata.layers:
+            raise KeyError(f"Missing probability layer {probability_layer!r}.")
+        work.layers["_metrics_admix_probs"] = adata.layers[probability_layer].copy()
+
+    if split_counts_layer is not None:
+        if split_counts_layer not in adata.layers:
+            raise KeyError(f"Missing SPLIT counts layer {split_counts_layer!r}.")
+        work.layers["_metrics_split_counts"] = sanitize_numeric_matrix(
+            adata.layers[split_counts_layer].copy()
+        )
+
+    return work
+
+
+def missing_layer_metric_row(
+    tissue: str,
+    source_file: str,
+    *,
+    case_name: str,
+    layer_key: str,
+    input_layer: str,
+    evaluation_method: str,
+    sample_replicate: str,
+    dropout_label: str = "",
+    dropout_fraction=np.nan,
+    probability_layer: str = "",
+    counts_layer: str = "",
+) -> dict:
+    row = empty_metric_row(tissue, source_file, case_name)
+    row["error"] = f"Missing layer {layer_key!r}."
+    return add_layered_metadata(
+        [row],
+        input_layer=input_layer,
+        evaluation_method=evaluation_method,
+        probability_layer=probability_layer,
+        counts_layer=counts_layer,
+        sample_replicate=sample_replicate,
+        dropout_label=dropout_label,
+        dropout_fraction=dropout_fraction,
+    )[0]
+
+
+def missing_layer_tcell_frame(
+    tissue: str,
+    source_file: str,
+    *,
+    condition: str,
+    layer_key: str,
+    input_layer: str,
+    evaluation_method: str,
+    sample_replicate: str,
+    dropout_label: str = "",
+    dropout_fraction=np.nan,
+    probability_layer: str = "",
+    counts_layer: str = "",
+) -> pd.DataFrame:
+    return pd.DataFrame(
+        [
+            {
+                "tissue": tissue,
+                "source_file": source_file,
+                "condition": condition,
+                "error": f"Missing layer {layer_key!r}.",
+                "input_layer": input_layer,
+                "evaluation_method": evaluation_method,
+                "probability_layer": probability_layer,
+                "counts_layer": counts_layer,
+                "sample_replicate": sample_replicate,
+                "dropout_label": dropout_label,
+                "dropout_fraction": dropout_fraction,
+            }
+        ]
+    )
+
+
+def score_split_cell_type_case(
+    adata: ad.AnnData,
+    split_counts,
+    tissue: str,
+    source_file: str,
+    case_name: str,
+    args: argparse.Namespace,
+) -> list[dict]:
+    if args.label_key not in adata.obs:
+        row = empty_metric_row(tissue, source_file, case_name)
+        row["error"] = f"Missing label key {args.label_key!r}."
+        return [row]
+
+    labels = adata.obs[args.label_key]
+    exclude_labels = set(parse_str_list(args.exclude_labels))
+    if exclude_labels:
+        keep = ~labels.astype(str).isin(exclude_labels)
+        split_counts = split_counts[keep.to_numpy()]
+        labels = labels[keep]
+
+    return [score_case(tissue, source_file, case_name, split_counts, labels, args)]
+
+
+def run_layered_evaluations_for_file(
+    adata: ad.AnnData,
+    tissue: str,
+    source_file: str,
+    sample_replicate: str,
+    dropout_label: str,
+    dropout_fraction: float,
+    args: argparse.Namespace,
+    skip_zero_dropout_layers: bool = False,
+    reference_adata: ad.AnnData | None = None,
+    reference_profile_cache: dict | None = None,
+) -> tuple[
+    list[dict],
+    list[pd.DataFrame],
+    list[pd.DataFrame],
+    list[pd.DataFrame],
+    list[pd.DataFrame],
+]:
+    cell_type_rows: list[dict] = []
+    tcell_frames: list[pd.DataFrame] = []
+    coefficient_frames: list[pd.DataFrame] = []
+    profile_frames: list[pd.DataFrame] = []
+    cosine_frames: list[pd.DataFrame] = []
+
+    layers = parse_str_list(args.evaluation_layers)
+    if not layers:
+        return cell_type_rows, tcell_frames, coefficient_frames, profile_frames, cosine_frames
+
+    for input_layer in layers:
+        if skip_zero_dropout_layers and input_layer == "X":
+            continue
+        layer_dropout_label, layer_dropout_fraction = layer_dropout_metadata(
+            input_layer,
+            dropout_label,
+            dropout_fraction,
+        )
+        baseline_label = args.uncorrected_condition_label
+        baseline_counts_layer = "X"
+        if not args.skip_cell_type_separation:
+            baseline_rows = score_split_cell_type_case(
+                adata,
+                adata.X,
+                tissue,
+                source_file,
+                baseline_label,
+                args,
+            )
+            cell_type_rows.extend(
+                add_layered_metadata(
+                    baseline_rows,
+                    input_layer=input_layer,
+                    evaluation_method="baseline",
+                    counts_layer=baseline_counts_layer,
+                    sample_replicate=sample_replicate,
+                    dropout_label=layer_dropout_label,
+                    dropout_fraction=layer_dropout_fraction,
+                )
+            )
+
+        if not args.skip_tcell_contamination:
+            baseline_args = copy.copy(args)
+            baseline_args.target_removed_fractions = ""
+            baseline_args.admix_probs_layer = "_metrics_zero_probs"
+            baseline_args.additional_counts_layer = ""
+            baseline_args.uncorrected_condition_label = baseline_label
+            baseline_work = ad.AnnData(
+                X=sanitize_numeric_matrix(adata.X.copy()),
+                obs=adata.obs.copy(),
+                var=adata.var.copy(),
+            )
+            if args.coord_key in adata.obsm:
+                baseline_work.obsm[args.coord_key] = adata.obsm[args.coord_key].copy()
+            baseline_work.layers["_metrics_zero_probs"] = sparse.csr_matrix(baseline_work.shape)
+            tcell_df, coefficient_df, profile_df, cosine_df = run_tcell_contamination(
+                baseline_work,
+                tissue,
+                source_file,
+                baseline_args,
+                reference_adata=reference_adata,
+                reference_profile_cache=reference_profile_cache,
+            )
+            tcell_frames.append(
+                add_layered_metadata(
+                    tcell_df,
+                    input_layer=input_layer,
+                    evaluation_method="baseline",
+                    counts_layer=baseline_counts_layer,
+                    sample_replicate=sample_replicate,
+                    dropout_label=layer_dropout_label,
+                    dropout_fraction=layer_dropout_fraction,
+                )
+            )
+            coefficient_frames.append(
+                add_layered_metadata(
+                    coefficient_df,
+                    input_layer=input_layer,
+                    evaluation_method="baseline",
+                    counts_layer=baseline_counts_layer,
+                    sample_replicate=sample_replicate,
+                    dropout_label=layer_dropout_label,
+                    dropout_fraction=layer_dropout_fraction,
+                )
+            )
+            profile_frames.append(
+                add_layered_metadata(
+                    profile_df,
+                    input_layer=input_layer,
+                    evaluation_method="baseline",
+                    counts_layer=baseline_counts_layer,
+                    sample_replicate=sample_replicate,
+                    dropout_label=layer_dropout_label,
+                    dropout_fraction=layer_dropout_fraction,
+                )
+            )
+            cosine_frames.append(
+                add_layered_metadata(
+                    cosine_df,
+                    input_layer=input_layer,
+                    evaluation_method="baseline",
+                    counts_layer=baseline_counts_layer,
+                    sample_replicate=sample_replicate,
+                    dropout_label=layer_dropout_label,
+                    dropout_fraction=layer_dropout_fraction,
+                )
+            )
+
+        if args.layered_baseline_only:
+            continue
+
+        for method, prob_template, label in [
+            ("syndri", args.syndri_probs_template, args.syndri_case_label),
+            ("mlp", args.mlp_probs_template, args.mlp_case_label),
+        ]:
+            probability_layer = format_layer_template(prob_template, input_layer)
+            probability_fallbacks = ()
+            if input_layer == "X":
+                probability_fallbacks = (
+                    "admix_probs" if method == "syndri" else "mlp_admix_probs",
+                )
+            resolved_probability_layer = resolve_layer_key(
+                adata,
+                probability_layer,
+                fallback_keys=probability_fallbacks,
+            )
+            method_args = copy.copy(args)
+            method_args.admix_probs_layer = "_metrics_admix_probs"
+            method_args.additional_counts_layer = ""
+            method_args.uncorrected_condition_label = f"{label}_uncorrected"
+
+            if input_layer != "X" and input_layer not in adata.layers:
+                cell_type_rows.append(
+                    missing_layer_metric_row(
+                        tissue,
+                        source_file,
+                        case_name=f"{label}_missing_input",
+                        layer_key=input_layer,
+                        input_layer=input_layer,
+                        evaluation_method=method,
+                        probability_layer=probability_layer,
+                        sample_replicate=sample_replicate,
+                        dropout_label=layer_dropout_label,
+                        dropout_fraction=layer_dropout_fraction,
+                    )
+                )
+                continue
+            if resolved_probability_layer is None:
+                cell_type_rows.append(
+                    missing_layer_metric_row(
+                        tissue,
+                        source_file,
+                        case_name=f"{label}_missing_probability",
+                        layer_key=probability_layer,
+                        input_layer=input_layer,
+                        evaluation_method=method,
+                        probability_layer=probability_layer,
+                        counts_layer=input_layer,
+                        sample_replicate=sample_replicate,
+                        dropout_label=layer_dropout_label,
+                        dropout_fraction=layer_dropout_fraction,
+                    )
+                )
+                tcell_frames.append(
+                    missing_layer_tcell_frame(
+                        tissue,
+                        source_file,
+                        condition=f"{label}_missing_probability",
+                        layer_key=probability_layer,
+                        input_layer=input_layer,
+                        evaluation_method=method,
+                        probability_layer=probability_layer,
+                        counts_layer=input_layer,
+                        sample_replicate=sample_replicate,
+                        dropout_label=layer_dropout_label,
+                        dropout_fraction=layer_dropout_fraction,
+                    )
+                )
+                cosine_frames.append(
+                    missing_layer_tcell_frame(
+                        tissue,
+                        source_file,
+                        condition=f"{label}_missing_probability",
+                        layer_key=probability_layer,
+                        input_layer=input_layer,
+                        evaluation_method=method,
+                        probability_layer=probability_layer,
+                        counts_layer=input_layer,
+                        sample_replicate=sample_replicate,
+                        dropout_label=layer_dropout_label,
+                        dropout_fraction=layer_dropout_fraction,
+                    )
+                )
+                continue
+
+            work = layered_work_adata(
+                adata,
+                input_layer,
+                probability_layer=resolved_probability_layer,
+                args=method_args,
+            )
+
+            if not args.skip_cell_type_separation:
+                rows = run_cell_type_separation(work, tissue, source_file, method_args)
+                rows = [row for row in rows if row.get("case") != "admixed"]
+                for row in rows:
+                    if str(row.get("case", "")).startswith("cleaned_admixed_"):
+                        row["case"] = str(row["case"]).replace("cleaned_admixed", f"{label}_cleaned", 1)
+                cell_type_rows.extend(
+                    add_layered_metadata(
+                        rows,
+                        input_layer=input_layer,
+                        evaluation_method=method,
+                        probability_layer=resolved_probability_layer,
+                        counts_layer=input_layer,
+                        sample_replicate=sample_replicate,
+                        dropout_label=layer_dropout_label,
+                        dropout_fraction=layer_dropout_fraction,
+                    )
+                )
+
+            if not args.skip_tcell_contamination:
+                tcell_df, coefficient_df, profile_df, cosine_df = run_tcell_contamination(
+                    work,
+                    tissue,
+                    source_file,
+                    method_args,
+                    reference_adata=reference_adata,
+                    reference_profile_cache=reference_profile_cache,
+                )
+                for frame in [tcell_df, coefficient_df, profile_df, cosine_df]:
+                    if frame is not None and not frame.empty and "condition" in frame:
+                        frame.drop(
+                            frame.index[
+                                frame["condition"].astype(str)
+                                == method_args.uncorrected_condition_label
+                            ],
+                            inplace=True,
+                        )
+                        frame["condition"] = frame["condition"].astype(str).replace(
+                            {
+                                method_args.uncorrected_condition_label: f"{label}_uncorrected",
+                            }
+                        )
+                        frame["condition"] = frame["condition"].str.replace(
+                            "cleaned_admixed", f"{label}_cleaned", regex=False
+                        )
+                tcell_frames.append(
+                    add_layered_metadata(
+                        tcell_df,
+                        input_layer=input_layer,
+                        evaluation_method=method,
+                        probability_layer=resolved_probability_layer,
+                        counts_layer=input_layer,
+                        sample_replicate=sample_replicate,
+                        dropout_label=layer_dropout_label,
+                        dropout_fraction=layer_dropout_fraction,
+                    )
+                )
+                coefficient_frames.append(
+                    add_layered_metadata(
+                        coefficient_df,
+                        input_layer=input_layer,
+                        evaluation_method=method,
+                        probability_layer=resolved_probability_layer,
+                        counts_layer=input_layer,
+                        sample_replicate=sample_replicate,
+                        dropout_label=layer_dropout_label,
+                        dropout_fraction=layer_dropout_fraction,
+                    )
+                )
+                profile_frames.append(
+                    add_layered_metadata(
+                        profile_df,
+                        input_layer=input_layer,
+                        evaluation_method=method,
+                        probability_layer=resolved_probability_layer,
+                        counts_layer=input_layer,
+                        sample_replicate=sample_replicate,
+                        dropout_label=layer_dropout_label,
+                        dropout_fraction=layer_dropout_fraction,
+                    )
+                )
+                cosine_frames.append(
+                    add_layered_metadata(
+                        cosine_df,
+                        input_layer=input_layer,
+                        evaluation_method=method,
+                        probability_layer=resolved_probability_layer,
+                        counts_layer=input_layer,
+                        sample_replicate=sample_replicate,
+                        dropout_label=layer_dropout_label,
+                        dropout_fraction=layer_dropout_fraction,
+                    )
+                )
+
+        split_layer = format_layer_template(args.split_counts_template, input_layer)
+        split_label = args.split_case_label
+        split_method = "split"
+        if input_layer != "X" and input_layer not in adata.layers:
+            cell_type_rows.append(
+                missing_layer_metric_row(
+                    tissue,
+                    source_file,
+                    case_name=f"{split_label}_missing_input",
+                    layer_key=input_layer,
+                    input_layer=input_layer,
+                    evaluation_method=split_method,
+                    sample_replicate=sample_replicate,
+                    dropout_label=layer_dropout_label,
+                    dropout_fraction=layer_dropout_fraction,
+                )
+            )
+            continue
+        if split_layer not in adata.layers:
+            cell_type_rows.append(
+                missing_layer_metric_row(
+                    tissue,
+                    source_file,
+                    case_name=f"{split_label}_missing_counts",
+                    layer_key=split_layer,
+                    input_layer=input_layer,
+                    evaluation_method=split_method,
+                    counts_layer=split_layer,
+                    sample_replicate=sample_replicate,
+                    dropout_label=layer_dropout_label,
+                    dropout_fraction=layer_dropout_fraction,
+                )
+            )
+            tcell_frames.append(
+                missing_layer_tcell_frame(
+                    tissue,
+                    source_file,
+                    condition=f"{split_label}_missing_counts",
+                    layer_key=split_layer,
+                    input_layer=input_layer,
+                    evaluation_method=split_method,
+                    counts_layer=split_layer,
+                    sample_replicate=sample_replicate,
+                    dropout_label=layer_dropout_label,
+                    dropout_fraction=layer_dropout_fraction,
+                )
+            )
+            cosine_frames.append(
+                missing_layer_tcell_frame(
+                    tissue,
+                    source_file,
+                    condition=f"{split_label}_missing_counts",
+                    layer_key=split_layer,
+                    input_layer=input_layer,
+                    evaluation_method=split_method,
+                    counts_layer=split_layer,
+                    sample_replicate=sample_replicate,
+                    dropout_label=layer_dropout_label,
+                    dropout_fraction=layer_dropout_fraction,
+                )
+            )
+            continue
+
+        split_work = layered_work_adata(
+            adata,
+            input_layer,
+            split_counts_layer=split_layer,
+            args=args,
+        )
+        if not args.skip_cell_type_separation:
+            split_rows = score_split_cell_type_case(
+                split_work,
+                counts_from_layer(split_work, "_metrics_split_counts"),
+                tissue,
+                source_file,
+                split_label,
+                args,
+            )
+            cell_type_rows.extend(
+                add_layered_metadata(
+                    split_rows,
+                    input_layer=input_layer,
+                    evaluation_method=split_method,
+                    counts_layer=split_layer,
+                    sample_replicate=sample_replicate,
+                    dropout_label=layer_dropout_label,
+                    dropout_fraction=layer_dropout_fraction,
+                )
+            )
+
+        if not args.skip_tcell_contamination:
+            split_args = copy.copy(args)
+            split_args.target_removed_fractions = ""
+            split_args.admix_probs_layer = "_metrics_zero_probs"
+            split_args.additional_counts_layer = "_metrics_split_counts"
+            split_args.purified_condition_label = split_label
+            split_args.additional_counts_case_label = split_label
+            split_args.uncorrected_condition_label = f"{split_label}_input_counts"
+            split_work.layers["_metrics_zero_probs"] = sparse.csr_matrix(split_work.shape)
+            tcell_df, coefficient_df, profile_df, cosine_df = run_tcell_contamination(
+                split_work,
+                tissue,
+                source_file,
+                split_args,
+                reference_adata=reference_adata,
+                reference_profile_cache=reference_profile_cache,
+            )
+            for frame_name, frame in [
+                ("tcell", tcell_df),
+                ("coefficients", coefficient_df),
+                ("profiles", profile_df),
+                ("cosine", cosine_df),
+            ]:
+                if frame is not None and not frame.empty and "condition" in frame:
+                    keep = frame["condition"].astype(str) == split_label
+                    if frame_name == "tcell":
+                        tcell_df = frame.loc[keep].copy()
+                    elif frame_name == "coefficients":
+                        coefficient_df = frame.loc[keep].copy()
+                    elif frame_name == "profiles":
+                        profile_df = frame.loc[keep].copy()
+                    else:
+                        cosine_df = frame.loc[keep].copy()
+
+            tcell_frames.append(
+                add_layered_metadata(
+                    tcell_df,
+                    input_layer=input_layer,
+                    evaluation_method=split_method,
+                    counts_layer=split_layer,
+                    sample_replicate=sample_replicate,
+                    dropout_label=layer_dropout_label,
+                    dropout_fraction=layer_dropout_fraction,
+                )
+            )
+            coefficient_frames.append(
+                add_layered_metadata(
+                    coefficient_df,
+                    input_layer=input_layer,
+                    evaluation_method=split_method,
+                    counts_layer=split_layer,
+                    sample_replicate=sample_replicate,
+                    dropout_label=layer_dropout_label,
+                    dropout_fraction=layer_dropout_fraction,
+                )
+            )
+            profile_frames.append(
+                add_layered_metadata(
+                    profile_df,
+                    input_layer=input_layer,
+                    evaluation_method=split_method,
+                    counts_layer=split_layer,
+                    sample_replicate=sample_replicate,
+                    dropout_label=layer_dropout_label,
+                    dropout_fraction=layer_dropout_fraction,
+                )
+            )
+            cosine_frames.append(
+                add_layered_metadata(
+                    cosine_df,
+                    input_layer=input_layer,
+                    evaluation_method=split_method,
+                    counts_layer=split_layer,
+                    sample_replicate=sample_replicate,
+                    dropout_label=layer_dropout_label,
+                    dropout_fraction=layer_dropout_fraction,
+                )
+            )
+
+    return cell_type_rows, tcell_frames, coefficient_frames, profile_frames, cosine_frames
+
+
+def output_identity_columns(df: pd.DataFrame) -> list[str]:
+    candidates = [
+        "source_file",
+        "tissue",
+        "sample_replicate",
+        "dropout_label",
+        "dropout_fraction",
+        "input_layer",
+        "evaluation_method",
+        "probability_layer",
+        "counts_layer",
+        "case",
+        "condition",
+        "target_removed_fraction",
+        "target_cell_type_i",
+        "contaminating_cell_type_j",
+        "spatial_cell_type",
+        "reference_cell_type",
+        "spatial_counts_layer",
+        "reference_counts_layer",
+        "gene",
+        "cell_type",
+        "layer",
+    ]
+    return [col for col in candidates if col in df.columns]
+
+
+def remove_layer_count_baselines(
+    df: pd.DataFrame,
+    uncorrected_condition_label: str,
+) -> pd.DataFrame:
+    label_columns = [col for col in ["case", "condition"] if col in df.columns]
+    if not label_columns:
+        return df
+
+    keep = pd.Series(True, index=df.index)
+    for col in label_columns:
+        values = df[col].astype(str)
+        remove = values.str.endswith("_uncorrected") & (values != uncorrected_condition_label)
+        keep &= ~remove
+    return df.loc[keep].copy()
+
+
+def write_csv(
+    df: pd.DataFrame,
+    path: Path,
+    *,
+    append: bool = False,
+    replace_layer_count_baselines: bool = False,
+    uncorrected_condition_label: str = "uncorrected",
+) -> pd.DataFrame:
     path.parent.mkdir(parents=True, exist_ok=True)
-    df.to_csv(path, index=False)
-    print(f"Wrote {len(df):,} rows: {path}")
+    output = df.copy()
+    if append and path.exists():
+        existing = pd.read_csv(path)
+        if replace_layer_count_baselines:
+            existing = remove_layer_count_baselines(existing, uncorrected_condition_label)
+        output = pd.concat([existing, output], ignore_index=True, sort=False)
+        identity = output_identity_columns(output)
+        if identity:
+            output = output.drop_duplicates(subset=identity, keep="last")
+    output.to_csv(path, index=False)
+    print(f"Wrote {len(output):,} rows: {path}")
+    return output
 
 
 def main() -> None:
@@ -1443,19 +2592,76 @@ def main() -> None:
     print(f"Wrote config: {config_path}")
     print(f"Found {len(files)} input file(s). sample_frac={args.sample_frac}")
 
+    reference_adata = None
+    reference_profile_cache: dict = {}
+    if not args.skip_tcell_contamination and not args.skip_tcell_cosine_similarity:
+        if args.reference_data:
+            reference_path = Path(args.reference_data).expanduser().resolve()
+            if not reference_path.exists():
+                raise FileNotFoundError(f"Reference AnnData does not exist: {reference_path}")
+            reference_adata = ad.read_h5ad(reference_path, backed="r")
+            print(f"Loaded T-cell cosine reference: {reference_path}")
+        else:
+            print("Skipping T-cell cosine similarity: --reference-data was not provided.")
+
     cell_type_rows: list[dict] = []
     tcell_frames: list[pd.DataFrame] = []
     tcell_coefficient_frames: list[pd.DataFrame] = []
     cell_type_profile_frames: list[pd.DataFrame] = []
+    tcell_cosine_frames: list[pd.DataFrame] = []
+    zero_dropout_replicates_seen: set[str] = set()
 
     for path in tqdm(files, desc="Spatial files"):
         tissue = tissue_name_from_path(path, args.tissue_name_regex)
+        sample_replicate = sample_replicate_from_path(path, args.sample_replicate_regex)
+        dropout_label, dropout_fraction = dropout_from_path(path)
         print(f"\nReading {path}")
         adata = ad.read_h5ad(path)
         adata.obs[args.source_file_key] = str(path)
         adata.obs["_metrics_tissue"] = tissue
+        adata.obs["_metrics_sample_replicate"] = sample_replicate
+        adata.obs["_metrics_dropout_label"] = dropout_label
+        adata.obs["_metrics_dropout_fraction"] = dropout_fraction
         adata.X = sanitize_numeric_matrix(adata.X)
         adata = sample_adata(adata, args)
+
+        if parse_str_list(args.evaluation_layers):
+            skip_zero_dropout_layers = (
+                args.deduplicate_zero_dropout_inputs
+                and "X" in parse_str_list(args.evaluation_layers)
+                and sample_replicate in zero_dropout_replicates_seen
+            )
+            print(
+                "Computing layered metrics: "
+                f"{tissue} layers={parse_str_list(args.evaluation_layers)}"
+                + (" (skipping duplicate X/0pct)" if skip_zero_dropout_layers else "")
+            )
+            (
+                layered_cell_rows,
+                layered_tcell_frames,
+                layered_coefficient_frames,
+                layered_profile_frames,
+                layered_cosine_frames,
+            ) = run_layered_evaluations_for_file(
+                adata,
+                tissue,
+                str(path),
+                sample_replicate,
+                dropout_label,
+                dropout_fraction,
+                args,
+                skip_zero_dropout_layers=skip_zero_dropout_layers,
+                reference_adata=reference_adata,
+                reference_profile_cache=reference_profile_cache,
+            )
+            if "X" in parse_str_list(args.evaluation_layers):
+                zero_dropout_replicates_seen.add(sample_replicate)
+            cell_type_rows.extend(layered_cell_rows)
+            tcell_frames.extend(layered_tcell_frames)
+            tcell_coefficient_frames.extend(layered_coefficient_frames)
+            cell_type_profile_frames.extend(layered_profile_frames)
+            tcell_cosine_frames.extend(layered_cosine_frames)
+            continue
 
         if not args.skip_cell_type_separation:
             print(f"Computing cell-type separation metrics: {tissue}")
@@ -1463,19 +2669,28 @@ def main() -> None:
 
         if not args.skip_tcell_contamination:
             print(f"Computing T-cell contamination metrics: {tissue}")
-            tcell_df, coefficient_df, profile_df = run_tcell_contamination(
+            tcell_df, coefficient_df, profile_df, cosine_df = run_tcell_contamination(
                 adata.copy(),
                 tissue,
                 str(path),
                 args,
+                reference_adata=reference_adata,
+                reference_profile_cache=reference_profile_cache,
             )
             tcell_frames.append(tcell_df)
             tcell_coefficient_frames.append(coefficient_df)
             cell_type_profile_frames.append(profile_df)
+            tcell_cosine_frames.append(cosine_df)
 
     if not args.skip_cell_type_separation:
         cell_type_df = pd.DataFrame(cell_type_rows)
-        write_csv(cell_type_df, output_dir / args.cell_type_output)
+        write_csv(
+            cell_type_df,
+            output_dir / args.cell_type_output,
+            append=args.append_output,
+            replace_layer_count_baselines=args.replace_layer_count_baselines,
+            uncorrected_condition_label=args.uncorrected_condition_label,
+        )
 
     if not args.skip_tcell_contamination:
         tcell_df = (
@@ -1483,20 +2698,51 @@ def main() -> None:
             if tcell_frames
             else pd.DataFrame()
         )
-        write_csv(tcell_df, output_dir / args.tcell_output)
+        tcell_df = write_csv(
+            tcell_df,
+            output_dir / args.tcell_output,
+            append=args.append_output,
+            replace_layer_count_baselines=args.replace_layer_count_baselines,
+            uncorrected_condition_label=args.uncorrected_condition_label,
+        )
         write_csv(summarize_tcell_effects(tcell_df, args), output_dir / args.tcell_effect_output)
         tcell_coefficient_df = (
             pd.concat(tcell_coefficient_frames, ignore_index=True)
             if tcell_coefficient_frames
             else pd.DataFrame()
         )
-        write_csv(tcell_coefficient_df, output_dir / args.tcell_lr_gene_output)
+        write_csv(
+            tcell_coefficient_df,
+            output_dir / args.tcell_lr_gene_output,
+            append=args.append_output,
+            replace_layer_count_baselines=args.replace_layer_count_baselines,
+            uncorrected_condition_label=args.uncorrected_condition_label,
+        )
         cell_type_profile_df = (
             pd.concat(cell_type_profile_frames, ignore_index=True)
             if cell_type_profile_frames
             else pd.DataFrame()
         )
-        write_csv(cell_type_profile_df, output_dir / args.cell_type_profile_output)
+        write_csv(
+            cell_type_profile_df,
+            output_dir / args.cell_type_profile_output,
+            append=args.append_output,
+            replace_layer_count_baselines=args.replace_layer_count_baselines,
+            uncorrected_condition_label=args.uncorrected_condition_label,
+        )
+        if not args.skip_tcell_cosine_similarity and reference_adata is not None:
+            tcell_cosine_df = (
+                pd.concat(tcell_cosine_frames, ignore_index=True)
+                if tcell_cosine_frames
+                else pd.DataFrame()
+            )
+            write_csv(
+                tcell_cosine_df,
+                output_dir / args.tcell_cosine_output,
+                append=args.append_output,
+                replace_layer_count_baselines=args.replace_layer_count_baselines,
+                uncorrected_condition_label=args.uncorrected_condition_label,
+            )
 
 
 if __name__ == "__main__":

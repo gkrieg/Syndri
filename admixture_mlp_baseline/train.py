@@ -336,6 +336,10 @@ def main():
                     "model": model.state_dict(),
                     "optimizer": optimizer.state_dict(),
                     "config": OmegaConf.to_container(cfg, resolve=True),
+                    "mlp_args": {
+                        "hidden_dims": hidden_dims,
+                        "dropout": args.dropout,
+                    },
                 },
                 work_dir / "best_model.pt",
             )

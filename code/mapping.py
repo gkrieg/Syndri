@@ -616,7 +616,7 @@ def map_sc_reference_to_unique_xenium_cells(
     )
 
     sampled_ids = match_result["ids"][np.arange(match_result["ids"].shape[0]), selected_idx].astype(str)
-    mapped_sc_data.uns["sc_reference_to_xenium_mapping"] = {
+    mapped_sc_data.uns["sc_reference_to_spatial_mapping"] = {
         "embedding_key": embedding_key,
         "spatial_cols": tuple(spatial_cols),
         "n_matches": int(n_matches),

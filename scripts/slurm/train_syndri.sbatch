@@ -16,4 +16,4 @@ source /home/jwinchel/miniconda3/etc/profile.d/conda.sh
 conda activate heimdall
 python train.py +experiments=$EXPERIMENT
 
-# sbatch --export=EXPERIMENT=admixture_prediction slurmfiles/train_syndri.sbatch
+# sbatch --export=EXPERIMENT=admixture_prediction Syndri/scripts/slurm/train_syndri.sbatch

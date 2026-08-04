@@ -1,7 +1,17 @@
 # Syndri
 
+New structure for data on cluster:
+```
+/work/magroup/skrieger/Syndri/
+├── data/          # Raw, interim, processed, and derived datasets
+├── experiments/   # All methods, including Syndri and comparators
+├── benchmarks/    # Cross-method evaluations
+├── results/       # Final aggregated tables and figures
+└── archive/
+```
 
 New structure for reorganization
+
 ```
 Syndri/
   README.md
