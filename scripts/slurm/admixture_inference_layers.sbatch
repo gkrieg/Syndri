@@ -1,6 +1,6 @@
 #!/bin/bash
-#SBATCH -p gpu-small
-#SBATCH --mem=16Gb
+#SBATCH -p gpu-small,gpu-large
+#SBATCH --mem=32Gb
 #SBATCH --job-name syndri-infer-layers
 #SBATCH --output=/home/jwinchel/Syndri/logs/syndri-infer-layers-%A_%a.txt
 #SBATCH -t 0-12:00:00
@@ -302,4 +302,18 @@ echo "Finished layered predictions for $ST_DATA"
 
 # sbatch --array=0-76%4 \
 #   --export=ALL,ST_DATA_DIR=/work/magroup/skrieger/Syndri/data/xenium_noise_experiment/,ST_DATA_GLOB='GSM95*pct.h5ad',INPUT_LAYER_TEMPLATE='trial_%d',PRED_LAYER_TEMPLATE='admix_probs_trial_%d',N_LAYERS=3 \
+#   /home/jwinchel/Syndri/scripts/slurm/admixture_inference_layers.sbatch
+
+
+# NEW MODEL COSMX
+# ST_DATA_DIR: /work/magroup/skrieger/Syndri/data/xenium_noise_experiment/
+# reference: /compute/oven-0-13/jwinchel/scRNA-seq/adata/GSE127465_tumor_integrated.h5ad
+# checkpoint_dir: /home/jwinchel/Syndri/Heimdall/admixture_prediction_results/nsclc_lung9rep1_bestadj (Milestone 91)
+# cell_type_col: cell_type
+# st_data_glob: 'cosmx_nsclc*1pct.pct' 
+# INPUT_LAYER_TEMPLATE: 'X'
+
+# sbatch --array=0-7%2   --export=ALL,COORD_X=CenterX_global_px,COORD_Y=CenterY_global_px,ST_DATA_DIR=/work/magroup/skrieger/Syndri/data/xenium_noise_experiment/,ST_DATA_GLOB='cosmx_nsclc*1pct.h5ad',REFERENCE_DATA=/compute/oven-0-13/jwinchel/scRNA-seq/adata/GSE127465_tumor_integrated.h5ad,CHECKPOINT_DIR=/home/jwinchel/Syndri/Heimdall/admixture_prediction_results/nsclc_lung9rep1_bestadj,MILESTONE=91,CELL_TYPE_COL=cell_type,INPUT_LAYER_TEMPLATE='X',N_LAYERS=1   /home/jwinchel/Syndri/scripts/slurm/admixture_inference_layers.sbatch
+# sbatch --array=0-7%2 \
+#   --export=ALL,COORD_X=CenterX_global_px,COORD_Y=CenterY_global_px,ST_DATA_DIR=/work/magroup/skrieger/Syndri/data/xenium_noise_experiment/,ST_DATA_GLOB='cosmx_nsclc*1pct.h5ad',REFERENCE_DATA=/compute/oven-0-13/jwinchel/scRNA-seq/adata/GSE127465_tumor_integrated.h5ad,CHECKPOINT_DIR=/home/jwinchel/Syndri/Heimdall/admixture_prediction_results/nsclc_lung9rep1_bestadj,MILESTONE=91,CELL_TYPE_COL=cell_type,INPUT_LAYER_TEMPLATE='X',N_LAYERS=1,FAST_INFERENCE=0,EXTRA_OVERRIDES='fe.args.drop_zeros=false',GENE_LIST=/work/magroup/skrieger/Syndri/data/xenium_noise_experiment/cosmx_nsclc_gene_list.txt \
 #   /home/jwinchel/Syndri/scripts/slurm/admixture_inference_layers.sbatch

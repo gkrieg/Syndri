@@ -1,8 +1,8 @@
 #!/bin/bash
-#SBATCH -p cpu,gpu-small
+#SBATCH -p cpu,gpu-small,gpu-large
 #SBATCH --mem=48Gb
 #SBATCH --job-name syndri-xenium-noisy-metrics
-#SBATCH --output=/home/jwinchel/Syndri/logs/syndri-layer-metrics-%A_%a.txt
+#SBATCH --output=/home/jwinchel/Syndri/logs/syndri-xenium-noisy-metrics-%A_%a.txt
 #SBATCH --exclude=oven-0-27
 #SBATCH -t 2-00:00:00
 #SBATCH --cpus-per-task=8
@@ -45,19 +45,30 @@ TCELL_SAMPLE_KEY=${TCELL_SAMPLE_KEY:-batch}
 COORD_X=${COORD_X:-x_centroid}
 COORD_Y=${COORD_Y:-y_centroid}
 EXCLUDE_LABELS=${EXCLUDE_LABELS:-malignant cell}
+FILTER_TCELL_INVALID_CELLS=${FILTER_TCELL_INVALID_CELLS:-${TCELL_FILTER_INVALID_CELLS:-0}}
+TCELL_EXCLUDE_LABELS=${TCELL_EXCLUDE_LABELS:-$EXCLUDE_LABELS}
 
 REFERENCE_DATA=${REFERENCE_DATA:-/compute/oven-0-13/jwinchel/scRNA-seq/adata/chromium_GSM9509174_breast_integrated.h5ad}
 REFERENCE_CELL_TYPE_KEY=${REFERENCE_CELL_TYPE_KEY:-cell_type}
 REFERENCE_COUNTS_LAYER=${REFERENCE_COUNTS_LAYER:-}
-TCELL_COSINE_CELL_TYPE_PATTERN=${TCELL_COSINE_CELL_TYPE_PATTERN:-(?i)(^|\b)(t cells?|cd4|cd8|treg|t[- ]?regulatory|regulatory t|cytotoxic t)(\b|$)}
+TCELL_COSINE_CELL_TYPE_PATTERN=${TCELL_COSINE_CELL_TYPE_PATTERN:-(?i)(^|[^A-Za-z])(t cells?|cd4|cd8|treg|t[- ]?regulatory|regulatory t|cytotoxic t)([^A-Za-z]|$)}
 TCELL_COSINE_CELL_TYPES=${TCELL_COSINE_CELL_TYPES:-}
 TCELL_COSINE_CELL_TYPE_MAP=${TCELL_COSINE_CELL_TYPE_MAP:-}
 TCELL_COSINE_MIN_SPATIAL_CELLS=${TCELL_COSINE_MIN_SPATIAL_CELLS:-1}
 TCELL_COSINE_MIN_REFERENCE_CELLS=${TCELL_COSINE_MIN_REFERENCE_CELLS:-1}
 
-SYNDRI_PROBS_TEMPLATE=${SYNDRI_PROBS_TEMPLATE:-admix_probs_{layer}}
-MLP_PROBS_TEMPLATE=${MLP_PROBS_TEMPLATE:-mlp_admix_probs_{layer}}
-SPLIT_COUNTS_TEMPLATE=${SPLIT_COUNTS_TEMPLATE:-split_purified_counts_{layer}}
+SYNDRI_PROBS_TEMPLATE=${SYNDRI_PROBS_TEMPLATE:-}
+MLP_PROBS_TEMPLATE=${MLP_PROBS_TEMPLATE:-}
+SPLIT_COUNTS_TEMPLATE=${SPLIT_COUNTS_TEMPLATE:-}
+if [[ -z "$SYNDRI_PROBS_TEMPLATE" ]]; then
+  SYNDRI_PROBS_TEMPLATE='admix_probs_{layer}'
+fi
+if [[ -z "$MLP_PROBS_TEMPLATE" ]]; then
+  MLP_PROBS_TEMPLATE='mlp_admix_probs_{layer}'
+fi
+if [[ -z "$SPLIT_COUNTS_TEMPLATE" ]]; then
+  SPLIT_COUNTS_TEMPLATE='split_purified_counts_{layer}'
+fi
 SYNDRI_CASE_LABEL=${SYNDRI_CASE_LABEL:-syndri}
 MLP_CASE_LABEL=${MLP_CASE_LABEL:-mlp}
 SPLIT_CASE_LABEL=${SPLIT_CASE_LABEL:-split}
@@ -237,6 +248,9 @@ fi
 if [[ "$DEDUPLICATE_ZERO_DROPOUT_INPUTS" == "1" || "$DEDUPLICATE_ZERO_DROPOUT_INPUTS" == "true" || "$DEDUPLICATE_ZERO_DROPOUT_INPUTS" == "TRUE" ]]; then
   OPTIONAL_ARGS+=(--deduplicate-zero-dropout-inputs)
 fi
+if [[ "$FILTER_TCELL_INVALID_CELLS" == "1" || "$FILTER_TCELL_INVALID_CELLS" == "true" || "$FILTER_TCELL_INVALID_CELLS" == "TRUE" ]]; then
+  OPTIONAL_ARGS+=(--filter-tcell-invalid-cells)
+fi
 
 echo "Running pooled layered metrics"
 echo "  task: $TASK_ID / $(( ${#SAMPLE_REPLICATES[@]} - 1 ))"
@@ -255,6 +269,8 @@ echo "  layered baseline only: $LAYERED_BASELINE_ONLY"
 echo "  append output: $APPEND_OUTPUT"
 echo "  deduplicate zero-dropout inputs: $DEDUPLICATE_ZERO_DROPOUT_INPUTS"
 echo "  skip tcell neighborhood metrics: $SKIP_TCELL_NEIGHBORHOOD_METRICS"
+echo "  filter tcell invalid cells: $FILTER_TCELL_INVALID_CELLS"
+echo "  tcell exclude labels: ${TCELL_EXCLUDE_LABELS:-<none>}"
 echo "  reference data: ${REFERENCE_DATA:-<unset>}"
 echo "  tcell cosine output: $TCELL_COSINE_OUTPUT"
 
@@ -286,6 +302,7 @@ python /home/jwinchel/Syndri/eval/metrics_eval.py \
   --coord-x "$COORD_X" \
   --coord-y "$COORD_Y" \
   --exclude-labels "$EXCLUDE_LABELS" \
+  --tcell-exclude-labels "$TCELL_EXCLUDE_LABELS" \
   --syndri-probs-template "$SYNDRI_PROBS_TEMPLATE" \
   --mlp-probs-template "$MLP_PROBS_TEMPLATE" \
   --split-counts-template "$SPLIT_COUNTS_TEMPLATE" \
@@ -329,3 +346,14 @@ python /home/jwinchel/Syndri/eval/metrics_eval.py \
 # sbatch --array=0-18%2 --export=ALL,SKIP_EXISTING=0,INPUT_LAYERS=X:trial_0:trial_1:trial_2,INPUT_LAYERS_SEP=:,TCELL_COSINE_CELL_TYPE_PATTERN='T' /home/jwinchel/Syndri/scripts/slurm/metrics_eval_layers_pooled.sbatch
 
 # sbatch --array=0-18%2   --export=ALL,SKIP_EXISTING=0,SKIP_CELL_TYPE_SEPARATION=1,SKIP_TCELL_NEIGHBORHOOD_METRICS=1,SKIP_CELL_TYPE_PROFILES=1,INPUT_LAYERS=X:trial_0:trial_1:trial_2,INPUT_LAYERS_SEP=:,TCELL_COSINE_CELL_TYPE_PATTERN='T'   /home/jwinchel/Syndri/scripts/slurm/metrics_eval_layers_pooled.sbatch
+
+
+# sbatch --array=0-18%2 \
+#   --export=ALL,SKIP_EXISTING=0,APPEND_OUTPUT=1,SKIP_CELL_TYPE_SEPARATION=1,SKIP_TCELL_NEIGHBORHOOD_METRICS=1,SKIP_CELL_TYPE_PROFILES=1,INPUT_LAYERS=X:trial_0:trial_1:trial_2,INPUT_LAYERS_SEP=:,TCELL_COSINE_CELL_TYPE_PATTERN=T \
+#   /home/jwinchel/Syndri/scripts/slurm/metrics_eval_layers_pooled.sbatch
+
+
+# 08/05/2026: cosmx lab meeting results
+# sbatch --array=0-7%2 \
+#   --export=ALL,SPATIAL_DIR=/work/magroup/skrieger/Syndri/data/xenium_noise_experiment,INPUT_GLOB='cosmx_nsclc*1pct.h5ad',SAMPLE_REPLICATE_REGEX='Lung[0-9]+(-Rep[0-9]+)?',INPUT_LAYERS=X,LABEL_KEY=cell_type,TCELL_CELL_TYPE_KEY=cell_type,REMOVAL_GROUP_KEY=cell_type,COORD_X=CenterX_global_px,COORD_Y=CenterY_global_px,REFERENCE_DATA=/compute/oven-0-13/jwinchel/scRNA-seq/adata/GSE127465_tumor_integrated.h5ad,REFERENCE_CELL_TYPE_KEY=cell_type,SYNDRI_PROBS_TEMPLATE='admix_probs_{layer}',MLP_PROBS_TEMPLATE='mlp_admix_probs_{layer}',SPLIT_COUNTS_TEMPLATE='split_purified_counts_{layer}',OUTPUT_DIR=/work/magroup/skrieger/Syndri/data/xenium_noise_experiment/metrics_eval_layers_pooled_cosmx_X,SKIP_EXISTING=0,EXCLUDE_LABELS='malignant cell,nan',TCELL_COSINE_CELL_TYPE_PATTERN='T' \
+#   /home/jwinchel/Syndri/scripts/slurm/metrics_eval_layers_pooled.sbatch

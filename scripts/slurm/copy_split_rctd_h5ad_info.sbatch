@@ -75,3 +75,9 @@ python /home/jwinchel/Syndri/data/copy_split_rctd_h5ad_info.py "${ARGS[@]}"
 #
 # Example in-place copy:
 # sbatch --array=0-75%8 --export=ALL,OVERWRITE=1 /home/jwinchel/Syndri/scripts/slurm/copy_split_rctd_h5ad_info.sbatch
+
+
+# 08/05/2026: cosmx results for lab meeting:
+# sbatch --dependency=afterok:<SPLIT_JOB_ID> --array=0-7%2 \
+#   --export=ALL,SOURCE_DIR=/work/magroup/skrieger/Syndri/data/xenium_noise_experiment/split_h5ad_layers/merged_h5ad,TARGET_DIR=/work/magroup/skrieger/Syndri/data/xenium_noise_experiment,SOURCE_GLOB='cosmx_nsclc*1pct.h5ad',OVERWRITE=1 \
+#   /home/jwinchel/Syndri/scripts/slurm/copy_split_rctd_h5ad_info.sbatch

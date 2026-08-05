@@ -176,3 +176,7 @@ echo "Done"
 #
 # Include adata.X too:
 # sbatch --array=0-76%4 --export=ALL,INPUT_LAYERS=X:trial_0:trial_1:trial_2,INPUT_LAYERS_SEP=: /home/jwinchel/Syndri/scripts/slurm/run_split_h5ad_layers.sbatch
+
+# sbatch --dependency=afterok:56783 --array=0-7%2 \
+#   --export=ALL,INPUT_DIR=/work/magroup/skrieger/Syndri/data/xenium_noise_experiment/,INPUT_GLOB='cosmx_nsclc*1pct.h5ad',INPUT_LAYERS=X,REFERENCE_H5AD=/compute/oven-0-13/jwinchel/scRNA-seq/adata/GSE127465_tumor_annotated.h5ad,REFERENCE_LAYER=X,REFERENCE_CELL_TYPE_COL=cell_type \
+#   /home/jwinchel/Syndri/scripts/slurm/run_split_h5ad_layers.sbatch

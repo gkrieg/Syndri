@@ -116,7 +116,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--layered-baseline-only",
         action="store_true",
-        help="In layered mode, compute only the shared .X uncorrected baseline rows.",
+        help="In layered mode, compute only the uncorrected baseline rows for each input layer.",
     )
     parser.add_argument(
         "--append-output",
@@ -128,7 +128,7 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help=(
             "When appending, remove older method-specific *_uncorrected rows so the shared "
-            ".X uncorrected rows are the only uncorrected baselines."
+            "uncorrected rows are the only uncorrected baselines."
         ),
     )
     parser.add_argument(
@@ -204,6 +204,23 @@ def build_parser() -> argparse.ArgumentParser:
 
     parser.add_argument("--tcell-cell-type-key", default="rctd_first_type")
     parser.add_argument("--tcell-sample-key", default="batch")
+    parser.add_argument(
+        "--filter-tcell-invalid-cells",
+        action="store_true",
+        help=(
+            "Before T-cell contamination metrics, drop cells with missing/string-'nan' "
+            "T-cell labels, excluded T-cell labels, missing removal-group labels, or "
+            "non-finite coordinates."
+        ),
+    )
+    parser.add_argument(
+        "--tcell-exclude-labels",
+        default="",
+        help=(
+            "Comma-separated T-cell labels to exclude when --filter-tcell-invalid-cells "
+            "is enabled. Defaults to --exclude-labels when unset."
+        ),
+    )
     parser.add_argument("--coord-key", default="spatial")
     parser.add_argument("--coord-x", default="x_centroid")
     parser.add_argument("--coord-y", default="y_centroid")
@@ -1034,6 +1051,41 @@ def ensure_tcell_inputs(adata: ad.AnnData, tissue: str, args: argparse.Namespace
         adata.obsm[args.coord_key] = adata.obs[[args.coord_x, args.coord_y]].to_numpy(dtype=float)
 
 
+def filtered_tcell_adata(adata: ad.AnnData, args: argparse.Namespace) -> tuple[ad.AnnData, dict[str, int]]:
+    valid = np.ones(adata.n_obs, dtype=bool)
+    dropped: dict[str, int] = {}
+
+    exclude_labels = set(parse_str_list(args.tcell_exclude_labels) or parse_str_list(args.exclude_labels))
+
+    label_keys = [args.tcell_cell_type_key]
+    if args.cell_type_specific_removal:
+        removal_group_key = args.removal_group_key or args.label_key
+        if removal_group_key not in label_keys:
+            label_keys.append(removal_group_key)
+
+    for key in label_keys:
+        if key not in adata.obs:
+            continue
+        values = adata.obs[key]
+        text = values.astype(str).str.strip()
+        key_valid = values.notna().to_numpy()
+        key_valid &= text.str.lower().ne("nan").to_numpy()
+        if exclude_labels:
+            key_valid &= ~text.isin(exclude_labels).to_numpy()
+        dropped[f"{key}_label"] = int((valid & ~key_valid).sum())
+        valid &= key_valid
+
+    coords = np.asarray(adata.obsm[args.coord_key], dtype=float)
+    coord_valid = np.isfinite(coords).all(axis=1)
+    dropped["coordinates"] = int((valid & ~coord_valid).sum())
+    valid &= coord_valid
+
+    dropped["total"] = int((~valid).sum())
+    if valid.all():
+        return adata, dropped
+    return adata[valid].copy(), dropped
+
+
 def jsonize_list_columns(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
     for col in df.columns:
@@ -1365,43 +1417,81 @@ def run_tcell_contamination(
     reference_adata: ad.AnnData | None = None,
     reference_profile_cache: dict | None = None,
 ) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
-    empty_outputs = (pd.DataFrame(), pd.DataFrame(), pd.DataFrame())
+    empty_df = pd.DataFrame()
     if args.tcell_cell_type_key not in adata.obs:
-        return pd.DataFrame(
-            [
-                {
-                    "tissue": tissue,
-                    "source_file": source_file,
-                    "condition": "all",
-                    "error": f"Missing T-cell label key {args.tcell_cell_type_key!r}.",
-                }
-            ]
-        ), *empty_outputs
+        return (
+            pd.DataFrame(
+                [
+                    {
+                        "tissue": tissue,
+                        "source_file": source_file,
+                        "condition": "all",
+                        "error": f"Missing T-cell label key {args.tcell_cell_type_key!r}.",
+                    }
+                ]
+            ),
+            empty_df,
+            empty_df,
+            empty_df,
+        )
     if args.admix_probs_layer not in adata.layers:
-        return pd.DataFrame(
-            [
-                {
-                    "tissue": tissue,
-                    "source_file": source_file,
-                    "condition": "all",
-                    "error": f"Missing admixture probability layer {args.admix_probs_layer!r}.",
-                }
-            ]
-        ), *empty_outputs
+        return (
+            pd.DataFrame(
+                [
+                    {
+                        "tissue": tissue,
+                        "source_file": source_file,
+                        "condition": "all",
+                        "error": f"Missing admixture probability layer {args.admix_probs_layer!r}.",
+                    }
+                ]
+            ),
+            empty_df,
+            empty_df,
+            empty_df,
+        )
 
     try:
         ensure_tcell_inputs(adata, tissue, args)
     except Exception as exc:
-        return pd.DataFrame(
-            [
-                {
-                    "tissue": tissue,
-                    "source_file": source_file,
-                    "condition": "all",
-                    "error": repr(exc),
-                }
-            ]
-        ), *empty_outputs
+        return (
+            pd.DataFrame(
+                [
+                    {
+                        "tissue": tissue,
+                        "source_file": source_file,
+                        "condition": "all",
+                        "error": repr(exc),
+                    }
+                ]
+            ),
+            empty_df,
+            empty_df,
+            empty_df,
+        )
+
+    if args.filter_tcell_invalid_cells:
+        adata, dropped = filtered_tcell_adata(adata, args)
+        print(
+            "> Filtered T-cell metric cells: "
+            f"dropped {dropped['total']:,}; remaining {adata.n_obs:,}; details={dropped}"
+        )
+        if adata.n_obs == 0:
+            return (
+                pd.DataFrame(
+                    [
+                        {
+                            "tissue": tissue,
+                            "source_file": source_file,
+                            "condition": "all",
+                            "error": "No cells remain after T-cell invalid-cell filtering.",
+                        }
+                    ]
+                ),
+                empty_df,
+                empty_df,
+                empty_df,
+            )
 
     lognorm_uncorrected = "_metrics_lognorm_uncorrected"
     lognorm_purified = "_metrics_lognorm_purified"
@@ -1436,16 +1526,21 @@ def run_tcell_contamination(
     if args.cell_type_specific_removal:
         removal_group_key = args.removal_group_key or args.label_key
         if removal_group_key not in adata.obs:
-            return pd.DataFrame(
-                [
-                    {
-                        "tissue": tissue,
-                        "source_file": source_file,
-                        "condition": "cell_type_specific_removal",
-                        "error": f"Missing removal group key {removal_group_key!r}.",
-                    }
-                ]
-            ), *empty_outputs
+            return (
+                pd.DataFrame(
+                    [
+                        {
+                            "tissue": tissue,
+                            "source_file": source_file,
+                            "condition": "cell_type_specific_removal",
+                            "error": f"Missing removal group key {removal_group_key!r}.",
+                        }
+                    ]
+                ),
+                empty_df,
+                empty_df,
+                empty_df,
+            )
         removal_labels = adata.obs[removal_group_key]
 
     admix_probs = adata.layers[args.admix_probs_layer]
@@ -2063,11 +2158,47 @@ def run_layered_evaluations_for_file(
             dropout_fraction,
         )
         baseline_label = args.uncorrected_condition_label
-        baseline_counts_layer = "X"
+        baseline_counts_layer = input_layer
+        if input_layer != "X" and input_layer not in adata.layers:
+            if not args.skip_cell_type_separation:
+                cell_type_rows.append(
+                    missing_layer_metric_row(
+                        tissue,
+                        source_file,
+                        case_name=f"{baseline_label}_missing_input",
+                        layer_key=input_layer,
+                        input_layer=input_layer,
+                        evaluation_method="baseline",
+                        counts_layer=baseline_counts_layer,
+                        sample_replicate=sample_replicate,
+                        dropout_label=layer_dropout_label,
+                        dropout_fraction=layer_dropout_fraction,
+                    )
+                )
+            if not args.skip_tcell_contamination:
+                missing_baseline = missing_layer_tcell_frame(
+                    tissue,
+                    source_file,
+                    condition=f"{baseline_label}_missing_input",
+                    layer_key=input_layer,
+                    input_layer=input_layer,
+                    evaluation_method="baseline",
+                    counts_layer=baseline_counts_layer,
+                    sample_replicate=sample_replicate,
+                    dropout_label=layer_dropout_label,
+                    dropout_fraction=layer_dropout_fraction,
+                )
+                tcell_frames.append(missing_baseline)
+                cosine_frames.append(missing_baseline.copy())
+            continue
+
+        baseline_counts = sanitize_numeric_matrix(
+            counts_from_layer(adata, baseline_counts_layer).copy()
+        )
         if not args.skip_cell_type_separation:
             baseline_rows = score_split_cell_type_case(
                 adata,
-                adata.X,
+                baseline_counts,
                 tissue,
                 source_file,
                 baseline_label,
@@ -2092,7 +2223,7 @@ def run_layered_evaluations_for_file(
             baseline_args.additional_counts_layer = ""
             baseline_args.uncorrected_condition_label = baseline_label
             baseline_work = ad.AnnData(
-                X=sanitize_numeric_matrix(adata.X.copy()),
+                X=baseline_counts.copy(),
                 obs=adata.obs.copy(),
                 var=adata.var.copy(),
             )
@@ -2551,6 +2682,13 @@ def remove_layer_count_baselines(
     for col in label_columns:
         values = df[col].astype(str)
         remove = values.str.endswith("_uncorrected") & (values != uncorrected_condition_label)
+        if {"input_layer", "counts_layer"}.issubset(df.columns):
+            remove |= (
+                (values == uncorrected_condition_label)
+                & df["input_layer"].notna()
+                & df["counts_layer"].notna()
+                & (df["input_layer"].astype(str) != df["counts_layer"].astype(str))
+            )
         keep &= ~remove
     return df.loc[keep].copy()
 
@@ -2576,6 +2714,16 @@ def write_csv(
     output.to_csv(path, index=False)
     print(f"Wrote {len(output):,} rows: {path}")
     return output
+
+
+def remove_stale_tcell_cosine_errors(df: pd.DataFrame) -> pd.DataFrame:
+    if df.empty or "error" not in df.columns:
+        return df
+    errors = df["error"].fillna("").astype(str)
+    stale = errors.str.contains("No spatial cell types matched the T-cell cosine selection", regex=False)
+    if "spatial_cell_type" in df.columns:
+        stale &= df["spatial_cell_type"].isna() | (df["spatial_cell_type"].astype(str) == "")
+    return df.loc[~stale].copy()
 
 
 def main() -> None:
@@ -2736,6 +2884,12 @@ def main() -> None:
                 if tcell_cosine_frames
                 else pd.DataFrame()
             )
+            if args.append_output:
+                tcell_cosine_df = remove_stale_tcell_cosine_errors(tcell_cosine_df)
+                cosine_path = output_dir / args.tcell_cosine_output
+                if cosine_path.exists():
+                    existing_cosine = remove_stale_tcell_cosine_errors(pd.read_csv(cosine_path))
+                    existing_cosine.to_csv(cosine_path, index=False)
             write_csv(
                 tcell_cosine_df,
                 output_dir / args.tcell_cosine_output,

@@ -125,3 +125,7 @@ python /home/jwinchel/Syndri/code/rctd_annotation.py "${PYTHON_ARGS[@]}"
 
 # 07/26/2026: xenium noise experiment
 # sbatch --array=0-76%4 --export=ALL,REFERENCE_FILE=/compute/oven-0-13/jwinchel/scRNA-seq/adata/chromium_GSM9509174_breast_integrated.h5ad,SPATIAL_DIR=/work/magroup/skrieger/Syndri/data/xenium_noise_experiment,INPUT_GLOB='GSM95*pct.h5ad',OUTPUT_DIR=/work/magroup/skrieger/Syndri/data/xenium_noise_experiment/rctd_annotations/,LAYER_PATTERN='^(X|trial_(0|1|2))$',MODE=doublet /home/jwinchel/Syndri/scripts/slurm/rctd_annotation.sbatch
+
+# sbatch --array=0-7%2 \
+  # --export=ALL,REFERENCE_FILE=/compute/oven-0-13/jwinchel/scRNA-seq/adata/GSE127465_tumor_integrated.h5ad,SPATIAL_DIR=/work/magroup/skrieger/Syndri/data/xenium_noise_experiment/,INPUT_GLOB='cosmx_nsclc*1pct.h5ad',OUTPUT_DIR=/work/magroup/skrieger/Syndri/data/xenium_noise_experiment/,LAYER_PATTERN='^X$',CELL_TYPE_COL=cell_type,MODE=doublet \
+  # /home/jwinchel/Syndri/scripts/slurm/rctd_annotation.sbatch
