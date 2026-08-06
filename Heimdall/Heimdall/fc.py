@@ -185,6 +185,7 @@ class AdmixtureFc(Fc):
         self.ensembl_dir = ensembl_dir
         self.species = species
         self.admixture_token_offset = 1
+        self._cell_type_extract_debug_count = 0
         
         super().__init__(*fc_args, **fc_kwargs)
 
@@ -195,6 +196,14 @@ class AdmixtureFc(Fc):
         # surr_cell_types = [self.adata.obs.loc[cid,'cell_type'] for cid in surr_cell_ids]
         surr_cell_types = self.adata.uns['neighbor_celltype_dict'][cell_id]
         surr_cell_tokens = [self.adata.uns['cell_type_dict'][t] for t in surr_cell_types]
+
+        if self._cell_type_extract_debug_count < 5:
+            print(f"> training cell_type tokenization: cell_id={cell_id}")
+            print(f"  neighbor_cell_types={surr_cell_types}")
+            print(f"  neighbor_tokens={surr_cell_tokens}")
+            print(f"  token_pairs={list(zip(surr_cell_types, surr_cell_tokens))}")
+            print(f"  metadata_indices={[-tok - self.admixture_token_offset for tok in surr_cell_tokens]}")
+            self._cell_type_extract_debug_count += 1
 
         # update fc field
         self.surr_cell_tokens = surr_cell_tokens

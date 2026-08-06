@@ -146,6 +146,10 @@ class ChromosomeSumReduce(Reduce):
 
 
 class AdmixtureSumReduce(Reduce):
+    def __init__(self, fc: Fc):
+        super().__init__(fc=fc)
+        self._cell_type_reduce_debug_count = 0
+
     def __call__(
         self,
         identity_inputs: Tensor,
@@ -159,6 +163,15 @@ class AdmixtureSumReduce(Reduce):
         # cell type tokens are -1...-n
         admixture_token_mask = identity_inputs < 0
         admixture_token_indices = identity_inputs[admixture_token_mask]
+
+        if self._cell_type_reduce_debug_count < 5:
+            print("> reducer admixture token mapping:")
+            print(f"  raw_negative_tokens={admixture_token_indices[:20].detach().cpu().tolist()}")
+            print(
+                "  metadata_indices="
+                f"{(-admixture_token_indices[:20] - self.fc.admixture_token_offset).detach().cpu().tolist()}"
+            )
+            self._cell_type_reduce_debug_count += 1
 
         admixture_token_indices = -admixture_token_indices - self.fc.admixture_token_offset
 

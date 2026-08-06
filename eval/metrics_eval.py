@@ -288,7 +288,7 @@ def sample_replicate_from_path(path: Path, regex: str | None = None) -> str:
     if regex:
         match = re.search(regex, path.name)
         if match:
-            return match.group(1) if match.groups() else match.group(0)
+            return match.groupdict().get("sample_replicate") or match.group(0)
     return tissue_name_from_path(path)
 
 

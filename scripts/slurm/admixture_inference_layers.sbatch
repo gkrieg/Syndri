@@ -32,6 +32,7 @@ TISSUE_COL=${TISSUE_COL:-}
 APPLY_ADMIXTURE=${APPLY_ADMIXTURE:-0}
 FAST_INFERENCE=${FAST_INFERENCE:-1}
 EXTRA_OVERRIDES=${EXTRA_OVERRIDES:-}
+DRY_RUN=${DRY_RUN:-0}
 
 # File selection, one input file per array task.
 ST_DATA_LIST_FILE=${ST_DATA_LIST_FILE:-}
@@ -140,6 +141,11 @@ if [[ "$FAST_INFERENCE" == "1" || "$FAST_INFERENCE" == "true" || "$FAST_INFERENC
   FAST_INFERENCE_ARG=--fast-inference
 fi
 
+DRY_RUN_ARGS=()
+if [[ "$DRY_RUN" == "1" || "$DRY_RUN" == "true" || "$DRY_RUN" == "TRUE" ]]; then
+  DRY_RUN_ARGS=(--dry-run-tokenization)
+fi
+
 GENE_LIST_ARGS=()
 if [[ -n "$GENE_LIST" ]]; then
   GENE_LIST_ARGS=(--gene-list "$GENE_LIST")
@@ -240,6 +246,7 @@ echo "  coord cols: $COORD_COLS"
 echo "  tissue col: ${TISSUE_COL:-<default>}"
 echo "  apply admixture: $APPLY_ADMIXTURE"
 echo "  fast inference: $FAST_INFERENCE"
+echo "  dry run: $DRY_RUN"
 echo "  overwrite layers: $OVERWRITE_LAYERS"
 echo "  run dir: $RUN_DIR"
 
@@ -279,9 +286,15 @@ for ((i = 0; i < ${#INPUT_LAYER_NAMES[@]}; i++)); do
     "$PRESERVE_SPLIT_ARG" \
     "$APPLY_ADMIXTURE_ARG" \
     "$FAST_INFERENCE_ARG" \
+    "${DRY_RUN_ARGS[@]}" \
     "${GENE_LIST_ARGS[@]}" \
     "${EXPRESSION_LAYER_ARGS[@]}" \
     "${TISSUE_COL_ARGS[@]}"
+
+  if [[ "$DRY_RUN" == "1" || "$DRY_RUN" == "true" || "$DRY_RUN" == "TRUE" ]]; then
+    echo "Dry run enabled; skipping merge of $PRED_LAYER into $ST_DATA"
+    continue
+  fi
 
   merge_prediction_layer "$ST_DATA" "$RUN_DIR/$OUTPUT_NAME" "$PRED_LAYER"
 done

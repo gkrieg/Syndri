@@ -110,6 +110,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--apply-admixture", action=argparse.BooleanOptionalAction, default=False)
     parser.add_argument("--fast-inference", action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument(
+        "--dry-run-tokenization",
+        action="store_true",
+        help="Run setup and one inference batch to print tokenization checks, then skip writing prediction output.",
+    )
+    parser.add_argument(
         "--extra-overrides",
         default="",
         help="Optional space-separated dotlist overrides applied after standard runtime overrides.",
@@ -170,6 +175,25 @@ def prepare_spatial_adata(args: argparse.Namespace) -> Path:
         st_data.uns["cell_type_dict"] = build_cell_type_dict(st_data, args.cell_type_col)
         print("> Built cell_type_dict from spatial AnnData cell types.")
 
+
+    cell_type_dict = dict(st_data.uns["cell_type_dict"])
+    cell_type_tokens = list(cell_type_dict.values())
+    observed_cell_types = set(st_data.obs[args.cell_type_col].astype(str))
+    dict_cell_types = set(cell_type_dict)
+    missing_cell_types = sorted(observed_cell_types - dict_cell_types)
+    unused_cell_types = sorted(dict_cell_types - observed_cell_types)
+    metadata_indices = sorted(-token - 1 for token in cell_type_tokens)
+    print("> cell_type_dict sanity:")
+    print(f"  n_cell_types={len(cell_type_dict)}")
+    print(f"  first_10={list(cell_type_dict.items())[:10]}")
+    if cell_type_tokens:
+        print(f"  token_range=({min(cell_type_tokens)}, {max(cell_type_tokens)})")
+    print(f"  all_negative={all(v < 0 for v in cell_type_tokens)}")
+    print(f"  unique_tokens={len(set(cell_type_tokens)) == len(cell_type_tokens)}")
+    print(f"  contiguous_negative_tokens={sorted(cell_type_tokens) == list(range(-len(cell_type_tokens), 0))}")
+    print(f"  metadata_indices_first_10={metadata_indices[:10]}")
+    print(f"  missing_observed_cell_types={missing_cell_types[:10]}")
+    print(f"  unused_dict_cell_types={unused_cell_types[:10]}")
     if args.preserve_split_column:
         if args.split_col not in st_data.obs:
             raise KeyError(f"{args.split_col!r} not found in input adata.obs")
@@ -275,9 +299,23 @@ class PrecomputedAdmixtureInferenceDataset(Dataset):
         return {key: value[idx] for key, value in self.batches.items()}
 
 
-def _neighbor_tokens(adata: ad.AnnData, cell_id: str, cell_type_dict: dict, max_neighbors: int) -> list[int]:
+def _neighbor_tokens(
+    adata: ad.AnnData,
+    cell_id: str,
+    cell_type_dict: dict,
+    max_neighbors: int,
+    token_offset: int,
+    debug: bool = False,
+) -> list[int]:
     neighbor_types = adata.uns["neighbor_celltype_dict"].get(cell_id, [])
-    return [cell_type_dict[cell_type] for cell_type in neighbor_types[:max_neighbors]]
+    tokens = [cell_type_dict[cell_type] for cell_type in neighbor_types[:max_neighbors]]
+    if debug:
+        print(f"> inference cell_type tokenization: cell_id={cell_id}")
+        print(f"  neighbor_cell_types={neighbor_types[:max_neighbors]}")
+        print(f"  neighbor_tokens={tokens}")
+        print(f"  token_pairs={list(zip(neighbor_types[:max_neighbors], tokens))}")
+        print(f"  metadata_indices={[-token - token_offset for token in tokens]}")
+    return tokens
 
 
 def build_fast_inference_loader(cr: CellRepresentation, batch_size: int, split: str = "test") -> DataLoader:
@@ -308,11 +346,27 @@ def build_fast_inference_loader(cr: CellRepresentation, batch_size: int, split: 
     print(f"> Precomputing fast inference tensors for {n:,} {split!r} cells...")
     for out_i, cell_idx in enumerate(tqdm(indices, desc="precompute inference tensors")):
         cell_id = str(adata.obs_names[cell_idx])
-        surr_tokens = _neighbor_tokens(adata, cell_id, cell_type_dict, neighbor_len)
+        surr_tokens = _neighbor_tokens(
+            adata,
+            cell_id,
+            cell_type_dict,
+            neighbor_len,
+            cr.fc.admixture_token_offset,
+            debug=out_i < 5,
+        )
         n_surr = len(surr_tokens)
         if n_surr:
             identity_inputs[out_i, :n_surr] = surr_tokens
             expression_inputs[out_i, :n_surr] = surr_tokens
+
+        if out_i < 5:
+            print("> inference prefix materialized:")
+            print(f"  row={out_i}, cell_id={cell_id}")
+            print(f"  neighbor_len={neighbor_len}, n_surr={n_surr}")
+            print(f"  expected_tokens={surr_tokens}")
+            print(f"  identity_prefix={identity_inputs[out_i, :neighbor_len].tolist()}")
+            print(f"  expression_prefix={expression_inputs[out_i, :neighbor_len].tolist()}")
+            print(f"  gene_tokens_start_at={neighbor_len}")
 
         row_start = expression.indptr[cell_idx]
         row_stop = expression.indptr[cell_idx + 1]
@@ -397,7 +451,42 @@ def build_output_adata_with_input_genes(args: argparse.Namespace, model_adata: a
     return output_adata
 
 
-def run_inference(args: argparse.Namespace, prepared_path: Path) -> Path:
+def dry_run_tokenization(trainer: HeimdallTrainer, dataloader: DataLoader) -> None:
+    trainer.model.eval()
+    device = trainer.accelerator.device
+
+    def move_to_device(value):
+        if isinstance(value, torch.Tensor):
+            return value.to(device)
+        if isinstance(value, tuple):
+            return tuple(move_to_device(v) for v in value)
+        if isinstance(value, list):
+            return [move_to_device(v) for v in value]
+        return value
+
+    try:
+        batch = next(iter(dataloader))
+    except StopIteration as exc:
+        raise ValueError("Dry-run tokenization found an empty inference dataloader.") from exc
+
+    print("> Dry-run tokenization batch:")
+    for key, value in batch.items():
+        if isinstance(value, torch.Tensor):
+            print(f"  {key}: shape={tuple(value.shape)}, dtype={value.dtype}")
+
+    with torch.no_grad():
+        outputs = trainer.model(
+            inputs=(
+                move_to_device(batch["identity_inputs"]),
+                move_to_device(batch["expression_inputs"]),
+            ),
+            attention_mask=move_to_device(batch.get("expression_padding")),
+        )
+    print(f"> Dry-run forward pass logits shape: {tuple(outputs.logits.shape)}")
+    print("> Dry-run tokenization complete; skipping prediction output write.")
+
+
+def run_inference(args: argparse.Namespace, prepared_path: Path) -> Path | None:
     if args.apply_admixture and args.fast_inference:
         print("> Disabling fast inference because apply_admixture=true requires the standard dataset path.")
         args.fast_inference = False
@@ -421,6 +510,10 @@ def run_inference(args: argparse.Namespace, prepared_path: Path) -> Path:
     if args.fast_inference:
         prediction_loader = build_fast_inference_loader(cr, config.tasks.args.batchsize, split="test")
         prediction_loader = trainer.accelerator.prepare(prediction_loader)
+
+    if args.dry_run_tokenization:
+        dry_run_tokenization(trainer, prediction_loader)
+        return None
 
     probs = np.concatenate(trainer.get_predictions(prediction_loader), axis=0).astype(np.float32)
     expected_shape = (len(prediction_indices), trainer.data.adata.X.shape[1])

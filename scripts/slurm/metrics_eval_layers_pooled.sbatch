@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH -p cpu,gpu-small,gpu-large
-#SBATCH --mem=48Gb
+#SBATCH --mem=96Gb
 #SBATCH --job-name syndri-xenium-noisy-metrics
 #SBATCH --output=/home/jwinchel/Syndri/logs/syndri-xenium-noisy-metrics-%A_%a.txt
 #SBATCH --exclude=oven-0-27

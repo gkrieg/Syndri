@@ -215,6 +215,7 @@ class AdmixtureTailor(Tailor):
         super().__init__(fc=fc)
         self.sample_size = sample_size
         self.cell_type_dict = self.fc.adata.uns['cell_type_dict']
+        self._cell_type_prefix_debug_count = 0
         # self.sample_size = sample_size
     
     # limits number of genes
@@ -275,6 +276,15 @@ class AdmixtureTailor(Tailor):
 
         identity_inputs = np.append(self.fc.surr_cell_tokens,identity_inputs, axis=0)
         expression_inputs = np.append(self.fc.surr_cell_tokens,expression_inputs, axis=0)
+
+        if self._cell_type_prefix_debug_count < 5:
+            n_prefix = len(self.fc.surr_cell_tokens)
+            print("> training prefix after append_cell_type:")
+            print(f"  expected_prefix={self.fc.surr_cell_tokens}")
+            print(f"  identity_prefix={identity_inputs[:n_prefix].tolist()}")
+            print(f"  expression_prefix={expression_inputs[:n_prefix].tolist()}")
+            print(f"  prefix_all_negative={np.all(identity_inputs[:n_prefix] < 0)}")
+            self._cell_type_prefix_debug_count += 1
 
         return identity_inputs, expression_inputs
 
