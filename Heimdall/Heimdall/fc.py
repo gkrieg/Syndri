@@ -195,8 +195,8 @@ class AdmixtureFc(Fc):
         # surr_cell_ids = self.adata.uns['neighbor_dict'][cell_id]
         # surr_cell_types = [self.adata.obs.loc[cid,'cell_type'] for cid in surr_cell_ids]
         surr_cell_types = self.adata.uns['neighbor_celltype_dict'][cell_id]
+        # print(self.adata.uns['cell_type_dict'])
         surr_cell_tokens = [self.adata.uns['cell_type_dict'][t] for t in surr_cell_types]
-
         if self._cell_type_extract_debug_count < 5:
             print(f"> training cell_type tokenization: cell_id={cell_id}")
             print(f"  neighbor_cell_types={surr_cell_types}")
