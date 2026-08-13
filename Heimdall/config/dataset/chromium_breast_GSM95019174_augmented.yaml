@@ -13,13 +13,12 @@ preprocess_args:
   species: "human"
 
   admixture_args:
-    k_neighbors: 3
-    frac_transcript_per_cell: 0.05
+    k_neighbors: 15
     min_sampled_transcript_threshold: 0
-    min_source_transcript_count: 100
+    min_source_transcript_count: 10
     mask_out_random_genes: False
     mask_out_frac: 0.0
-    tau_range: [0.0,0.15]
+    tau_range: [0.1,0.35]
     n_repeats: 1
     coord_cols: ['x_centroid','y_centroid']
     tissue_col: "orig.ident"

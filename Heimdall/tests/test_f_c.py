@@ -190,15 +190,14 @@ from scipy.sparse import csr_array
 #     # assert np.allclose(expected, output)
 
 def test_admixture_fc_extract_surr_cell_types(mock_dataset_admixture, admixture_fc):
-    admixture_cols = ['ADM_ID_0','ADM_ID_1','ADM_ID_2']
-    
     for i in range(len(mock_dataset_admixture)):
 
         # should update admixture_fc.surr_cell_tokens each generation
         admixture_fc[i]
 
         # reproduce token indexing in extract_surr_cell_types
-        surr_cell_ids = mock_dataset_admixture.obs.iloc[i][admixture_cols]
+        cell_id = mock_dataset_admixture.obs_names[i]
+        surr_cell_ids = mock_dataset_admixture.uns["neighbor_dict"][cell_id]
         surr_cell_types = [mock_dataset_admixture.obs.loc[cid,'cell_type'] for cid in surr_cell_ids]
         expected_tokens = [mock_dataset_admixture.uns['cell_type_dict'][t] for t in surr_cell_types]
         assert admixture_fc.surr_cell_tokens == expected_tokens
@@ -210,12 +209,13 @@ def test_admixture_fc_getitem(mock_dataset_admixture, admixture_fc):
         identity_inputs, expression_inputs, padding = admixture_fc[i]
 
         print(sum(padding))
+        n_prefix = len(admixture_fc.surr_cell_tokens)
 
         # check that surrounding cell type tokens prepended to identity inputs
-        assert all(admixture_fc.surr_cell_tokens == identity_inputs[:3])
+        assert all(admixture_fc.surr_cell_tokens == identity_inputs[:n_prefix])
 
         # check that surrounding cell type tokens prepended to expression inputs
-        assert all(admixture_fc.surr_cell_tokens == expression_inputs[:3])
+        assert all(admixture_fc.surr_cell_tokens == expression_inputs[:n_prefix])
 
 
 
@@ -228,5 +228,3 @@ def test_admixture_fc_reduce(mock_dataset_admixture, admixture_fc):
         admixture_fc.reduce(identity_inputs,expression_inputs)
         pass
 
-
-         

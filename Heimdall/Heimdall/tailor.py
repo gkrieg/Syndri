@@ -211,7 +211,7 @@ class ChromosomeTailor(Tailor):
 
 
 class AdmixtureTailor(Tailor):
-    def __init__(self, fc: Fc, sample_size: int):
+    def __init__(self, fc: Fc, sample_size: int | None = None):
         super().__init__(fc=fc)
         self.sample_size = sample_size
         self.cell_type_dict = self.fc.adata.uns['cell_type_dict']

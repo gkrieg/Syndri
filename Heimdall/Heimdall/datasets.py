@@ -100,6 +100,29 @@ def filter_list(input_list):
     return [item for item in input_list if any(keyword in item.lower() for keyword in keywords)]
 
 
+def _get_admixture_prefix_length(data: "CellRepresentation") -> int:
+    prefix_length = getattr(data.fc, "num_prefix_tokens", None)
+    if prefix_length is not None:
+        return int(prefix_length)
+
+    admixture_args = data.dataset_preproc_cfg.get("admixture_args", {})
+    return int(admixture_args.get("k_neighbors", 0))
+
+
+def _get_admixture_context_length(data: "CellRepresentation") -> int:
+    max_input_length = data.fc.max_input_length
+    if max_input_length is None:
+        raise ValueError("admixture_binary tasks require fc.max_input_length to be set.")
+
+    context_length = int(max_input_length) - _get_admixture_prefix_length(data)
+    if context_length <= 0:
+        raise ValueError(
+            "admixture_binary context length must be positive; "
+            "increase fc.max_input_length or reduce admixture_args.k_neighbors.",
+        )
+    return context_length
+
+
 class SingleInstanceDataset(Dataset):
     def _setup_idx(self):
         self._idx = np.arange(self.data.adata.shape[0])
@@ -135,7 +158,22 @@ class SingleInstanceDataset(Dataset):
                 df = adata.obsm[dataset_task_cfg.label_obsm_name]
                 labels = np.array(df).astype(np.float32)
             elif dataset_task_cfg.task_type == "admixture_binary":
-                labels = np.empty((adata.n_obs, dataset_task_cfg.context_length), dtype=np.float32)
+                configured_context_length = dataset_task_cfg.get("context_length", None)
+                inferred_context_length = _get_admixture_context_length(self.data)
+                if configured_context_length is None:
+                    context_length = inferred_context_length
+                else:
+                    context_length = int(configured_context_length)
+                    if context_length != inferred_context_length:
+                        warnings.warn(
+                            "Configured admixture context_length "
+                            f"({context_length}) does not match fc.max_input_length - num_prefix_tokens "
+                            f"({inferred_context_length}).",
+                            UserWarning,
+                            stacklevel=2,
+                        )
+                dataset_task_cfg.context_length = context_length
+                labels = np.empty((adata.n_obs, context_length), dtype=np.float32)
             print(f"labels shape {labels.shape}")
 
         else:
@@ -190,7 +228,7 @@ class SingleInstanceDataset(Dataset):
 #         new_label_order = []
 
 #         # all gene values 
-#         for i,v in enumerate(identity_inputs[3:]):
+#         for i,v in enumerate(identity_inputs[num_prefix_tokens:]):
 #             if (v != self.data.fe.pad_value) and (v != self.data.fg.pad_value):
 #                 new_label_order.append(np.where(identity_token_order == v)[0][0])
 #             else:
@@ -221,6 +259,8 @@ class AdmixtureInstanceDataset(SingleInstanceDataset):
         self._pad_value = self.data.fe.pad_value
         self._fg_pad_value = self.data.fg.pad_value
         self.current_epoch = 0
+        self._num_prefix_tokens = _get_admixture_prefix_length(self.data)
+        self._context_length = self.labels.shape[1]
 
         # token id for each gene column in adata / binary label matrix
         identity_token_order = self.data.fc.adata.var["identity_embedding_index"].to_numpy()
@@ -280,9 +320,18 @@ class AdmixtureInstanceDataset(SingleInstanceDataset):
 
         # convert to NumPy if needed
         if isinstance(identity_inputs, torch.Tensor):
-            tokens = identity_inputs[3:].cpu().numpy()
+            tokens = identity_inputs[self._num_prefix_tokens:].cpu().numpy()
         else:
-            tokens = np.asarray(identity_inputs[3:])
+            tokens = np.asarray(identity_inputs[self._num_prefix_tokens:])
+        if len(tokens) < self._context_length:
+            tokens = np.pad(
+                tokens,
+                (0, self._context_length - len(tokens)),
+                mode="constant",
+                constant_values=self._pad_value,
+            )
+        else:
+            tokens = tokens[: self._context_length]
 
         gene_order = np.full(tokens.shape, self._pad_value, dtype=np.int64)
         valid = (

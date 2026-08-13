@@ -14,7 +14,7 @@ args:
     # type: Heimdall.tailor.ReorderTailor
     type: Heimdall.tailor.AdmixtureTailor
     args:
-      sample_size: 509
+      sample_size: null
 
   order_config:
     type: Heimdall.order.ExpressionOrder

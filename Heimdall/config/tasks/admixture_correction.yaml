@@ -1,6 +1,6 @@
 args:
   task_type: admixture_binary
-  context_length: 509
+  context_length: null
   label_obsm_name: is_transcript_added_0
   splits:
     type: predefined
@@ -38,4 +38,4 @@ args:
   head_config:
     type: ${tasks.args.admixture_pred_head_type}
     args:
-      num_prefix_tokens: 3
+      num_prefix_tokens: null

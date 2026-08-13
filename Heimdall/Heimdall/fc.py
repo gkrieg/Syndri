@@ -190,6 +190,14 @@ class AdmixtureFc(Fc):
         super().__init__(*fc_args, **fc_kwargs)
 
 
+    @property
+    def num_prefix_tokens(self) -> int:
+        neighbor_celltype_dict = self.adata.uns.get("neighbor_celltype_dict", {})
+        if neighbor_celltype_dict:
+            return max(len(cell_types) for cell_types in neighbor_celltype_dict.values())
+        return len(getattr(self, "surr_cell_tokens", []))
+
+
     def extract_surr_cell_types(self, cell_id: str):
         # get surrounding cell types from anndata
         # surr_cell_ids = self.adata.uns['neighbor_dict'][cell_id]

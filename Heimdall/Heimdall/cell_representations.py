@@ -260,6 +260,7 @@ class CellRepresentation(SpecialTokenMixin):
         # Get neighbors for admixture sampling or neighbor-aware inference.
         if get_value(self.dataset_preproc_cfg, "admixture_args"):
             admix_params = get_value(self.dataset_preproc_cfg,'admixture_args')
+            k_neighbors = int(get_value(admix_params, "k_neighbors", 3))
             apply_admixture = get_value(self.dataset_preproc_cfg, "apply_admixture", True)
             coord_cols = tuple(
                 get_value(
@@ -270,12 +271,20 @@ class CellRepresentation(SpecialTokenMixin):
             )
             tissue_col = get_value(admix_params, "tissue_col", "harmony_spatial_tissue" if apply_admixture else None)
             cell_type_col = get_value(admix_params, "cell_type_col", "cell_type")
-            if 'neighbor_dict' not in self.adata.uns:
+            neighbor_dict = self.adata.uns.get("neighbor_dict")
+            neighbor_dict_needs_build = not isinstance(neighbor_dict, dict) or not neighbor_dict
+            if not neighbor_dict_needs_build:
+                neighbor_counts = [len(neighbor_ids) for neighbor_ids in neighbor_dict.values()]
+                neighbor_dict_needs_build = max(neighbor_counts, default=0) != k_neighbors
+
+            if neighbor_dict_needs_build:
                 print(f"> Getting nearest neighbors using coordinates: {coord_cols}")
+                if isinstance(neighbor_dict, dict) and neighbor_dict:
+                    print(f"> Rebuilding neighbor_dict for k_neighbors={k_neighbors}")
                 # create .uns with neighbors based on mapped spatial coordinates
                 
                 self.adata = build_neighbor_dict(self.adata,
-                                                k_neighbors=admix_params['k_neighbors'],
+                                                k_neighbors=k_neighbors,
                                                 coord_cols=coord_cols,
                                                 tissue_col=tissue_col,
                                                 cell_type_col=cell_type_col,
@@ -283,6 +292,7 @@ class CellRepresentation(SpecialTokenMixin):
                                                 initial_query_k=64,
                                                 query_k_growth=2,
                                                 batch_size=1024)
+                self.adata.uns.pop("neighbor_celltype_dict", None)
                 
             if 'neighbor_celltype_dict' not in self.adata.uns:
                 self.adata = build_neighbor_celltype_dict(
