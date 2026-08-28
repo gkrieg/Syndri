@@ -17,6 +17,7 @@ def build_neighbor_dict(
     tissue_col="harmony_spatial_tissue",
     cell_type_col="cell_type",
     min_source_counts=400,
+    use_same_cell_type_neighbors=False,
     id_col=None,
     uns_key="neighbor_dict",
     initial_query_k=None,
@@ -35,7 +36,7 @@ def build_neighbor_dict(
     Neighbors are the true nearest Euclidean neighbors in coordinate space
     satisfying:
       - same tissue, if tissue_col is provided
-      - different cell type
+      - different cell type, unless use_same_cell_type_neighbors is True
       - not self
       - source total counts > min_source_counts
 
@@ -51,6 +52,9 @@ def build_neighbor_dict(
         If None, all cells with valid coordinates are treated as one tissue.
     cell_type_col : str
     min_source_counts : int
+    use_same_cell_type_neighbors : bool
+        If True, allow source neighbors with the same cell type as the query
+        cell. If False, same-cell-type source neighbors are skipped.
     id_col : str or None
         If None, use adata.obs_names. Otherwise use adata.obs[id_col].
     uns_key : str
@@ -68,6 +72,7 @@ def build_neighbor_dict(
         Copy with neighbor dict stored in `.uns[uns_key]`.
     """
     adata = adata.copy()
+    use_same_cell_type_neighbors = bool(use_same_cell_type_neighbors)
 
     xcol, ycol = coord_cols
     tissue_col = tissue_col or None
@@ -149,7 +154,7 @@ def build_neighbor_dict(
                     for local_j in inds[b]:
                         if local_j == local_i:
                             continue
-                        if tissue_cell_types[local_j] == query_ct:
+                        if not use_same_cell_type_neighbors and tissue_cell_types[local_j] == query_ct:
                             continue
                         if tissue_row_sums[local_j] <= min_source_counts:
                             continue
@@ -184,6 +189,14 @@ def build_neighbor_dict(
         )
 
     adata.uns[uns_key] = neighbor_dict
+    adata.uns[f"{uns_key}_config"] = {
+        "k_neighbors": int(k_neighbors),
+        "coord_cols": list(coord_cols),
+        "tissue_col": tissue_col,
+        "cell_type_col": cell_type_col,
+        "min_source_counts": int(min_source_counts),
+        "use_same_cell_type_neighbors": use_same_cell_type_neighbors,
+    }
     return adata
 
 def build_neighbor_celltype_dict(
@@ -372,6 +385,7 @@ def sample_admixture_from_neighbor_dict(
     min_sampled_transcript_threshold=10,
     uns_key="neighbor_dict",
     id_col=None,
+    only_sample_unexpressed_genes=True,
     mask_out_random_genes=False,
     mask_out_frac=0.0,
     rng=None,
@@ -395,6 +409,10 @@ def sample_admixture_from_neighbor_dict(
     min_sampled_transcript_threshold : int
     uns_key : str
     id_col : str or None
+    only_sample_unexpressed_genes : bool, default=True
+        If True, only sample neighbor transcripts for genes not expressed in
+        the query cell. If False, all source-neighbor expressed genes are
+        eligible.
     mask_out_random_genes : bool, default=False
         If True, randomly zero out `mask_out_frac` fraction of admixed genes
         per cell per repeat, considering only genes with nonzero admixture.
@@ -419,6 +437,7 @@ def sample_admixture_from_neighbor_dict(
 
     if not (0 <= mask_out_frac <= 1):
         raise ValueError("mask_out_frac must be between 0 and 1.")
+    only_sample_unexpressed_genes = bool(only_sample_unexpressed_genes)
 
     X = adata.X
     if not isinstance(X, csr_matrix):
@@ -461,10 +480,12 @@ def sample_admixture_from_neighbor_dict(
         s, e = indptr[i], indptr[i + 1]
         return indices[s:e], data[s:e]
 
-    query_nz_sets = []
-    for i in range(n_cells):
-        row_idx, _ = get_row_sparse(i)
-        query_nz_sets.append(set(row_idx))
+    query_nz_sets = None
+    if only_sample_unexpressed_genes:
+        query_nz_sets = []
+        for i in range(n_cells):
+            row_idx, _ = get_row_sparse(i)
+            query_nz_sets.append(set(row_idx))
 
     # resolve neighbor IDs to row indices once
     neighbor_idx_lists = []
@@ -482,7 +503,7 @@ def sample_admixture_from_neighbor_dict(
     for rep in range(n_repeats):
         print('beginning admixture sampling...')
         for query_idx in range(n_cells):
-            query_nz_set = query_nz_sets[query_idx]
+            query_nz_set = query_nz_sets[query_idx] if only_sample_unexpressed_genes else None
             query_total = int(row_sums[query_idx])
             neighbor_gene_counts = {}
 
@@ -492,11 +513,14 @@ def sample_admixture_from_neighbor_dict(
 
                 src_genes, src_counts = get_row_sparse(surr_idx)
 
-                keep = np.fromiter(
-                    (g not in query_nz_set for g in src_genes),
-                    dtype=bool,
-                    count=len(src_genes),
-                )
+                if only_sample_unexpressed_genes:
+                    keep = np.fromiter(
+                        (g not in query_nz_set for g in src_genes),
+                        dtype=bool,
+                        count=len(src_genes),
+                    )
+                else:
+                    keep = np.ones(len(src_genes), dtype=bool)
 
                 if not np.any(keep):
                     continue

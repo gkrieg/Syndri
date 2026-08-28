@@ -1,10 +1,13 @@
 """Lazy per-epoch storage for sampled admixture matrices."""
 
+import hashlib
+import json
 from pathlib import Path
 
 import anndata as ad
 import numpy as np
 import pandas as pd
+from omegaconf import OmegaConf
 from scipy.sparse import csr_matrix, load_npz, save_npz
 
 from Heimdall.admixture_sampling import sample_admixture_from_neighbor_dict
@@ -35,6 +38,7 @@ class AdmixtureEpochStore:
         self.split_col = split_col
         self.train_key = train_key
         self.fixed_epoch = None if fixed_epoch is None else int(fixed_epoch)
+        self.cache_key = self._cache_key(adata)
 
         self.obs_names = pd.Index(adata.obs_names.astype(str))
         self.var_names = pd.Index(adata.var_names.astype(str))
@@ -72,7 +76,7 @@ class AdmixtureEpochStore:
         if self._current_epoch == epoch and self._current_matrix is not None:
             return self._current_matrix
 
-        path = self.cache_dir / f"admixed_epoch_{epoch}.npz"
+        path = self.cache_dir / f"admixed_epoch_{epoch}_{self.cache_key}.npz"
         if path.exists():
             matrix = load_npz(path).tocsr()
         else:
@@ -89,7 +93,7 @@ class AdmixtureEpochStore:
         if self._fixed_matrix is not None:
             return self._fixed_matrix
 
-        path = self.cache_dir / "admixed_fixed_val_test.npz"
+        path = self.cache_dir / f"admixed_fixed_val_test_{self.cache_key}.npz"
         if path.exists():
             matrix = load_npz(path).tocsr()
         else:
@@ -118,6 +122,7 @@ class AdmixtureEpochStore:
             min_sampled_transcript_threshold=self.admixture_args["min_sampled_transcript_threshold"],
             mask_out_random_genes=self.admixture_args["mask_out_random_genes"],
             mask_out_frac=self.admixture_args["mask_out_frac"],
+            only_sample_unexpressed_genes=self.admixture_args.get("only_sample_unexpressed_genes", True),
             tau_range=tuple(self.admixture_args["tau_range"]),
             rng=np.random.default_rng(seed),
             return_sparse=True,
@@ -126,6 +131,23 @@ class AdmixtureEpochStore:
         matrix.sum_duplicates()
         matrix.sort_indices()
         return matrix
+
+    def _cache_key(self, adata):
+        if OmegaConf.is_config(self.admixture_args):
+            args = OmegaConf.to_container(self.admixture_args, resolve=True)
+        else:
+            args = dict(self.admixture_args)
+        payload = {
+            "admixture_args": args,
+            "count_truncation_config": adata.uns.get("count_truncation_config", {}),
+            "neighbor_dict_config": adata.uns.get("neighbor_dict_config", {}),
+            "rng_seed": self.rng_seed,
+            "split_col": self.split_col,
+            "train_key": self.train_key,
+            "fixed_epoch": self.fixed_epoch,
+        }
+        encoded = json.dumps(payload, sort_keys=True, default=str).encode()
+        return hashlib.sha1(encoded).hexdigest()[:12]
 
     def _align(self, matrix, obs_names=None, var_names=None):
         obs_indexer = self._indexer(self.obs_names, obs_names)

@@ -357,3 +357,21 @@ python /home/jwinchel/Syndri/eval/metrics_eval.py \
 # sbatch --array=0-7%2 \
 #   --export=ALL,SPATIAL_DIR=/work/magroup/skrieger/Syndri/data/xenium_noise_experiment,INPUT_GLOB='cosmx_nsclc*1pct.h5ad',SAMPLE_REPLICATE_REGEX='Lung[0-9]+(-Rep[0-9]+)?',INPUT_LAYERS=X,LABEL_KEY=cell_type,TCELL_CELL_TYPE_KEY=cell_type,REMOVAL_GROUP_KEY=cell_type,COORD_X=CenterX_global_px,COORD_Y=CenterY_global_px,REFERENCE_DATA=/compute/oven-0-13/jwinchel/scRNA-seq/adata/GSE127465_tumor_integrated.h5ad,REFERENCE_CELL_TYPE_KEY=cell_type,SYNDRI_PROBS_TEMPLATE='admix_probs_{layer}',MLP_PROBS_TEMPLATE='mlp_admix_probs_{layer}',SPLIT_COUNTS_TEMPLATE='split_purified_counts_{layer}',OUTPUT_DIR=/work/magroup/skrieger/Syndri/data/xenium_noise_experiment/metrics_eval_layers_pooled_cosmx_X,SKIP_EXISTING=0,EXCLUDE_LABELS='malignant cell,nan',TCELL_COSINE_CELL_TYPE_PATTERN='T' \
 #   /home/jwinchel/Syndri/scripts/slurm/metrics_eval_layers_pooled.sbatch
+
+
+# 08/21/2026: first-pass optimized xenium results
+# sbatch --array=0-18%2 \
+#   --export=ALL,SKIP_EXISTING=0,APPEND_OUTPUT=0,SKIP_CELL_TYPE_SEPARATION=0,SKIP_TCELL_NEIGHBORHOOD_METRICS=0,SKIP_CELL_TYPE_PROFILES=0,INPUT_LAYERS=X,INPUT_LAYERS_SEP=:,SYNDRI_PROBS_TEMPLATE='admix_probs_matchedcelltypes_optimized_0{layer:.0}',SYNDRI_CASE_LABEL=syndri_matchedcelltypes_optimized_0,TCELL_COSINE_CELL_TYPE_PATTERN=T,INPUT_GLOB='GSM950*_1pct.h5ad',OUTPUT_DIR=/work/magroup/skrieger/Syndri/data/xenium_noise_experiment/optimized_matchedcelltypes_eval \
+#   /home/jwinchel/Syndri/scripts/slurm/metrics_eval_layers_pooled.sbatch
+
+
+# 08/25/2026: first-pass optimized xenium results (unexpressed genes, no same-cell type neighbors, no query cell type)
+# sbatch --array=0-18%2 \
+#   --export=ALL,SKIP_EXISTING=0,APPEND_OUTPUT=0,SKIP_CELL_TYPE_SEPARATION=0,SKIP_TCELL_NEIGHBORHOOD_METRICS=0,SKIP_CELL_TYPE_PROFILES=0,INPUT_LAYERS=X,INPUT_LAYERS_SEP=:,SYNDRI_PROBS_TEMPLATE='admix_probs_optimized_unexpressedgenes_',SYNDRI_CASE_LABEL=syndri_matchedcelltypes_optimized_0,TCELL_COSINE_CELL_TYPE_PATTERN=T,INPUT_GLOB='GSM950*_1pct.h5ad',OUTPUT_DIR=/work/magroup/skrieger/Syndri/data/xenium_noise_experiment/optimized_unexpressed_nosametypeneighbors_eval \
+#   /home/jwinchel/Syndri/scripts/slurm/metrics_eval_layers_pooled.sbatch
+
+
+# 08/27/2026: first-pass optimized xenium results (unexpressed genes, no same-cell type neighbors, with query cell type)
+# sbatch --array=0-18%2 \
+#   --export=ALL,SKIP_EXISTING=0,APPEND_OUTPUT=0,SKIP_CELL_TYPE_SEPARATION=0,SKIP_TCELL_NEIGHBORHOOD_METRICS=0,SKIP_CELL_TYPE_PROFILES=0,INPUT_LAYERS=X,INPUT_LAYERS_SEP=:,SYNDRI_PROBS_TEMPLATE='admix_probs_optimized_unexpressedgenes_withquerycelltype',SYNDRI_CASE_LABEL=admix_probs_optimized_unexpressedgenes_withquerycelltype_X,TCELL_COSINE_CELL_TYPE_PATTERN=T,INPUT_GLOB='GSM950*_1pct.h5ad',OUTPUT_DIR=/work/magroup/skrieger/Syndri/data/xenium_noise_experiment/optimized_unexpressed_nosametypeneighbors_withquerycelltype_eval \
+#   /home/jwinchel/Syndri/scripts/slurm/metrics_eval_layers_pooled.sbatch

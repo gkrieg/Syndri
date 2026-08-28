@@ -178,6 +178,8 @@ from pathlib import Path
 
 import anndata as ad
 import pandas as pd
+ad.settings.allow_write_nullable_strings = True
+
 from scipy.sparse import coo_matrix, csr_matrix, issparse
 
 target_path = Path(sys.argv[1])
@@ -329,4 +331,28 @@ echo "Finished layered predictions for $ST_DATA"
 # sbatch --array=0-7%2   --export=ALL,COORD_X=CenterX_global_px,COORD_Y=CenterY_global_px,ST_DATA_DIR=/work/magroup/skrieger/Syndri/data/xenium_noise_experiment/,ST_DATA_GLOB='cosmx_nsclc*1pct.h5ad',REFERENCE_DATA=/compute/oven-0-13/jwinchel/scRNA-seq/adata/GSE127465_tumor_integrated.h5ad,CHECKPOINT_DIR=/home/jwinchel/Syndri/Heimdall/admixture_prediction_results/nsclc_lung9rep1_bestadj,MILESTONE=91,CELL_TYPE_COL=cell_type,INPUT_LAYER_TEMPLATE='X',N_LAYERS=1   /home/jwinchel/Syndri/scripts/slurm/admixture_inference_layers.sbatch
 # sbatch --array=0-7%2 \
 #   --export=ALL,COORD_X=CenterX_global_px,COORD_Y=CenterY_global_px,ST_DATA_DIR=/work/magroup/skrieger/Syndri/data/xenium_noise_experiment/,ST_DATA_GLOB='cosmx_nsclc*1pct.h5ad',REFERENCE_DATA=/compute/oven-0-13/jwinchel/scRNA-seq/adata/GSE127465_tumor_integrated.h5ad,CHECKPOINT_DIR=/home/jwinchel/Syndri/Heimdall/admixture_prediction_results/nsclc_lung9rep1_bestadj,MILESTONE=91,CELL_TYPE_COL=cell_type,INPUT_LAYER_TEMPLATE='X',N_LAYERS=1,FAST_INFERENCE=0,EXTRA_OVERRIDES='fe.args.drop_zeros=false',GENE_LIST=/work/magroup/skrieger/Syndri/data/xenium_noise_experiment/cosmx_nsclc_gene_list.txt \
+#   /home/jwinchel/Syndri/scripts/slurm/admixture_inference_layers.sbatch
+
+
+# 08/18/2026
+# sbatch --array=0-18%2 \
+#   --export=ALL,COORD_X=x_centroid,COORD_Y=y_centroid,ST_DATA_DIR=/work/magroup/skrieger/Syndri/data/xenium_noise_experiment/,ST_DATA_GLOB='GSM950*1pct.h5ad',REFERENCE_DATA=/compute/oven-0-13/jwinchel/scRNA-seq/adata/chromium_GSM9509174_breast_integrated.h5ad,CHECKPOINT_DIR=/home/jwinchel/Syndri/Heimdall/admixture_prediction_results/chromium_breast_GSM95019174_augmented_hightaufloor_matchedcelltypes,MILESTONE=30,CELL_TYPE_COL=harmony_cell_type,INPUT_LAYER_TEMPLATE='X',N_LAYERS=1,PRED_LAYER_PREFIX=admix_probs_matchedcelltypes \
+#   /home/jwinchel/Syndri/scripts/slurm/admixture_inference_layers.sbatch
+
+
+# 08/18/2026 (first pass of optimization)
+# sbatch --array=0-18%2 \
+#   --export=ALL,COORD_X=x_centroid,COORD_Y=y_centroid,ST_DATA_DIR=/work/magroup/skrieger/Syndri/data/xenium_noise_experiment/,ST_DATA_GLOB='GSM950*1pct.h5ad',REFERENCE_DATA=/compute/oven-0-13/jwinchel/scRNA-seq/adata/chromium_GSM9509174_breast_integrated.h5ad,CHECKPOINT_DIR=/home/jwinchel/Syndri/Heimdall/admixture_prediction_results/chromium_breast_GSM95019174_augmented_matchedcelltypes_optimized,MILESTONE=52,CELL_TYPE_COL=harmony_cell_type,INPUT_LAYER_TEMPLATE='X',N_LAYERS=1,PRED_LAYER_PREFIX=admix_probs_matchedcelltypes_optimized \
+#   /home/jwinchel/Syndri/scripts/slurm/admixture_inference_layers.sbatch
+
+
+# 08/25/2026 (first pass of optimization (no same cell type, only use unexpressed genes))
+# sbatch --array=0-18%2 \
+#   --export=ALL,COORD_X=x_centroid,COORD_Y=y_centroid,ST_DATA_DIR=/work/magroup/skrieger/Syndri/data/xenium_noise_experiment/,ST_DATA_GLOB='GSM950*1pct.h5ad',REFERENCE_DATA=/compute/oven-0-13/jwinchel/scRNA-seq/adata/chromium_GSM9509174_breast_integrated.h5ad,CHECKPOINT_DIR=/home/jwinchel/Syndri/Heimdall/admixture_prediction_results/chromium_breast_GSM95019174_augmented_matchedcelltypes_optimized_unexpressedgenes/,MILESTONE=54,CELL_TYPE_COL=harmony_cell_type,INPUT_LAYER_TEMPLATE='X',N_LAYERS=1,PRED_LAYER_PREFIX=admix_probs_optimized_unexpressedgenes \
+#   /home/jwinchel/Syndri/scripts/slurm/admixture_inference_layers.sbatch
+
+
+# 08/27/2026 (first pass of optimization (no same cell type, only use unexpressed genes, with query cell type token))
+# sbatch --array=0-18%2 \
+#   --export=ALL,COORD_X=x_centroid,COORD_Y=y_centroid,ST_DATA_DIR=/work/magroup/skrieger/Syndri/data/xenium_noise_experiment/,ST_DATA_GLOB='GSM950*1pct.h5ad',REFERENCE_DATA=/compute/oven-0-13/jwinchel/scRNA-seq/adata/chromium_GSM9509174_breast_integrated.h5ad,CHECKPOINT_DIR=/home/jwinchel/Syndri/Heimdall/admixture_prediction_results/chromium_breast_GSM95019174_augmented_matchedcelltypes_optimized_unexpressedgenes_withquerycelltype,MILESTONE=54,CELL_TYPE_COL=harmony_cell_type,INPUT_LAYER_TEMPLATE='X',N_LAYERS=1,PRED_LAYER_PREFIX=admix_probs_optimized_unexpressedgenes_withquerycelltype,EXTRA_OVERRIDES='fc.args.query_cell_type_col=harmony_cell_type'\
 #   /home/jwinchel/Syndri/scripts/slurm/admixture_inference_layers.sbatch

@@ -6,6 +6,7 @@ preprocess_args:
   normalize: false
   log_1p: false
   scale_data: false
+  truncate_counts_max_value: null
   admixture: true
   fix_admixture: false
   admix_layer: "admixed_0"
@@ -17,6 +18,8 @@ preprocess_args:
     frac_transcript_per_cell: 0.05
     min_sampled_transcript_threshold: 0
     min_source_transcript_count: 400
+    use_same_cell_type_neighbors: False
+    only_sample_unexpressed_genes: True
     mask_out_random_genes: False
     mask_out_frac: 0.0
     tau_range: [0.10,0.35]

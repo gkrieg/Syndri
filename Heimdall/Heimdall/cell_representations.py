@@ -256,6 +256,24 @@ class CellRepresentation(SpecialTokenMixin):
         else:
             print("> Matrix is already dense.")
 
+        truncate_counts_max_value = get_value(self.dataset_preproc_cfg, "truncate_counts_max_value", None)
+        effective_truncate_counts_max_value = None
+        if truncate_counts_max_value is not None and truncate_counts_max_value is not False:
+            truncate_counts_max_value = float(truncate_counts_max_value)
+            if truncate_counts_max_value < 0:
+                raise ValueError("truncate_counts_max_value must be non-negative.")
+            effective_truncate_counts_max_value = truncate_counts_max_value
+
+            valid_mask = ~np.isnan(self.adata.X)
+            truncated_count = int(np.sum((self.adata.X > truncate_counts_max_value) & valid_mask))
+            print(
+                f"> Truncating {truncated_count:,} single-cell count values "
+                f"above {truncate_counts_max_value:g} before admixture preprocessing.",
+            )
+            self.adata.X = np.minimum(self.adata.X, truncate_counts_max_value)
+        self.adata.uns["count_truncation_config"] = {
+            "truncate_counts_max_value": effective_truncate_counts_max_value,
+        }
 
         # Get neighbors for admixture sampling or neighbor-aware inference.
         if get_value(self.dataset_preproc_cfg, "admixture_args"):
@@ -271,16 +289,25 @@ class CellRepresentation(SpecialTokenMixin):
             )
             tissue_col = get_value(admix_params, "tissue_col", "harmony_spatial_tissue" if apply_admixture else None)
             cell_type_col = get_value(admix_params, "cell_type_col", "cell_type")
+            use_same_cell_type_neighbors = bool(get_value(admix_params, "use_same_cell_type_neighbors", False))
+            neighbor_dict_config = {
+                "k_neighbors": k_neighbors,
+                "coord_cols": list(coord_cols),
+                "tissue_col": tissue_col,
+                "cell_type_col": cell_type_col,
+                "min_source_counts": int(admix_params['min_source_transcript_count']),
+                "use_same_cell_type_neighbors": use_same_cell_type_neighbors,
+                "truncate_counts_max_value": effective_truncate_counts_max_value,
+            }
             neighbor_dict = self.adata.uns.get("neighbor_dict")
             neighbor_dict_needs_build = not isinstance(neighbor_dict, dict) or not neighbor_dict
             if not neighbor_dict_needs_build:
-                neighbor_counts = [len(neighbor_ids) for neighbor_ids in neighbor_dict.values()]
-                neighbor_dict_needs_build = max(neighbor_counts, default=0) != k_neighbors
+                neighbor_dict_needs_build = self.adata.uns.get("neighbor_dict_config") != neighbor_dict_config
 
             if neighbor_dict_needs_build:
                 print(f"> Getting nearest neighbors using coordinates: {coord_cols}")
                 if isinstance(neighbor_dict, dict) and neighbor_dict:
-                    print(f"> Rebuilding neighbor_dict for k_neighbors={k_neighbors}")
+                    print(f"> Rebuilding neighbor_dict for config: {neighbor_dict_config}")
                 # create .uns with neighbors based on mapped spatial coordinates
                 
                 self.adata = build_neighbor_dict(self.adata,
@@ -289,9 +316,11 @@ class CellRepresentation(SpecialTokenMixin):
                                                 tissue_col=tissue_col,
                                                 cell_type_col=cell_type_col,
                                                 min_source_counts=admix_params['min_source_transcript_count'],
+                                                use_same_cell_type_neighbors=use_same_cell_type_neighbors,
                                                 initial_query_k=64,
                                                 query_k_growth=2,
                                                 batch_size=1024)
+                self.adata.uns["neighbor_dict_config"] = neighbor_dict_config
                 self.adata.uns.pop("neighbor_celltype_dict", None)
                 
             if 'neighbor_celltype_dict' not in self.adata.uns:

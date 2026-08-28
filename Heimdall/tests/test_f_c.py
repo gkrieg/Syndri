@@ -3,6 +3,7 @@ from pathlib import Path
 import anndata as ad
 import numpy as np
 from omegaconf import OmegaConf
+import pytest
 from pytest import fixture
 from scipy.sparse import csr_array
 
@@ -218,6 +219,30 @@ def test_admixture_fc_getitem(mock_dataset_admixture, admixture_fc):
         assert all(admixture_fc.surr_cell_tokens == expression_inputs[:n_prefix])
 
 
+def test_admixture_fc_getitem_with_query_cell_type_token(mock_dataset_admixture, admixture_fc):
+    admixture_fc.query_cell_type_token_mode = "metadata"
+
+    for i in range(len(mock_dataset_admixture)):
+        identity_inputs, expression_inputs, _ = admixture_fc[i]
+        cell_id = mock_dataset_admixture.obs_names[i]
+        query_cell_type = mock_dataset_admixture.obs.loc[cell_id, "cell_type"]
+        query_token = mock_dataset_admixture.uns["cell_type_dict"][query_cell_type]
+        expected_prefix = admixture_fc.surr_cell_tokens + [query_token]
+        n_prefix = len(expected_prefix)
+
+        assert admixture_fc.metadata_prefix_tokens == expected_prefix
+        assert admixture_fc.num_prefix_tokens == n_prefix
+        assert all(expected_prefix == identity_inputs[:n_prefix])
+        assert all(expected_prefix == expression_inputs[:n_prefix])
+
+
+def test_admixture_fc_predicted_cls_query_cell_type_token_raises(admixture_fc):
+    admixture_fc.query_cell_type_token_mode = "predicted_cls"
+
+    with pytest.raises(NotImplementedError):
+        admixture_fc[0]
+
+
 
 def test_admixture_fc_reduce(mock_dataset_admixture, admixture_fc):
 
@@ -227,4 +252,3 @@ def test_admixture_fc_reduce(mock_dataset_admixture, admixture_fc):
         # check that reduce is working
         admixture_fc.reduce(identity_inputs,expression_inputs)
         pass
-

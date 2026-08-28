@@ -28,6 +28,7 @@ from Heimdall.models import HeimdallModel
 from Heimdall.trainer import HeimdallTrainer
 from Heimdall.utils import count_parameters, get_dtype
 
+ad.settings.allow_write_nullable_strings = True
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
@@ -327,8 +328,8 @@ def build_fast_inference_loader(cr: CellRepresentation, batch_size: int, split: 
 
     seq_len = int(cr.fc.max_input_length)
     gene_len = int(cr.dataset_task_cfg.context_length)
-    neighbor_len = seq_len - gene_len
-    if neighbor_len <= 0:
+    prefix_len = seq_len - gene_len
+    if prefix_len <= 0:
         raise ValueError(f"Expected max_input_length > context_length, got seq_len={seq_len} and gene_len={gene_len}.")
 
     n = len(indices)
@@ -346,27 +347,35 @@ def build_fast_inference_loader(cr: CellRepresentation, batch_size: int, split: 
     print(f"> Precomputing fast inference tensors for {n:,} {split!r} cells...")
     for out_i, cell_idx in enumerate(tqdm(indices, desc="precompute inference tensors")):
         cell_id = str(adata.obs_names[cell_idx])
-        surr_tokens = _neighbor_tokens(
-            adata,
-            cell_id,
-            cell_type_dict,
-            neighbor_len,
-            cr.fc.admixture_token_offset,
-            debug=out_i < 5,
-        )
-        n_surr = len(surr_tokens)
-        if n_surr:
-            identity_inputs[out_i, :n_surr] = surr_tokens
-            expression_inputs[out_i, :n_surr] = surr_tokens
+        if hasattr(cr.fc, "get_metadata_prefix_tokens"):
+            _, _, prefix_tokens = cr.fc.get_metadata_prefix_tokens(cell_id)
+        else:
+            prefix_tokens = _neighbor_tokens(
+                adata,
+                cell_id,
+                cell_type_dict,
+                prefix_len,
+                cr.fc.admixture_token_offset,
+                debug=out_i < 5,
+            )
+        if len(prefix_tokens) > prefix_len:
+            raise ValueError(
+                f"Metadata prefix for cell {cell_id!r} has {len(prefix_tokens)} tokens, "
+                f"but only {prefix_len} prefix positions are available.",
+            )
+        n_prefix = len(prefix_tokens)
+        if n_prefix:
+            identity_inputs[out_i, :n_prefix] = prefix_tokens
+            expression_inputs[out_i, :n_prefix] = prefix_tokens
 
         if out_i < 5:
             print("> inference prefix materialized:")
             print(f"  row={out_i}, cell_id={cell_id}")
-            print(f"  neighbor_len={neighbor_len}, n_surr={n_surr}")
-            print(f"  expected_tokens={surr_tokens}")
-            print(f"  identity_prefix={identity_inputs[out_i, :neighbor_len].tolist()}")
-            print(f"  expression_prefix={expression_inputs[out_i, :neighbor_len].tolist()}")
-            print(f"  gene_tokens_start_at={neighbor_len}")
+            print(f"  prefix_len={prefix_len}, n_prefix={n_prefix}")
+            print(f"  expected_tokens={prefix_tokens}")
+            print(f"  identity_prefix={identity_inputs[out_i, :prefix_len].tolist()}")
+            print(f"  expression_prefix={expression_inputs[out_i, :prefix_len].tolist()}")
+            print(f"  gene_tokens_start_at={prefix_len}")
 
         row_start = expression.indptr[cell_idx]
         row_stop = expression.indptr[cell_idx + 1]
@@ -378,9 +387,9 @@ def build_fast_inference_loader(cr: CellRepresentation, batch_size: int, split: 
         vals = vals[valid_expr][:gene_len]
         tokens = identity_token_order[cols]
 
-        gene_stop = neighbor_len + len(tokens)
-        identity_inputs[out_i, neighbor_len:gene_stop] = tokens
-        expression_inputs[out_i, neighbor_len:gene_stop] = vals
+        gene_stop = prefix_len + len(tokens)
+        identity_inputs[out_i, prefix_len:gene_stop] = tokens
+        expression_inputs[out_i, prefix_len:gene_stop] = vals
 
         valid_tokens = (tokens >= 0) & (tokens < len(token_to_col))
         row_gene_order = gene_order[out_i, : len(tokens)]

@@ -172,18 +172,24 @@ class ChromosomeAwareFc(Fc):
         self.extract_gene_positions()
 
 class AdmixtureFc(Fc):
+    QUERY_CELL_TYPE_TOKEN_MODES = {"none", "metadata", "predicted_cls"}
+
     def __init__(
         self,
         *fc_args,
         gene_metadata_filepath: str | Path,
         ensembl_dir: str | Path,
         species: str,
+        query_cell_type_token_mode: str = "none",
+        query_cell_type_col: str = "cell_type",
         **fc_kwargs,
         ):
 
         self.gene_metadata = pd.read_csv(gene_metadata_filepath)
         self.ensembl_dir = ensembl_dir
         self.species = species
+        self.query_cell_type_token_mode = query_cell_type_token_mode
+        self.query_cell_type_col = query_cell_type_col
         self.admixture_token_offset = 1
         self._cell_type_extract_debug_count = 0
         
@@ -192,29 +198,65 @@ class AdmixtureFc(Fc):
 
     @property
     def num_prefix_tokens(self) -> int:
+        self._validate_query_cell_type_token_mode()
         neighbor_celltype_dict = self.adata.uns.get("neighbor_celltype_dict", {})
+        num_query_cell_type_tokens = int(self.query_cell_type_token_mode == "metadata")
         if neighbor_celltype_dict:
-            return max(len(cell_types) for cell_types in neighbor_celltype_dict.values())
-        return len(getattr(self, "surr_cell_tokens", []))
+            return max(len(cell_types) for cell_types in neighbor_celltype_dict.values()) + num_query_cell_type_tokens
+        return len(getattr(self, "metadata_prefix_tokens", getattr(self, "surr_cell_tokens", [])))
+
+    def _validate_query_cell_type_token_mode(self):
+        if self.query_cell_type_token_mode not in self.QUERY_CELL_TYPE_TOKEN_MODES:
+            valid = ", ".join(sorted(self.QUERY_CELL_TYPE_TOKEN_MODES))
+            raise ValueError(
+                f"query_cell_type_token_mode must be one of: {valid}. "
+                f"Got {self.query_cell_type_token_mode!r}.",
+            )
+        if self.query_cell_type_token_mode == "predicted_cls":
+            raise NotImplementedError(
+                "query_cell_type_token_mode='predicted_cls' requires a two-pass model that first predicts "
+                "query cell type from the CLS embedding, then re-encodes with that predicted cell-type token. "
+                "Use 'none' or 'metadata' with the current transformer path.",
+            )
+
+    def get_metadata_prefix_tokens(self, cell_id: str):
+        self._validate_query_cell_type_token_mode()
+
+        surr_cell_types = self.adata.uns['neighbor_celltype_dict'][cell_id]
+        surr_cell_tokens = [self.adata.uns['cell_type_dict'][t] for t in surr_cell_types]
+        metadata_prefix_tokens = list(surr_cell_tokens)
+
+        if self.query_cell_type_token_mode == "metadata":
+            if self.query_cell_type_col not in self.adata.obs:
+                raise KeyError(f"{self.query_cell_type_col!r} not found in adata.obs")
+            query_cell_type = self.adata.obs.loc[cell_id, self.query_cell_type_col]
+            cell_type_dict = self.adata.uns['cell_type_dict']
+            query_cell_type_token = cell_type_dict.get(query_cell_type, cell_type_dict.get(str(query_cell_type)))
+            if query_cell_type_token is None:
+                raise KeyError(f"{query_cell_type!r} not found in adata.uns['cell_type_dict']")
+            metadata_prefix_tokens.append(query_cell_type_token)
+
+        return surr_cell_types, surr_cell_tokens, metadata_prefix_tokens
 
 
     def extract_surr_cell_types(self, cell_id: str):
         # get surrounding cell types from anndata
         # surr_cell_ids = self.adata.uns['neighbor_dict'][cell_id]
         # surr_cell_types = [self.adata.obs.loc[cid,'cell_type'] for cid in surr_cell_ids]
-        surr_cell_types = self.adata.uns['neighbor_celltype_dict'][cell_id]
-        # print(self.adata.uns['cell_type_dict'])
-        surr_cell_tokens = [self.adata.uns['cell_type_dict'][t] for t in surr_cell_types]
+        surr_cell_types, surr_cell_tokens, metadata_prefix_tokens = self.get_metadata_prefix_tokens(cell_id)
         if self._cell_type_extract_debug_count < 5:
             print(f"> training cell_type tokenization: cell_id={cell_id}")
             print(f"  neighbor_cell_types={surr_cell_types}")
             print(f"  neighbor_tokens={surr_cell_tokens}")
+            print(f"  query_cell_type_token_mode={self.query_cell_type_token_mode}")
+            print(f"  metadata_prefix_tokens={metadata_prefix_tokens}")
             print(f"  token_pairs={list(zip(surr_cell_types, surr_cell_tokens))}")
-            print(f"  metadata_indices={[-tok - self.admixture_token_offset for tok in surr_cell_tokens]}")
+            print(f"  metadata_indices={[-tok - self.admixture_token_offset for tok in metadata_prefix_tokens]}")
             self._cell_type_extract_debug_count += 1
 
         # update fc field
         self.surr_cell_tokens = surr_cell_tokens
+        self.metadata_prefix_tokens = metadata_prefix_tokens
 
 
     def __getitem__(self, cell_index: int) -> tuple[NDArray, NDArray, NDArray,NDArray]:
