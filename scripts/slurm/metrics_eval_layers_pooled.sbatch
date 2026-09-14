@@ -74,7 +74,7 @@ MLP_CASE_LABEL=${MLP_CASE_LABEL:-mlp}
 SPLIT_CASE_LABEL=${SPLIT_CASE_LABEL:-split}
 
 # Fixed configuration from syndri_metric_eval_grid.sh: nonlinear power transform + cell-type-specific removal.
-TARGET_REMOVED_FRACTIONS=${TARGET_REMOVED_FRACTIONS:-0.01,0.02,0.05,0.1,0.2}
+TARGET_REMOVED_FRACTIONS=${TARGET_REMOVED_FRACTIONS:-0.01,0.02,0.05,0.1,0.2,0.3,0.4,0.5}
 CLEANING_MODE=${CLEANING_MODE:-probability_scale}
 CELL_TYPE_SPECIFIC_REMOVAL=${CELL_TYPE_SPECIFIC_REMOVAL:-1}
 REMOVAL_GROUP_KEY=${REMOVAL_GROUP_KEY:-$LABEL_KEY}
@@ -373,5 +373,5 @@ python /home/jwinchel/Syndri/eval/metrics_eval.py \
 
 # 08/27/2026: first-pass optimized xenium results (unexpressed genes, no same-cell type neighbors, with query cell type)
 # sbatch --array=0-18%2 \
-#   --export=ALL,SKIP_EXISTING=0,APPEND_OUTPUT=0,SKIP_CELL_TYPE_SEPARATION=0,SKIP_TCELL_NEIGHBORHOOD_METRICS=0,SKIP_CELL_TYPE_PROFILES=0,INPUT_LAYERS=X,INPUT_LAYERS_SEP=:,SYNDRI_PROBS_TEMPLATE='admix_probs_optimized_unexpressedgenes_withquerycelltype',SYNDRI_CASE_LABEL=admix_probs_optimized_unexpressedgenes_withquerycelltype_X,TCELL_COSINE_CELL_TYPE_PATTERN=T,INPUT_GLOB='GSM950*_1pct.h5ad',OUTPUT_DIR=/work/magroup/skrieger/Syndri/data/xenium_noise_experiment/optimized_unexpressed_nosametypeneighbors_withquerycelltype_eval \
+#   --export=ALL,SKIP_EXISTING=0,APPEND_OUTPUT=0,SKIP_CELL_TYPE_SEPARATION=0,SKIP_TCELL_NEIGHBORHOOD_METRICS=0,SKIP_CELL_TYPE_PROFILES=0,INPUT_LAYERS=X,INPUT_LAYERS_SEP=:,SYNDRI_PROBS_TEMPLATE='admix_probs_optimized_unexpressedgenes_withquerycelltype_{layer}',SYNDRI_CASE_LABEL=admix_probs_optimized_unexpressedgenes_withquerycelltype,TCELL_COSINE_CELL_TYPE_PATTERN=T,INPUT_GLOB='GSM950*_1pct.h5ad',OUTPUT_DIR=/work/magroup/skrieger/Syndri/data/xenium_noise_experiment/optimized_unexpressed_nosametypeneighbors_withquerycelltype_eval \
 #   /home/jwinchel/Syndri/scripts/slurm/metrics_eval_layers_pooled.sbatch

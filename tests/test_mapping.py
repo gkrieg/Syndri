@@ -20,6 +20,68 @@ def make_adata(n_obs, embedding, obs=None):
 
 
 class MapScReferenceToUniqueXeniumCellsTest(unittest.TestCase):
+    def test_maximizes_coverage_when_full_coverage_is_impossible(self):
+        cases = [
+            # More SC rows than spatial positions.
+            (["A"] * 5, ["A"] * 3, False, 3),
+            # Enough positions overall, but too few for type A; C is absent.
+            (["A", "A", "A", "B", "C"], ["A", "A", "B", "B", "B", "B"], True, 3),
+            # A saturated type must not prevent improvement for another type.
+            (["A"] * 4 + ["B"] * 3, ["A", "A", "B", "B"], True, 4),
+        ]
+        for sc_types, st_types, match_types, expected in cases:
+            with self.subTest(sc_types=sc_types, st_types=st_types):
+                sc_data = make_adata(
+                    len(sc_types), [[i * 10.0, 0] for i in range(len(sc_types))],
+                    obs={"cell_type": sc_types},
+                )
+                st_data = make_adata(
+                    len(st_types), [[0, 0]] * len(st_types),
+                    obs={
+                        "cell_type": st_types,
+                        "x_centroid": list(range(len(st_types))),
+                        "y_centroid": [0] * len(st_types),
+                    },
+                )
+                with self.assertWarnsRegex(UserWarning, "Full SC coverage is not possible"):
+                    mapped = map_sc_reference_to_unique_xenium_cells(
+                        sc_data, st_data, n_matches=1, reuse_penalty=0,
+                        match_cell_type=match_types, max_reuse_per_sc=2,
+                        ensure_all_sc_used=True, rng=np.random.default_rng(0),
+                    )
+                meta = mapped.uns["sc_reference_to_spatial_mapping"]
+                self.assertEqual(mapped.obs["source_sc_id"].nunique(), expected)
+                self.assertEqual(meta["n_sc_reference_cells_used"], expected)
+                self.assertEqual(meta["n_sc_reference_cells_unused"], len(sc_types) - expected)
+                self.assertEqual(meta["max_possible_sc_reference_cells_used"], expected)
+                self.assertEqual(meta["sc_coverage"], expected / len(sc_types))
+                self.assertEqual(meta["max_possible_sc_coverage"], meta["sc_coverage"])
+                self.assertEqual(
+                    meta["n_forced_sc_coverage_assignments"],
+                    expected - (len(set(st_types)) if match_types else 1),
+                )
+                self.assertEqual(mapped.n_obs, st_data.n_obs)
+                if match_types:
+                    self.assertEqual(mapped.obs["cell_type"].tolist(), st_types)
+
+    def test_coverage_can_be_disabled_and_uses_unique_coordinates(self):
+        sc_data = make_adata(3, [[0, 0], [10, 0], [20, 0]])
+        st_data = make_adata(
+            3, [[0, 0]] * 3,
+            obs={"x_centroid": [0, 0, 1], "y_centroid": [0, 0, 0]},
+        )
+        mapped = map_sc_reference_to_unique_xenium_cells(
+            sc_data, st_data, n_matches=1, ensure_all_sc_used=False,
+        )
+        meta = mapped.uns["sc_reference_to_spatial_mapping"]
+        self.assertEqual(mapped.n_obs, 2)
+        self.assertEqual(meta["n_sc_reference_cells_used"], 1)
+        self.assertEqual(meta["max_possible_sc_reference_cells_used"], 2)
+        self.assertEqual(meta["n_forced_sc_coverage_assignments"], 0)
+        with self.assertWarnsRegex(UserWarning, "SC coverage is 2/3"):
+            mapped = map_sc_reference_to_unique_xenium_cells(sc_data, st_data, n_matches=1)
+        self.assertEqual(mapped.obs["source_sc_id"].nunique(), 2)
+
     def test_uses_every_sc_reference_row_when_spatial_has_more_cells(self):
         sc_data = make_adata(
             3,

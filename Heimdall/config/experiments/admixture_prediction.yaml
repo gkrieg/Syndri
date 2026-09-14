@@ -6,7 +6,7 @@
 
 defaults:
   - override /model: transformer_syndri_medium #transformer # the chosen model
-  - override /dataset: chromium_breast_GSM95019174_augmented_optimized # dataset for the relevant task
+  - override /dataset: 10x_agingbrain_donors5to8 # dataset for the relevant task
   - override /tasks: admixture_correction # dataset for the relevant task
   - override /scheduler: cosine # contains scheduler
   - override /trainer: default # contains optimizer and trainer details
@@ -31,8 +31,8 @@ seed: 54
 # run_name: ${fg.type}_${fe.type}_${fc.type}_${model.type}_lr${optimizer.args.lr}_bz${tasks.args.batchsize}  ## what is set for WandB
 # work_dir: '${project_name}_results/${fg.type}_${fe.name}_${fc.type}_${dataset.dataset_name}_lr${optimizer.args.lr}_bz${tasks.args.batchsize}_seed${seed}_ag${fe.args.drop_zeros}'  ## set your custom working directory
 
-run_name: chromium_breast_GSM95019174_augmented_matchedcelltypes_optimized_unexpressedgenes_withquerycelltype ## what is set for WandB
-work_dir: '${project_name}_results/chromium_breast_GSM95019174_augmented_matchedcelltypes_optimized_unexpressedgenes_withquerycelltype'  ## set your custom working directory
+run_name: 10x_agingbrain_donors5to8 ## what is set for WandB
+work_dir: '${project_name}_results/10x_agingbrain_donors5to8'  ## set your custom working directory
 
 
 project_name: 'admixture_prediction' #project name for WandB

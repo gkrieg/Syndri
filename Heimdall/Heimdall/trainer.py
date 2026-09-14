@@ -1,6 +1,8 @@
 """Heimdall trainer."""
 
+import importlib.util
 import random
+import re
 from pathlib import Path
 
 import numpy as np
@@ -197,6 +199,8 @@ class HeimdallTrainer:
             self.lr_scheduler,
         )
 
+        self.external_eval = self._initialize_external_eval()
+
         if self.accelerator.is_main_process:
             print("> Finished Wrapping the model, optimizer, and dataloaders in accelerate")
             print("> run HeimdallTrainer.train() to begin training")
@@ -377,6 +381,335 @@ class HeimdallTrainer:
         full_dataset = self.data.datasets.get("full")
         if isinstance(full_dataset, Heimdall.datasets.AdmixtureInstanceDataset):
             full_dataset.set_epoch(epoch)
+
+    def _initialize_external_eval(self):
+        eval_cfg = self.cfg.tasks.args.get("external_eval", {})
+        if not eval_cfg or not eval_cfg.get("enabled", False):
+            return None
+
+        data_path = eval_cfg.get("data_path", None)
+        if not data_path:
+            raise ValueError("tasks.args.external_eval.data_path is required when external_eval.enabled=true.")
+
+        every_n_epochs = int(eval_cfg.get("every_n_epochs", 1))
+        if every_n_epochs < 1:
+            raise ValueError("tasks.args.external_eval.every_n_epochs must be >= 1.")
+
+        from Heimdall.cell_representations import CellRepresentation
+
+        eval_config = OmegaConf.create(OmegaConf.to_container(self.cfg, resolve=True))
+        data_path = str(data_path)
+        dataset_name = eval_cfg.get("dataset_name", None)
+        if dataset_name is None:
+            dataset_name = f"{self.cfg.dataset.dataset_name}_external_eval_{Path(data_path).stem}"
+
+        eval_config.dataset.dataset_name = str(dataset_name)
+        eval_config.dataset.preprocess_args.data_path = data_path
+        eval_config.tasks.args.shuffle = False
+        eval_config.work_dir = str(Path(self.cfg.work_dir) / "external_eval" / str(dataset_name))
+
+        overrides = eval_cfg.get("overrides", None)
+        if overrides:
+            eval_config = OmegaConf.merge(eval_config, overrides)
+
+        self.print_r0(
+            "> Initializing external evaluation dataset "
+            f"{eval_config.dataset.dataset_name!r} from {data_path}",
+        )
+        external_data = CellRepresentation(eval_config)
+        if eval_cfg.get("require_matching_var_names", True):
+            self._validate_external_eval_gene_alignment(external_data)
+
+        split = eval_cfg.get("split", "full")
+        if split not in external_data.dataloaders:
+            valid_splits = ", ".join(sorted(external_data.dataloaders))
+            raise ValueError(
+                f"External eval split {split!r} is not available. "
+                f"Available splits: {valid_splits}",
+            )
+
+        raw_external_dataloader = external_data.dataloaders[split]
+        external_dataloader = self.accelerator.prepare(raw_external_dataloader)
+        fixed_epoch = eval_cfg.get("fixed_epoch", None)
+        if fixed_epoch is not None:
+            fixed_epoch = int(fixed_epoch)
+
+        return {
+            "data": external_data,
+            "dataloader": external_dataloader,
+            "raw_dataloader": raw_external_dataloader,
+            "row_indices": self._dataset_row_indices(external_data.datasets[split]),
+            "every_n_epochs": every_n_epochs,
+            "fixed_epoch": fixed_epoch,
+            "metrics_eval": eval_cfg.get("metrics_eval", {}),
+            "prefix": str(eval_cfg.get("prefix", "external_eval")),
+            "run_model_metrics": bool(eval_cfg.get("run_model_metrics", True)),
+            "split": str(split),
+            "source_file": data_path,
+        }
+
+    def _validate_external_eval_gene_alignment(self, external_data):
+        if not external_data.adata.var_names.equals(self.data.adata.var_names):
+            raise ValueError(
+                "External eval AnnData var_names do not match the training AnnData var_names. "
+                "Reorder/subset the external h5ad to the training genes before evaluation, "
+                "or set tasks.args.external_eval.require_matching_var_names=false if you have "
+                "verified that the token mapping is compatible.",
+            )
+
+        train_tokens = self.data.adata.var.get("identity_embedding_index", None)
+        external_tokens = external_data.adata.var.get("identity_embedding_index", None)
+        if train_tokens is None or external_tokens is None:
+            return
+
+        if not np.array_equal(train_tokens.to_numpy(), external_tokens.to_numpy()):
+            raise ValueError(
+                "External eval identity_embedding_index does not match the training token order. "
+                "This model cannot safely evaluate the external dataset with the current tokenization.",
+            )
+
+    def _set_external_eval_epoch(self, epoch: int):
+        if self.external_eval is None:
+            return
+
+        eval_epoch = self.external_eval["fixed_epoch"]
+        if eval_epoch is None:
+            eval_epoch = epoch
+
+        full_dataset = self.external_eval["data"].datasets.get("full")
+        if isinstance(full_dataset, Heimdall.datasets.AdmixtureInstanceDataset):
+            full_dataset.set_epoch(eval_epoch)
+
+    def evaluate_external_dataset(self, epoch: int):
+        if self.external_eval is None:
+            return None
+
+        completed_epochs = epoch + 1
+        every_n_epochs = self.external_eval["every_n_epochs"]
+        if completed_epochs % every_n_epochs != 0:
+            return None
+
+        eval_epoch = self.external_eval["fixed_epoch"]
+        if eval_epoch is None:
+            eval_epoch = epoch
+        self._set_external_eval_epoch(epoch)
+
+        prefix = self.external_eval["prefix"]
+        self.print_r0(
+            f"> Running external evaluation {prefix!r} after {completed_epochs} completed epoch(s) "
+            f"using eval epoch {eval_epoch}.",
+        )
+        result = None
+        if self.external_eval["run_model_metrics"]:
+            result = self.validate_model(
+                self.external_eval["dataloader"],
+                dataset_type=prefix,
+                extra_log={
+                    f"{prefix}_completed_epochs": completed_epochs,
+                    f"{prefix}_eval_epoch": eval_epoch,
+                },
+            )
+        self.evaluate_external_metrics_eval(epoch, completed_epochs, eval_epoch)
+        return result
+
+    def _load_metrics_eval_module(self):
+        eval_cfg = self.external_eval["metrics_eval"]
+        script_path = eval_cfg.get("script_path", None)
+        if script_path is None:
+            script_path = Path(__file__).resolve().parents[2] / "eval" / "metrics_eval.py"
+        script_path = Path(script_path).expanduser().resolve()
+        spec = importlib.util.spec_from_file_location("syndri_metrics_eval", script_path)
+        if spec is None or spec.loader is None:
+            raise ImportError(f"Could not load metrics_eval.py from {script_path}")
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module
+
+    @staticmethod
+    def _set_namespace_values(namespace, values):
+        if not values:
+            return namespace
+        for key, value in values.items():
+            setattr(namespace, str(key).replace("-", "_"), value)
+        return namespace
+
+    @staticmethod
+    def _safe_metric_key(value):
+        value = str(value)
+        value = re.sub(r"[^A-Za-z0-9_.-]+", "_", value).strip("_")
+        return value or "all"
+
+    def _metrics_eval_scalar_log(self, frames: dict[str, pd.DataFrame], prefix: str) -> dict:
+        log = {}
+        for frame_name, frame in frames.items():
+            if frame is None or frame.empty:
+                continue
+
+            metric_rows = frame
+            if "error" in metric_rows.columns:
+                metric_rows = metric_rows[metric_rows["error"].fillna("").astype(str) == ""]
+            if metric_rows.empty:
+                continue
+
+            numeric_cols = metric_rows.select_dtypes(include=[np.number]).columns
+            numeric_cols = [
+                col
+                for col in numeric_cols
+                if col not in {"dropout_fraction"}
+            ]
+            if not numeric_cols:
+                continue
+
+            group_col = "case" if "case" in metric_rows.columns else "condition" if "condition" in metric_rows.columns else None
+            if group_col is None:
+                means = metric_rows[numeric_cols].mean(numeric_only=True)
+                for col, value in means.items():
+                    if np.isfinite(value):
+                        log[f"{prefix}/metrics_eval/{frame_name}/{col}_mean"] = float(value)
+                continue
+
+            for group_value, group in metric_rows.groupby(group_col, dropna=False):
+                group_key = self._safe_metric_key(group_value)
+                means = group[numeric_cols].mean(numeric_only=True)
+                for col, value in means.items():
+                    if np.isfinite(value):
+                        log[f"{prefix}/metrics_eval/{frame_name}/{group_key}/{col}_mean"] = float(value)
+        return log
+
+    def _write_metrics_eval_outputs(
+        self,
+        metrics_module,
+        args,
+        frames: dict[str, pd.DataFrame],
+        output_dir: Path,
+    ):
+        output_dir.mkdir(parents=True, exist_ok=True)
+        output_map = {
+            "cell_type": args.cell_type_output,
+            "tcell": args.tcell_output,
+            "tcell_effect": args.tcell_effect_output,
+            "tcell_lr_gene": args.tcell_lr_gene_output,
+            "cell_type_profile": args.cell_type_profile_output,
+            "tcell_cosine": args.tcell_cosine_output,
+        }
+        for name, file_name in output_map.items():
+            frame = frames.get(name)
+            if frame is None or frame.empty:
+                continue
+            metrics_module.write_csv(frame, output_dir / file_name)
+
+    def evaluate_external_metrics_eval(self, epoch: int, completed_epochs: int, eval_epoch: int):
+        metrics_cfg = self.external_eval["metrics_eval"]
+        if not metrics_cfg or not metrics_cfg.get("enabled", False):
+            return None
+
+        prob_batches = self.get_predictions(
+            self.external_eval["raw_dataloader"],
+            data=self.external_eval["data"],
+        )
+        self.accelerator.wait_for_everyone()
+        if not self.accelerator.is_main_process:
+            return None
+
+        probs = np.vstack(prob_batches)
+        row_indices = self.external_eval["row_indices"]
+        if probs.shape[0] != len(row_indices):
+            raise ValueError(
+                "External metrics_eval prediction rows do not match selected external rows "
+                f"({probs.shape[0]} vs {len(row_indices)}).",
+            )
+
+        metrics_module = self._load_metrics_eval_module()
+        args = metrics_module.build_parser().parse_args([])
+        metrics_args = OmegaConf.to_container(metrics_cfg.get("args", {}), resolve=True)
+        self._set_namespace_values(args, metrics_args)
+
+        source_file = self.external_eval["source_file"]
+        source_path = Path(source_file)
+        tissue = metrics_cfg.get("tissue", None) or metrics_module.tissue_name_from_path(
+            source_path,
+            args.tissue_name_regex,
+        )
+        sample_replicate = metrics_cfg.get("sample_replicate", None) or metrics_module.sample_replicate_from_path(
+            source_path,
+            args.sample_replicate_regex,
+        )
+        dropout_label, dropout_fraction = metrics_module.dropout_from_path(source_path)
+
+        probability_layer = str(metrics_cfg.get("probability_layer", "_training_syndri_probs"))
+        metric_adata = self.external_eval["data"].adata[row_indices].copy()
+        metric_adata.layers[probability_layer] = csr_matrix(probs)
+        metric_adata.obs[args.source_file_key] = source_file
+        metric_adata.obs["_metrics_tissue"] = tissue
+        metric_adata.obs["_metrics_sample_replicate"] = sample_replicate
+        metric_adata.obs["_metrics_dropout_label"] = dropout_label
+        metric_adata.obs["_metrics_dropout_fraction"] = dropout_fraction
+        metric_adata.X = metrics_module.sanitize_numeric_matrix(metric_adata.X)
+        metric_adata = metrics_module.sample_adata(metric_adata, args)
+
+        args.admix_probs_layer = probability_layer
+        reference_adata = None
+        reference_profile_cache: dict = {}
+        if not args.skip_tcell_contamination and not args.skip_tcell_cosine_similarity and args.reference_data:
+            reference_adata = metrics_module.ad.read_h5ad(Path(args.reference_data).expanduser().resolve(), backed="r")
+
+        frames = {
+            "cell_type": pd.DataFrame(),
+            "tcell": pd.DataFrame(),
+            "tcell_effect": pd.DataFrame(),
+            "tcell_lr_gene": pd.DataFrame(),
+            "cell_type_profile": pd.DataFrame(),
+            "tcell_cosine": pd.DataFrame(),
+        }
+        if not args.skip_cell_type_separation:
+            rows = metrics_module.run_cell_type_separation(metric_adata, tissue, source_file, args)
+            frames["cell_type"] = pd.DataFrame(rows)
+
+        if not args.skip_tcell_contamination:
+            tcell_df, coefficient_df, profile_df, cosine_df = metrics_module.run_tcell_contamination(
+                metric_adata.copy(),
+                tissue,
+                source_file,
+                args,
+                reference_adata=reference_adata,
+                reference_profile_cache=reference_profile_cache,
+            )
+            frames["tcell"] = tcell_df
+            frames["tcell_effect"] = metrics_module.summarize_tcell_effects(tcell_df, args)
+            frames["tcell_lr_gene"] = coefficient_df
+            frames["cell_type_profile"] = profile_df
+            frames["tcell_cosine"] = cosine_df
+
+        if reference_adata is not None and getattr(reference_adata, "file", None) is not None:
+            reference_adata.file.close()
+
+        prefix = self.external_eval["prefix"]
+        scalar_log = self._metrics_eval_scalar_log(frames, prefix)
+        scalar_log.update(
+            {
+                f"{prefix}/metrics_eval/completed_epochs": completed_epochs,
+                f"{prefix}/metrics_eval/eval_epoch": eval_epoch,
+                "epoch": epoch,
+            }
+        )
+
+        if self.run_wandb:
+            self.accelerator.log(scalar_log, step=self.step)
+        else:
+            print(scalar_log)
+
+        if metrics_cfg.get("write_outputs", True):
+            output_dir = metrics_cfg.get("output_dir", None)
+            if output_dir is None:
+                output_dir = (
+                    Path(self.cfg.work_dir)
+                    / "external_metrics_eval"
+                    / prefix
+                    / f"epoch_{completed_epochs:04d}"
+                )
+            self._write_metrics_eval_outputs(metrics_module, args, frames, Path(output_dir))
+
+        return scalar_log
 
     @staticmethod
     def _dataset_row_indices(dataset):
@@ -641,6 +974,7 @@ class HeimdallTrainer:
 
             # Train for one epoch
             self.train_epoch(epoch)
+            self.evaluate_external_dataset(epoch)
             self.compute_silhouette_delta_metric(epoch)
 
             # Save checkpoint at regular intervals if requested
@@ -962,7 +1296,7 @@ class HeimdallTrainer:
 
         return epoch + 1  # Return the next epoch to start from
 
-    def validate_model(self, dataloader, dataset_type):
+    def validate_model(self, dataloader, dataset_type, extra_log=None):
         self.model.eval()
         metrics = self._initialize_metrics()
         # print(metrics)
@@ -1068,6 +1402,8 @@ class HeimdallTrainer:
             loss = self.accelerator.gather(torch.tensor(loss)).mean().item()
 
         log = {f"{dataset_type}_loss": loss}
+        if extra_log:
+            log.update(extra_log)
         for metric_name, metric in metrics.items():
             if metric_name != "ConfusionMatrix":
                 # Built-in metric
@@ -1119,10 +1455,11 @@ class HeimdallTrainer:
 
         return log, all_encoded
 
-    def get_predictions(self, dataloader):
+    def get_predictions(self, dataloader, data=None):
         self.model.eval()
         all_probs_batches = []
         device = self.accelerator.device
+        data = data or self.data
 
         def move_to_device(value):
             if isinstance(value, torch.Tensor):
@@ -1171,13 +1508,13 @@ class HeimdallTrainer:
                 # Reorder token-level probabilities back into adata.var order.
                 probs_np = probs.detach().cpu().numpy()
                 gene_reorderings_np = gene_reorderings.detach().cpu().numpy()
-                new_probs = np.zeros((len(probs_np), self.data.adata.X.shape[1]), dtype=probs_np.dtype)
+                new_probs = np.zeros((len(probs_np), data.adata.X.shape[1]), dtype=probs_np.dtype)
 
                 valid = (
-                    (gene_reorderings_np != self.data.fe.pad_value)
-                    & (gene_reorderings_np != self.data.fe.mask_value)
+                    (gene_reorderings_np != data.fe.pad_value)
+                    & (gene_reorderings_np != data.fe.mask_value)
                     & (gene_reorderings_np >= 0)
-                    & (gene_reorderings_np < self.data.adata.X.shape[1])
+                    & (gene_reorderings_np < data.adata.X.shape[1])
                 )
                 row_idx, token_idx = np.nonzero(valid)
                 new_probs[row_idx, gene_reorderings_np[row_idx, token_idx]] = probs_np[row_idx, token_idx]

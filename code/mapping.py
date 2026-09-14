@@ -1,5 +1,6 @@
 import os
 import re
+import warnings
 import numpy as np
 import anndata as ad
 import scanpy as sc
@@ -10,7 +11,7 @@ def _sanitize_name(name):
 
 
 def integrate_single_st_file_with_harmony(
-    st_file,
+    st_data,
     sc_data_orig,
     tissue_filter="tumor",
     n_pcs=30,
@@ -44,8 +45,8 @@ def integrate_single_st_file_with_harmony(
     embedding_key : str
         Tissue-specific embedding key used in obsm.
     """
-    if tissue_name is None:
-        tissue_name = os.path.splitext(os.path.basename(st_file))[0]
+    # if tissue_name is None:
+    #     tissue_name = os.path.splitext(os.path.basename(st_file))[0]
     tissue_name = _sanitize_name(tissue_name)
     embedding_key = f"X_pca_harmony_{tissue_name}"
 
@@ -57,7 +58,7 @@ def integrate_single_st_file_with_harmony(
     sc_data.obs["batch"] = "sc"
 
     # read spatial
-    st_data = ad.read_h5ad(st_file)
+    # st_data = ad.read_h5ad(st_file)
     st_data.obs["batch"] = "st"
 
     # concatenate and preprocess
@@ -70,6 +71,7 @@ def integrate_single_st_file_with_harmony(
     sc.pp.normalize_total(adata)
     sc.pp.log1p(adata)
     sc.pp.scale(adata)
+    # print(np.isnan(adata.X.data).any())
     sc.tl.pca(adata, n_comps=n_pcs)
 
     print(adata.obs.columns.tolist())
@@ -535,17 +537,15 @@ def ensure_all_sc_indices_used(
     st_cell_types=None,
 ):
     """
-    Force every SC row to be selected at least once when there are enough
-    spatial rows. Missing SC rows replace duplicate selections at their best
-    eligible spatial row.
+    Maximize the number of distinct SC rows selected. Missing SC rows replace
+    duplicate selections at their best eligible spatial row until no further
+    coverage is possible. Cell-type restrictions are preserved; replacements
+    may use SC rows outside the original nearest-neighbor candidates.
     """
     selected_idx = np.asarray(selected_idx, dtype=int).copy()
     indices = match_result["indices"]
     n_spatial = indices.shape[0]
     n_sc = sc_emb.shape[0]
-    if n_sc > n_spatial:
-        return selected_idx, 0
-
     rows = np.arange(n_spatial)
     selected_sc_indices = indices[rows, selected_idx]
     if np.any(selected_sc_indices < 0):
@@ -564,16 +564,24 @@ def ensure_all_sc_indices_used(
         sc_cell_types = np.asarray(sc_cell_types).astype(str)
         st_cell_types = np.asarray(st_cell_types).astype(str)
 
+    # A type with no duplicate selections cannot gain any more distinct SC
+    # rows. Remember exhausted types to avoid repeatedly scanning their rows.
+    exhausted_types = set()
+    rows_by_type = (
+        {label: np.flatnonzero(st_cell_types == label) for label in np.unique(st_cell_types)}
+        if sc_cell_types is not None else {None: rows}
+    )
+    n_forced = 0
     for sc_idx in missing_sc_indices:
-        replaceable = np.flatnonzero(counts[selected_sc_indices] > 1)
-        if sc_cell_types is not None:
-            replaceable = replaceable[st_cell_types[replaceable] == sc_cell_types[sc_idx]]
+        label = sc_cell_types[sc_idx] if sc_cell_types is not None else None
+        if label in exhausted_types:
+            continue
+        eligible = rows_by_type.get(label, np.empty(0, dtype=int))
+        replaceable = eligible[counts[selected_sc_indices[eligible]] > 1]
 
         if replaceable.size == 0:
-            raise ValueError(
-                "Cannot ensure every SC reference cell is used at least once with the "
-                "current candidate constraints."
-            )
+            exhausted_types.add(label)
+            continue
 
         distances = np.linalg.norm(st_emb[replaceable] - sc_emb[sc_idx], axis=1)
         best_idx = int(np.argmin(distances))
@@ -588,8 +596,9 @@ def ensure_all_sc_indices_used(
         match_result["ids"][row, col] = str(sc_ids[sc_idx])
         match_result["dists"][row, col] = float(distances[best_idx])
         match_result["indices"][row, col] = int(sc_idx)
+        n_forced += 1
 
-    return selected_idx, int(missing_sc_indices.size)
+    return selected_idx, n_forced
 
 
 def build_spatially_mapped_sc_adata(
@@ -669,9 +678,11 @@ def map_sc_reference_to_unique_xenium_cells(
         candidate matches. The default 1.0 penalizes by 1 / count.
         Set to 0.0 to disable reuse penalization.
     ensure_all_sc_used : bool
-        If True and the number of SC reference rows is less than or equal to
-        the number of unique spatial coordinates, force every SC reference
-        row to be selected at least once.
+        If True, maximize the number of distinct SC reference rows selected,
+        using every row when possible. If spatial capacity or cell-type
+        restrictions prevent full coverage, emit a warning and report achieved
+        and maximum possible coverage in the returned mapping metadata.
+        Coverage replacements may go beyond the top n_matches candidates.
     match_cell_type : bool
         If True, only use SC reference candidates whose cell type matches the
         spatial cell type for each unique Xenium coordinate.
@@ -801,6 +812,24 @@ def map_sc_reference_to_unique_xenium_cells(
     selected_sc_indices = match_result["indices"][
         np.arange(match_result["indices"].shape[0]), selected_idx
     ]
+    n_sc_used = int(np.unique(selected_sc_indices).size)
+    if match_cell_type:
+        sc_type_counts = dict(zip(*np.unique(sc_cell_types, return_counts=True)))
+        st_type_counts = dict(zip(*np.unique(st_cell_types, return_counts=True)))
+        max_sc_used = int(sum(
+            min(count, st_type_counts.get(label, 0))
+            for label, count in sc_type_counts.items()
+        ))
+    else:
+        max_sc_used = min(sc_data.n_obs, len(unique_row_idx))
+    if ensure_all_sc_used and n_sc_used < sc_data.n_obs:
+        warnings.warn(
+            f"SC coverage is {n_sc_used}/{sc_data.n_obs}; maximum possible with "
+            f"the unique spatial coordinates and cell-type constraints is {max_sc_used}. "
+            "Full SC coverage is not possible with these constraints.",
+            UserWarning,
+            stacklevel=2,
+        )
     mapped_sc_data.uns["sc_reference_to_spatial_mapping"] = {
         "embedding_key": embedding_key,
         "spatial_cols": tuple(spatial_cols),
@@ -814,7 +843,11 @@ def map_sc_reference_to_unique_xenium_cells(
         "n_unique_spatial_coordinates": int(len(unique_row_idx)),
         "n_sc_reference_cells": int(sc_data.n_obs),
         "n_forced_sc_coverage_assignments": int(n_forced_sc_assignments),
-        "sc_coverage": float(np.unique(selected_sc_indices).shape[0] / sc_data.n_obs),
+        "n_sc_reference_cells_used": n_sc_used,
+        "n_sc_reference_cells_unused": int(sc_data.n_obs - n_sc_used),
+        "max_possible_sc_reference_cells_used": int(max_sc_used),
+        "max_possible_sc_coverage": float(max_sc_used / sc_data.n_obs),
+        "sc_coverage": float(n_sc_used / sc_data.n_obs),
     }
 
     return mapped_sc_data
