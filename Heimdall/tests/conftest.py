@@ -118,16 +118,28 @@ def mock_dataset_admixture(gene_names):
                 [2, 1, 4, 3],
                 [3, 2, 1, 4],
                 [4, 3, 2, 1],
+                [5, 1, 2, 3],
             ],
         ),
     )
     mock_dataset = ad.AnnData(X=mock_expression)
 
-    mock_dataset.layers["admixed"] = np.random.randint(low=0,high=3,size=(4,4))
+    mock_dataset.layers["admixed"] = np.random.randint(low=0,high=3,size=(5,4))
     mock_dataset.X += mock_dataset.layers["admixed"]
-    mock_dataset.obs[["ADM_ID_0", "ADM_ID_1", "ADM_ID_2"]] = np.array([[1,2,3],[0,2,3],[0,1,3],[0,1,2]]).astype(str)
-    mock_dataset.obs["cell_type"] = ["A", "B", "C", "D"]
-    mock_dataset.uns['cell_type_dict'] = {"A":-1,"B":-2,"C":-3,"D":-4}
+    neighbor_ids = {
+        str(i): [str(j) for j in range(mock_dataset.n_obs) if j != i]
+        for i in range(mock_dataset.n_obs)
+    }
+    mock_dataset.obs[["ADM_ID_0", "ADM_ID_1", "ADM_ID_2", "ADM_ID_3"]] = np.array(
+        [neighbor_ids[str(i)] for i in range(mock_dataset.n_obs)],
+    ).astype(str)
+    mock_dataset.obs["cell_type"] = ["A", "B", "C", "D", "E"]
+    mock_dataset.uns['cell_type_dict'] = {"A":-1,"B":-2,"C":-3,"D":-4,"E":-5}
+    mock_dataset.uns["neighbor_dict"] = neighbor_ids
+    mock_dataset.uns["neighbor_celltype_dict"] = {
+        cell_id: [mock_dataset.obs.loc[n_id, "cell_type"] for n_id in neighbors]
+        for cell_id, neighbors in neighbor_ids.items()
+    }
     mock_dataset.layers['is_transcript_added'] = (mock_dataset.layers["admixed"] > 0).astype(int)
     mock_dataset.var_names = gene_names
     convert_to_ensembl_ids(mock_dataset, data_dir=os.environ["DATA_PATH"])
@@ -583,7 +595,7 @@ def admixture_fc(mock_dataset_admixture, identity_fg, identity_fe):
 
     fc_config = OmegaConf.create(
         {
-            "max_input_length": 4,
+            "max_input_length": 6,
             "species": "human",
             "ensembl_dir": os.environ["DATA_PATH"],
             "gene_metadata_filepath": f"{os.environ['DATA_PATH']}/gene_metadata/species_chrom.csv",

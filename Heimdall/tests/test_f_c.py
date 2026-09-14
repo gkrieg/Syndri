@@ -3,6 +3,7 @@ from pathlib import Path
 import anndata as ad
 import numpy as np
 from omegaconf import OmegaConf
+import pytest
 from pytest import fixture
 from scipy.sparse import csr_array
 
@@ -190,15 +191,14 @@ from scipy.sparse import csr_array
 #     # assert np.allclose(expected, output)
 
 def test_admixture_fc_extract_surr_cell_types(mock_dataset_admixture, admixture_fc):
-    admixture_cols = ['ADM_ID_0','ADM_ID_1','ADM_ID_2']
-    
     for i in range(len(mock_dataset_admixture)):
 
         # should update admixture_fc.surr_cell_tokens each generation
         admixture_fc[i]
 
         # reproduce token indexing in extract_surr_cell_types
-        surr_cell_ids = mock_dataset_admixture.obs.iloc[i][admixture_cols]
+        cell_id = mock_dataset_admixture.obs_names[i]
+        surr_cell_ids = mock_dataset_admixture.uns["neighbor_dict"][cell_id]
         surr_cell_types = [mock_dataset_admixture.obs.loc[cid,'cell_type'] for cid in surr_cell_ids]
         expected_tokens = [mock_dataset_admixture.uns['cell_type_dict'][t] for t in surr_cell_types]
         assert admixture_fc.surr_cell_tokens == expected_tokens
@@ -210,12 +210,37 @@ def test_admixture_fc_getitem(mock_dataset_admixture, admixture_fc):
         identity_inputs, expression_inputs, padding = admixture_fc[i]
 
         print(sum(padding))
+        n_prefix = len(admixture_fc.surr_cell_tokens)
 
         # check that surrounding cell type tokens prepended to identity inputs
-        assert all(admixture_fc.surr_cell_tokens == identity_inputs[:3])
+        assert all(admixture_fc.surr_cell_tokens == identity_inputs[:n_prefix])
 
         # check that surrounding cell type tokens prepended to expression inputs
-        assert all(admixture_fc.surr_cell_tokens == expression_inputs[:3])
+        assert all(admixture_fc.surr_cell_tokens == expression_inputs[:n_prefix])
+
+
+def test_admixture_fc_getitem_with_query_cell_type_token(mock_dataset_admixture, admixture_fc):
+    admixture_fc.query_cell_type_token_mode = "metadata"
+
+    for i in range(len(mock_dataset_admixture)):
+        identity_inputs, expression_inputs, _ = admixture_fc[i]
+        cell_id = mock_dataset_admixture.obs_names[i]
+        query_cell_type = mock_dataset_admixture.obs.loc[cell_id, "cell_type"]
+        query_token = mock_dataset_admixture.uns["cell_type_dict"][query_cell_type]
+        expected_prefix = admixture_fc.surr_cell_tokens + [query_token]
+        n_prefix = len(expected_prefix)
+
+        assert admixture_fc.metadata_prefix_tokens == expected_prefix
+        assert admixture_fc.num_prefix_tokens == n_prefix
+        assert all(expected_prefix == identity_inputs[:n_prefix])
+        assert all(expected_prefix == expression_inputs[:n_prefix])
+
+
+def test_admixture_fc_predicted_cls_query_cell_type_token_raises(admixture_fc):
+    admixture_fc.query_cell_type_token_mode = "predicted_cls"
+
+    with pytest.raises(NotImplementedError):
+        admixture_fc[0]
 
 
 
@@ -227,6 +252,3 @@ def test_admixture_fc_reduce(mock_dataset_admixture, admixture_fc):
         # check that reduce is working
         admixture_fc.reduce(identity_inputs,expression_inputs)
         pass
-
-
-         

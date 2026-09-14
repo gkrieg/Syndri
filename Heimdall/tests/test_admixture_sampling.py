@@ -1,0 +1,69 @@
+import anndata as ad
+import numpy as np
+from scipy.sparse import csr_array
+
+from Heimdall.admixture_sampling import build_neighbor_dict, sample_admixture_from_neighbor_dict
+
+
+def test_build_neighbor_dict_can_toggle_same_cell_type_neighbors():
+    adata = ad.AnnData(X=csr_array(np.ones((3, 2))))
+    adata.obs_names = ["query", "same_type", "other_type"]
+    adata.obs["x"] = [0.0, 1.0, 10.0]
+    adata.obs["y"] = [0.0, 0.0, 0.0]
+    adata.obs["cell_type"] = ["A", "A", "B"]
+    adata.obs["tissue"] = ["T", "T", "T"]
+
+    without_same_type = build_neighbor_dict(
+        adata,
+        k_neighbors=1,
+        coord_cols=("x", "y"),
+        tissue_col="tissue",
+        min_source_counts=0,
+        use_same_cell_type_neighbors=False,
+    )
+    with_same_type = build_neighbor_dict(
+        adata,
+        k_neighbors=1,
+        coord_cols=("x", "y"),
+        tissue_col="tissue",
+        min_source_counts=0,
+        use_same_cell_type_neighbors=True,
+    )
+
+    assert without_same_type.uns["neighbor_dict"]["query"] == ["other_type"]
+    assert with_same_type.uns["neighbor_dict"]["query"] == ["same_type"]
+
+
+def test_sample_admixture_can_toggle_query_expressed_gene_filter():
+    adata = ad.AnnData(
+        X=csr_array(
+            np.array(
+                [
+                    [10, 0],
+                    [100, 1],
+                ],
+            ),
+        ),
+    )
+    adata.obs_names = ["query", "source"]
+    adata.uns["neighbor_dict"] = {"query": ["source"], "source": []}
+
+    only_unexpressed, _ = sample_admixture_from_neighbor_dict(
+        adata,
+        tau_range=(0.99, 0.99),
+        min_sampled_transcript_threshold=0,
+        only_sample_unexpressed_genes=True,
+        rng=np.random.default_rng(0),
+    )
+    all_source_genes, _ = sample_admixture_from_neighbor_dict(
+        adata,
+        tau_range=(0.99, 0.99),
+        min_sampled_transcript_threshold=0,
+        only_sample_unexpressed_genes=False,
+        rng=np.random.default_rng(0),
+    )
+
+    assert only_unexpressed[0, 0] == 0
+    assert only_unexpressed[0, 1] == 1
+    assert all_source_genes[0, 0] == 100
+    assert all_source_genes[0, 1] == 1

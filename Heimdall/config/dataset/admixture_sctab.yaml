@@ -6,6 +6,7 @@ preprocess_args:
   normalize: false
   log_1p: false
   scale_data: false
+  truncate_counts_max_value: null
   admixture: true
   admix_layer: "admixed"
   binary_layer: "is_transcript_added"

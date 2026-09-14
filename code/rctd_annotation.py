@@ -18,7 +18,7 @@ import anndata as ad
 import numpy as np
 import rctd
 from rctd import RCTDConfig, Reference, run_rctd
-
+ad.settings.allow_write_nullable_strings = True
 
 def sanitize_key(value: str) -> str:
     text = re.sub(r"[^0-9A-Za-z]+", "_", str(value))

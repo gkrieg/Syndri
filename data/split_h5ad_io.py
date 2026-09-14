@@ -17,6 +17,7 @@ import pandas as pd
 from scipy import sparse
 from scipy.io import mmread, mmwrite
 
+ad.settings.allow_write_nullable_strings = True
 
 def sanitize_key(value: str) -> str:
     text = re.sub(r"[^0-9A-Za-z]+", "_", str(value))

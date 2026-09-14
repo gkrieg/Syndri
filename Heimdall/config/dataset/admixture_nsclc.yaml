@@ -7,6 +7,7 @@ preprocess_args:
   normalize: false
   log_1p: false
   scale_data: false
+  truncate_counts_max_value: null
   admixture: true
   admix_layer: "admixed"
   binary_layer: "is_transcript_added"
@@ -18,3 +19,5 @@ preprocess_args:
     n_repeats: 1
     min_sampled_transcript_threshold: 0
     min_source_transcript_count: 400
+    use_same_cell_type_neighbors: False
+    only_sample_unexpressed_genes: True

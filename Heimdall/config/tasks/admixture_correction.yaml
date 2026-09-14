@@ -1,6 +1,6 @@
 args:
   task_type: admixture_binary
-  context_length: 509
+  context_length: null
   label_obsm_name: is_transcript_added_0
   splits:
     type: predefined
@@ -25,6 +25,26 @@ args:
     metric: cosine
     max_cells: 5000
     random_state: 0
+  external_eval:
+    enabled: false
+    data_path: null
+    dataset_name: null
+    split: full
+    prefix: external_eval
+    every_n_epochs: 1
+    fixed_epoch: null
+    require_matching_var_names: true
+    run_model_metrics: true
+    metrics_eval:
+      enabled: false
+      script_path: null
+      probability_layer: _training_syndri_probs
+      output_dir: null
+      write_outputs: true
+      tissue: null
+      sample_replicate: null
+      args: {}
+    overrides: {}
   track_metric: F1Score
   # train_split: 0.8
   # prediction_dim: 14
@@ -38,4 +58,4 @@ args:
   head_config:
     type: ${tasks.args.admixture_pred_head_type}
     args:
-      num_prefix_tokens: 3
+      num_prefix_tokens: null

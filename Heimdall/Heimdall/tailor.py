@@ -211,7 +211,7 @@ class ChromosomeTailor(Tailor):
 
 
 class AdmixtureTailor(Tailor):
-    def __init__(self, fc: Fc, sample_size: int):
+    def __init__(self, fc: Fc, sample_size: int | None = None):
         super().__init__(fc=fc)
         self.sample_size = sample_size
         self.cell_type_dict = self.fc.adata.uns['cell_type_dict']
@@ -274,13 +274,14 @@ class AdmixtureTailor(Tailor):
     
     def append_cell_type(self, identity_inputs: NDArray, expression_inputs: NDArray) -> tuple[NDArray, NDArray]:
 
-        identity_inputs = np.append(self.fc.surr_cell_tokens,identity_inputs, axis=0)
-        expression_inputs = np.append(self.fc.surr_cell_tokens,expression_inputs, axis=0)
+        metadata_prefix_tokens = getattr(self.fc, "metadata_prefix_tokens", self.fc.surr_cell_tokens)
+        identity_inputs = np.append(metadata_prefix_tokens,identity_inputs, axis=0)
+        expression_inputs = np.append(metadata_prefix_tokens,expression_inputs, axis=0)
 
         if self._cell_type_prefix_debug_count < 5:
-            n_prefix = len(self.fc.surr_cell_tokens)
+            n_prefix = len(metadata_prefix_tokens)
             print("> training prefix after append_cell_type:")
-            print(f"  expected_prefix={self.fc.surr_cell_tokens}")
+            print(f"  expected_prefix={metadata_prefix_tokens}")
             print(f"  identity_prefix={identity_inputs[:n_prefix].tolist()}")
             print(f"  expression_prefix={expression_inputs[:n_prefix].tolist()}")
             print(f"  prefix_all_negative={np.all(identity_inputs[:n_prefix] < 0)}")

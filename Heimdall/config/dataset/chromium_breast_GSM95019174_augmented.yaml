@@ -1,11 +1,12 @@
 dataset_name: "chromium_breast_GSM95019174_augmented"
 
 preprocess_args:
-  data_path: "/compute/oven-0-13/jwinchel/scRNA-seq/adata/chromium_GSM9509174_breast_integrated.h5ad"
+  data_path: "/work/magroup/skrieger/Syndri/data/trainsets/chromium_GSM9509174_breast_matchedcelltypes.h5ad"
   top_n_genes: false
   normalize: false
   log_1p: false
   scale_data: false
+  truncate_counts_max_value: 250
   admixture: true
   fix_admixture: false
   admix_layer: "admixed_0"
@@ -13,13 +14,14 @@ preprocess_args:
   species: "human"
 
   admixture_args:
-    k_neighbors: 3
-    frac_transcript_per_cell: 0.05
+    k_neighbors: 15
     min_sampled_transcript_threshold: 0
-    min_source_transcript_count: 100
+    min_source_transcript_count: 5
+    use_same_cell_type_neighbors: False
+    only_sample_unexpressed_genes: True
     mask_out_random_genes: False
     mask_out_frac: 0.0
-    tau_range: [0.0,0.15]
+    tau_range: [0.4,0.7]
     n_repeats: 1
     coord_cols: ['x_centroid','y_centroid']
     tissue_col: "orig.ident"

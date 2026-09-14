@@ -129,3 +129,20 @@ python /home/jwinchel/Syndri/code/rctd_annotation.py "${PYTHON_ARGS[@]}"
 # sbatch --array=0-7%2 \
   # --export=ALL,REFERENCE_FILE=/compute/oven-0-13/jwinchel/scRNA-seq/adata/GSE127465_tumor_integrated.h5ad,SPATIAL_DIR=/work/magroup/skrieger/Syndri/data/xenium_noise_experiment/,INPUT_GLOB='cosmx_nsclc*1pct.h5ad',OUTPUT_DIR=/work/magroup/skrieger/Syndri/data/xenium_noise_experiment/,LAYER_PATTERN='^X$',CELL_TYPE_COL=cell_type,MODE=doublet \
   # /home/jwinchel/Syndri/scripts/slurm/rctd_annotation.sbatch
+
+# 09/10/2026: WHOLE MOUSE BRAIN MERFISH
+# sbatch --job-name=rctd-brain --array=0-2%2 \
+#   --export=ALL,REFERENCE_FILE=/work/magroup/skrieger/Syndri/data/datasets/brain_merfish/interim/single-cell/10Xv3_subsampled.h5ad,SPATIAL_DIR=/work/magroup/skrieger/Syndri/data/datasets/brain_merfish/interim/spatial,INPUT_GLOB='st_integrated_slice-Zhuang-ABCA-4.00[0-9].h5ad',INPUT_LIST_FILE=,INPUT_FILES=,OUTPUT_DIR=/work/magroup/skrieger/Syndri/data/datasets/brain_merfish/results/spatial,LAYER_PATTERN='^X$',CELL_TYPE_COL=class,MODE=doublet \
+#   /home/jwinchel/Syndri/scripts/slurm/rctd_annotation.sbatch
+
+
+# 09/10/2026: AGING MOUSE BRAIN MERFISH
+# sbatch --array=0-2%2 \
+  # --export=ALL,REFERENCE_FILE=/work/magroup/skrieger/Syndri/data/datasets/agingbrain_merfish/interim/single-cell/10Xv3_subsampled.h5ad,SPATIAL_DIR=/work/magroup/skrieger/Syndri/data/datasets/brain_merfish/interim,INPUT_GLOB='',OUTPUT_DIR=/work/magroup/skrieger/Syndri/data/datasets/brain_merfish/results/spatial,LAYER_PATTERN='^X$',CELL_TYPE_COL=class,MODE=doublet \
+  # /home/jwinchel/Syndri/scripts/slurm/rctd_annotation.sbatch
+
+# 9/11/2026: NSCLC COSMX
+# sbatch --job-name=rctd-cosmx --array=0-7%2 \
+#   --export=ALL,REFERENCE_FILE=/work/magroup/skrieger/Syndri/data/datasets/nsclc_cosmx/interim/single-cell/sc_integrated.h5ad,SPATIAL_DIR=/work/magroup/skrieger/Syndri/data/datasets/nsclc_cosmx/interim/spatial,INPUT_GLOB='*annotated.h5ad',INPUT_LIST_FILE=,INPUT_FILES=,OUTPUT_DIR=,LAYER_PATTERN='^X$',CELL_TYPE_COL=cell_type,MODE=doublet,FORCE=0 \
+#   /home/jwinchel/Syndri/scripts/slurm/rctd_annotation.sbatch
+
