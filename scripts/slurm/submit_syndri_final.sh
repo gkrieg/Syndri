@@ -4,8 +4,8 @@ set -euo pipefail
 # Edit the settings below, then run: bash submit_syndri_final.sh
 # Each checkpoint directory must contain config.txt and model-<milestone>.pt.
 # Each reference should contain the selected model's training cell_type_dict.
-datasets=(agingbrain_merfish brain_merfish nsclc_cosmx breast_xenium)
-
+# datasets=(agingbrain_merfish brain_merfish nsclc_cosmx breast_xenium)
+datasets=(nsclc_cosmx)
 declare -A checkpoint_dirs milestones reference_files
 
 checkpoint_dirs[agingbrain_merfish]="/home/jwinchel/Syndri/Heimdall/admixture_prediction_results/10x_agingbrain_donors5to8/"
@@ -17,7 +17,7 @@ milestones[brain_merfish]="130"
 reference_files[brain_merfish]="/compute/oven-0-13/jwinchel/scRNA-seq/adata/10x_wholemousebrain_Zhuang-ABCA-4.003.h5ad"
 
 checkpoint_dirs[nsclc_cosmx]="/home/jwinchel/Syndri/Heimdall/admixture_prediction_results/10x_nsclc-cosmx_Lung9-Rep1/"
-milestones[nsclc_cosmx]="108"
+milestones[nsclc_cosmx]="68"
 reference_files[nsclc_cosmx]="/compute/oven-0-13/jwinchel/scRNA-seq/adata/10x_nsclc-cosmx_Lung9-Rep1.h5ad"
 
 checkpoint_dirs[breast_xenium]="/home/jwinchel/Syndri/Heimdall/admixture_prediction_results/chromium_breast_GSM95019174_augmented_matchedcelltypes_optimized_unexpressedgenes_withquerycelltype/"
@@ -70,9 +70,9 @@ case "$dataset" in
     export COORD_COLS=x,y
     ;;
   nsclc_cosmx)
-    pattern='*annotated.h5ad'
+    pattern='st_integrated_slice-*.h5ad'
     expected=8
-    export CELL_TYPE_COL=cell_type
+    export CELL_TYPE_COL=cell_type_harmonized
     export COORD_COLS=CenterX_global_px,CenterY_global_px
     ;;
   breast_xenium)

@@ -2,7 +2,11 @@
 # Run with bash; one Slurm array per dataset and one task per ready slice.
 set -euo pipefail
 
-datasets=(breast_xenium nsclc_cosmx)
+if (( $# > 0 )); then
+  datasets=("$@")
+else
+  datasets=(breast_xenium nsclc_cosmx)
+fi
 export TARGET_REMOVED_FRACTIONS=0.01,0.02,0.05,0.1,0.2,0.3,0.4,0.5
 export SAMPLE_FRAC=1.0
 concurrent_tasks_per_dataset=2
@@ -42,9 +46,9 @@ submit_dataset() (
   export OUTPUT_ROOT="$base/$dataset/results/metrics/tcell"
   case "$dataset" in
     breast_xenium)
-      export LABEL_KEY=harmony_cell_type COORD_X=x_centroid COORD_Y=y_centroid COORD_UNITS=micrometers ;;
+      export LABEL_KEY=harmony_cell_type REFERENCE_LABEL_KEY=cell_type SYNDRI_PROFILE_CELL_TYPE_COL=cell_type COORD_X=x_centroid COORD_Y=y_centroid COORD_UNITS=micrometers ;;
     nsclc_cosmx)
-      export LABEL_KEY=cell_type COORD_X=CenterX_global_px COORD_Y=CenterY_global_px COORD_UNITS=pixels
+      export LABEL_KEY=cell_type_harmonized REFERENCE_LABEL_KEY=cell_type_harmonized SYNDRI_PROFILE_CELL_TYPE_COL=cell_type_harmonized COORD_X=CenterX_global_px COORD_Y=CenterY_global_px COORD_UNITS=pixels
       if [[ -z "$nsclc_micrometers_per_pixel" ]]; then
         export PHYSICAL_RADIUS_UM=""
       fi

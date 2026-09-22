@@ -340,10 +340,16 @@ def merge_layer(
     if (col_index < 0).any():
         raise ValueError(f"SPLIT output contains genes not present in target AnnData for {sample_id}")
 
+    original = get_count_matrix(adata, layer)
+    # SPLIT returns fractional purified counts even when the source matrix is
+    # integer-valued. Assigning them into an integer sparse matrix silently
+    # truncates values (especially 0 < x < 1) and creates artificial zeros.
+    # Use a dtype capable of representing both the original and SPLIT values.
+    output_dtype = np.result_type(original.dtype, purified.dtype)
     if fill_missing == "original":
-        output = get_count_matrix(adata, layer).tolil()
+        output = original.astype(output_dtype, copy=True).tolil()
     else:
-        output = sparse.lil_matrix(adata.shape, dtype=purified.dtype)
+        output = sparse.lil_matrix(adata.shape, dtype=output_dtype)
     output[np.ix_(row_index, col_index)] = purified
     adata.layers[result_layer] = output.tocsr()
 
@@ -356,6 +362,7 @@ def merge_layer(
         "n_cells": int(purified.shape[0]),
         "n_genes": int(purified.shape[1]),
         "fill_missing": fill_missing,
+        "output_dtype": str(output_dtype),
         "obs_columns": added_obs_columns,
     }
 

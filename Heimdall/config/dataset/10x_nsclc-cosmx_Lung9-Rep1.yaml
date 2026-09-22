@@ -23,5 +23,6 @@ preprocess_args:
     mask_out_frac: 0.0
     tau_range: [0.7,0.85]
     n_repeats: 1
+    cell_type_col: "cell_type_harmonized"
     coord_cols: ["CenterX_global_px", "CenterY_global_px"]
     tissue_col: "batch"

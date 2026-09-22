@@ -76,6 +76,7 @@ SKIP_TCELL_COSINE_SIMILARITY=${SKIP_TCELL_COSINE_SIMILARITY:-0}
 SKIP_CELL_TYPE_PROFILES=${SKIP_CELL_TYPE_PROFILES:-0}
 ADDITIONAL_COUNTS_ZERO_HIGH_PROB=${ADDITIONAL_COUNTS_ZERO_HIGH_PROB:-0}
 EXTRA_ARGS=${EXTRA_ARGS:-}
+source /home/jwinchel/Syndri/scripts/slurm/syndri_reference_cosine_args.sh
 
 if [[ -n "$INPUT_LIST_FILE" ]]; then
   mapfile -t ALL_INPUT_FILES < "$INPUT_LIST_FILE"
@@ -222,7 +223,8 @@ python /home/jwinchel/Syndri/eval/metrics_eval.py \
   --tcell-exact-zscore "$TCELL_EXACT_ZSCORE" \
   --tcell-dense-size-limit-entries "$TCELL_DENSE_SIZE_LIMIT_ENTRIES" \
   "${OPTIONAL_ARGS[@]}" \
-  $EXTRA_ARGS
+  $EXTRA_ARGS \
+  "${SYNDRI_COSINE_ARGS[@]}"
 
 # This script is array-oriented. Each task selects one file by SLURM_ARRAY_TASK_ID
 # and writes to OUTPUT_DIR/<sample_name>/ by default.

@@ -104,6 +104,7 @@ SKIP_TCELL_NEIGHBORHOOD_METRICS=${SKIP_TCELL_NEIGHBORHOOD_METRICS:-0}
 SKIP_TCELL_COSINE_SIMILARITY=${SKIP_TCELL_COSINE_SIMILARITY:-0}
 SKIP_CELL_TYPE_PROFILES=${SKIP_CELL_TYPE_PROFILES:-0}
 EXTRA_ARGS=${EXTRA_ARGS:-}
+source /home/jwinchel/Syndri/scripts/slurm/syndri_reference_cosine_args.sh
 
 if [[ -n "$INPUT_LAYERS" ]]; then
   LAYER_CSV=${INPUT_LAYERS//${INPUT_LAYERS_SEP}/,}
@@ -331,7 +332,8 @@ python /home/jwinchel/Syndri/eval/metrics_eval.py \
   --tcell-exact-zscore "$TCELL_EXACT_ZSCORE" \
   --tcell-dense-size-limit-entries "$TCELL_DENSE_SIZE_LIMIT_ENTRIES" \
   "${OPTIONAL_ARGS[@]}" \
-  $EXTRA_ARGS
+  $EXTRA_ARGS \
+  "${SYNDRI_COSINE_ARGS[@]}"
 
 # Current default directory has 19 breast sample-replicates, so:
 # sbatch --array=0-18%2 /home/jwinchel/Syndri/scripts/slurm/metrics_eval_layers_pooled.sbatch

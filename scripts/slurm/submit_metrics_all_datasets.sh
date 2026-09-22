@@ -2,8 +2,11 @@
 # Run with bash after Syndri inference. No source H5AD files are modified.
 set -euo pipefail
 
-# datasets=(agingbrain_merfish brain_merfish nsclc_cosmx breast_xenium)
-datasets=(nsclc_cosmx)
+if (( $# )); then
+  datasets=("$@")
+else
+  datasets=(agingbrain_merfish brain_merfish nsclc_cosmx breast_xenium)
+fi
 export TARGET_REMOVED_FRACTIONS=0.01,0.02,0.05,0.1,0.2,0.3,0.4,0.5
 export SAMPLE_FRAC=1.0
 export EXCLUDE_LABELS="nan"
@@ -17,12 +20,23 @@ submit_dataset() (
   dataset=$1
   export OUTPUT_ROOT="$base/$dataset/results/metrics/non_tcell"
   case "$dataset" in
-    agingbrain_merfish) export LABEL_KEY=cell_type ;;
-    brain_merfish) export LABEL_KEY=class ;;
-    nsclc_cosmx) export LABEL_KEY=cell_type ;;
-    breast_xenium) export LABEL_KEY=harmony_cell_type ;;
+    agingbrain_merfish) export LABEL_KEY=cell_type SYNDRI_PROFILE_CELL_TYPE_COL=cell_type ;;
+    brain_merfish) export LABEL_KEY=class SYNDRI_PROFILE_CELL_TYPE_COL=class ;;
+    nsclc_cosmx) export LABEL_KEY=cell_type SYNDRI_PROFILE_CELL_TYPE_COL=cell_type_harmonized ;;
+    breast_xenium) export LABEL_KEY=harmony_cell_type SYNDRI_PROFILE_CELL_TYPE_COL=cell_type ;;
     *) echo "Unknown dataset: $dataset" >&2; exit 1 ;;
   esac
+
+  # Only used by the optional reference-cosine case; retain the existing
+  # separation labels and removal-sweep behavior.
+  if [[ "${SYNDRI_REFERENCE_COSINE:-0}" =~ ^(1|true|TRUE)$ ]]; then
+    case "$dataset" in
+      nsclc_cosmx) export SYNDRI_CELL_TYPE_KEY="${SYNDRI_CELL_TYPE_KEY:-cell_type_harmonized}" ;;
+      breast_xenium)
+        export REFERENCE_DATA="${REFERENCE_DATA:-$base/breast_xenium/interim/single-cell/breast_cancer_chromium_genesubset.h5ad}"
+        ;;
+    esac
+  fi
 
   # Only schedule files with both completed prediction layers. Rerun this
   # wrapper after remaining inference jobs finish to include those slices.
@@ -56,7 +70,11 @@ PY
   INPUT_LIST_FILE=$(mktemp "$OUTPUT_ROOT/inputs.XXXXXX.txt")
   export INPUT_LIST_FILE
   printf '%s\n' "${files[@]}" > "$INPUT_LIST_FILE"
-  echo "$dataset: submitting ${#files[@]} slices, 10 cases per slice."
+  if [[ "${SPLIT_ONLY:-0}" == 1 ]]; then
+    echo "$dataset: submitting ${#files[@]} slices, SPLIT case only."
+  else
+    echo "$dataset: submitting ${#files[@]} slices, full metric set."
+  fi
   sbatch --job-name="metrics-$dataset" \
     --array="0-$((${#files[@]} - 1))%${concurrent_tasks_per_dataset}" \
     --export=ALL "$script"

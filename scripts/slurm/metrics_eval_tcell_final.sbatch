@@ -15,6 +15,7 @@ conda activate "${CONDA_ENV:-heimdall}"
 : "${OUTPUT_ROOT:?Set OUTPUT_ROOT}"
 : "${LABEL_KEY:?Set LABEL_KEY}"
 : "${REFERENCE_DATA:?Set REFERENCE_DATA}"
+REFERENCE_LABEL_KEY=${REFERENCE_LABEL_KEY:-cell_type}
 : "${COORD_X:?Set COORD_X}"
 : "${COORD_Y:?Set COORD_Y}"
 : "${NEIGHBORHOOD_RADIUS:?Set radius in native coordinate units}"
@@ -28,15 +29,25 @@ input=${files[$task]}
 sample=$(basename "$input" .h5ad)
 output="$OUTPUT_ROOT/$sample"
 mkdir -p "$output"
+source /home/jwinchel/Syndri/scripts/slurm/syndri_reference_cosine_args.sh
+METRIC_MODE_ARGS=()
+config_output=tcell_metrics_config.json
+if [[ "${SPLIT_ONLY:-0}" == 1 ]]; then
+  METRIC_MODE_ARGS=(--only-additional-counts --append-output)
+  config_output=tcell_metrics_split_rerun_config.json
+elif [[ "${SYNDRI_COSINE_ONLY:-0}" == 1 ]]; then
+  METRIC_MODE_ARGS=(--only-syndri-reference-cosine --append-output)
+  config_output=tcell_metrics_syndri_cosine_rerun_config.json
+fi
 echo "Neighborhood radius: $NEIGHBORHOOD_RADIUS ${COORD_UNITS:-coordinate units}"
 
 # A fresh coordinate key makes the evaluator use the selected obs columns.
 # Each input is a single slice, so use its filename as the neighborhood group
 # rather than inherited reference/batch labels. Both fields are in-memory only.
-python /home/jwinchel/Syndri/eval/metrics_eval.py \
+/home/jwinchel/miniconda3/envs/heimdall/bin/python /home/jwinchel/Syndri/eval/metrics_eval.py \
   --input-files "$input" \
   --output-dir "$output" \
-  --config-output tcell_metrics_config.json \
+  --config-output "$config_output" \
   --tcell-output tcell_contamination_metrics.csv \
   --tcell-effect-output tcell_contamination_effects.csv \
   --tcell-lr-gene-output tcell_lr_top_genes.csv \
@@ -63,7 +74,7 @@ python /home/jwinchel/Syndri/eval/metrics_eval.py \
   --probability-transform power \
   --probability-power 2 \
   --reference-data "$REFERENCE_DATA" \
-  --reference-cell-type-key cell_type \
+  --reference-cell-type-key "$REFERENCE_LABEL_KEY" \
   --reference-counts-layer "" \
   --tcell-cosine-cell-type-pattern '(?i)(T CD[48]|Treg|CD4-positive|cytotoxic T|T-regulatory)' \
   --tcell-top-n 20 \
@@ -74,18 +85,24 @@ python /home/jwinchel/Syndri/eval/metrics_eval.py \
   --sample-frac "${SAMPLE_FRAC:-1.0}" \
   --sample-random-state 0 \
   --random-state 0 \
-  --n-jobs "${SLURM_CPUS_PER_TASK:-8}"
+  --n-jobs "${SLURM_CPUS_PER_TASK:-8}" \
+  "${SYNDRI_COSINE_ARGS[@]}" \
+  "${METRIC_MODE_ARGS[@]}"
 
 # Neighborhood pairs can legitimately be absent when too few proximal/distal
 # cells qualify. Report recorded computation errors, not absent eligible pairs.
-python - "$output" "$NEIGHBORHOOD_RADIUS" "${COORD_UNITS:-coordinate units}" "${PHYSICAL_RADIUS_UM:-}" <<'PY'
+/home/jwinchel/miniconda3/envs/heimdall/bin/python - "$output" "$NEIGHBORHOOD_RADIUS" "${COORD_UNITS:-coordinate units}" "${PHYSICAL_RADIUS_UM:-}" "$config_output" <<'PY'
 import json
 import sys
 from pathlib import Path
 import pandas as pd
 
 output = Path(sys.argv[1])
-config_path = output / "tcell_metrics_config.json"
+config_path = output / sys.argv[5]
+rerun_condition = {
+    "tcell_metrics_split_rerun_config.json": "SPLIT",
+    "tcell_metrics_syndri_cosine_rerun_config.json": "syndri_reference_cosine",
+}.get(config_path.name)
 config = json.loads(config_path.read_text())
 config.update(neighborhood_radius=float(sys.argv[2]), coordinate_units=sys.argv[3],
               physical_radius_um=float(sys.argv[4]) if sys.argv[4] else None)
@@ -98,6 +115,8 @@ for name in ["tcell_contamination_metrics.csv", "tcell_cosine_similarity.csv",
     except pd.errors.EmptyDataError:
         print(f"No eligible results: {name}")
         continue
+    if rerun_condition and "condition" in table:
+        table = table[table["condition"].astype(str) == rerun_condition]
     if "error" in table:
         errors = table["error"].fillna("").astype(str)
         failures.extend(f"{name}: {error}" for error in errors[errors != ""].unique())

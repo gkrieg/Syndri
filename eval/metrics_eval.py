@@ -84,6 +84,25 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--admix-probs-layer", default="admix_probs")
     parser.add_argument("--target-removed-fractions", default="0.01,0.02,0.05,0.1,0.2")
     parser.add_argument("--clean-prob-threshold", type=float, default=0.5)
+    parser.add_argument("--syndri-reference-cosine", action="store_true",
+                        help="Add a per-cell Syndri zeroing case selected by rolling reference cosine.")
+    parser.add_argument("--syndri-cosine-window", type=int, default=5,
+                        help="Trailing window of distinct expressed-gene probability thresholds; 1 disables smoothing.")
+    parser.add_argument("--syndri-reference-profiles",
+                        default=str(SCRIPT_DIR.parent / "data/cache/rctd_profiles"),
+                        help="Cell-type-by-gene profile h5ad, or directory of split_sparsity profile caches.")
+    parser.add_argument("--syndri-cell-type-key", default="",
+                        help="obs column matching reference profile names; defaults to --label-key.")
+    parser.add_argument("--syndri-profile-min-umi", type=int, default=10)
+    parser.add_argument("--syndri-profile-max-umi", type=int, default=2000)
+    parser.add_argument("--syndri-profile-cell-min", type=int, default=25)
+    parser.add_argument("--syndri-profile-max-cells", type=int, default=10000)
+    parser.add_argument("--syndri-profile-cell-type-col", default="cell_type")
+    parser.add_argument(
+        "--only-syndri-reference-cosine",
+        action="store_true",
+        help="Evaluate only the adaptive per-cell Syndri reference-cosine case.",
+    )
     parser.add_argument("--cleaning-mode", choices=["zero", "probability_scale"], default="zero")
     parser.add_argument("--cell-type-specific-removal", action="store_true")
     parser.add_argument(
@@ -104,6 +123,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--additional-counts-layer", default="split_purified_counts")
     parser.add_argument("--additional-counts-case-label", default="SPLIT")
     parser.add_argument("--additional-counts-zero-high-prob", action="store_true")
+    parser.add_argument(
+        "--only-additional-counts",
+        action="store_true",
+        help=("Evaluate only --additional-counts-layer. Use with --append-output "
+              "to replace that case while preserving existing rows."),
+    )
 
     parser.add_argument(
         "--evaluation-layers",
@@ -746,6 +771,19 @@ def preprocess_counts_for_metrics(X, args: argparse.Namespace):
     return metric_adata.obsm["X_pca"]
 
 
+def median_cell_count_summaries(X) -> tuple[float, float]:
+    """Return median detected genes and median transcript count per cell."""
+    if sparse.issparse(X):
+        genes_per_cell = np.asarray((X > 0).sum(axis=1)).ravel()
+        transcripts_per_cell = np.asarray(X.sum(axis=1)).ravel()
+    else:
+        X_array = np.asarray(X)
+        genes_per_cell = np.count_nonzero(X_array > 0, axis=1)
+        transcripts_per_cell = X_array.sum(axis=1)
+
+    return float(np.median(genes_per_cell)), float(np.median(transcripts_per_cell))
+
+
 def neighbors_for_scib_leiden_metrics(embedding, args: argparse.Namespace):
     return pynndescent(
         embedding,
@@ -787,6 +825,8 @@ def empty_metric_row(
         "n_cells": np.nan,
         "n_genes": np.nan,
         "n_labels": np.nan,
+        "median_genes_per_cell": np.nan,
+        "median_transcripts_per_cell": np.nan,
         "silhouette_score": np.nan,
         "calinski_harabasz": np.nan,
         "davies_bouldin": np.nan,
@@ -836,6 +876,10 @@ def score_case(
         row["n_cells"] = int(X_raw.shape[0])
         row["n_genes"] = int(X_raw.shape[1])
         row["n_labels"] = int(len(unique_labels))
+        (
+            row["median_genes_per_cell"],
+            row["median_transcripts_per_cell"],
+        ) = median_cell_count_summaries(X_raw)
         if len(unique_labels) < 2:
             raise ValueError("At least two labels are required for separation metrics.")
 
@@ -900,7 +944,7 @@ def run_cell_type_separation(
         adata = adata[keep].copy()
         labels = adata.obs[args.label_key]
 
-    rows = [
+    rows = [] if args.only_additional_counts else [
         score_case(tissue, source_file, "admixed", adata.X, labels, args),
     ]
 
@@ -915,7 +959,8 @@ def run_cell_type_separation(
         removal_labels = adata.obs[removal_group_key]
 
     admix_probs = adata.layers[args.admix_probs_layer]
-    for target_removed_fraction in parse_float_list(args.target_removed_fractions):
+    target_fractions = [] if args.only_additional_counts else parse_float_list(args.target_removed_fractions)
+    for target_removed_fraction in target_fractions:
         try:
             (
                 X_cleaned,
@@ -1507,7 +1552,7 @@ def run_tcell_contamination(
     coefficient_results: list[pd.DataFrame] = []
     profile_results: list[pd.DataFrame] = []
     cosine_results: list[pd.DataFrame] = []
-    specificity_layers: list[dict] = [
+    specificity_layers: list[dict] = [] if args.only_additional_counts else [
         {
             "condition": args.uncorrected_condition_label,
             "layer": lognorm_uncorrected,
@@ -1544,7 +1589,8 @@ def run_tcell_contamination(
         removal_labels = adata.obs[removal_group_key]
 
     admix_probs = adata.layers[args.admix_probs_layer]
-    for target_removed_fraction in parse_float_list(args.target_removed_fractions):
+    target_fractions = [] if args.only_additional_counts else parse_float_list(args.target_removed_fractions)
+    for target_removed_fraction in target_fractions:
         condition = f"cleaned_admixed_removed_frac_{target_removed_fraction:g}"
         try:
             (
@@ -2377,6 +2423,24 @@ def run_layered_evaluations_for_file(
                 args=method_args,
             )
 
+            if method == "syndri" and args.syndri_reference_cosine:
+                # Preserve reference provenance for automatic cache matching.
+                work.uns = copy.deepcopy(adata.uns)
+                adaptive = run_reference_cosine_evaluation(
+                    work, tissue, source_file, method_args, input_layer=input_layer,
+                    reference_adata=reference_adata, reference_profile_cache=reference_profile_cache)
+                for result, destination in zip(adaptive, [cell_type_rows, tcell_frames,
+                        coefficient_frames, profile_frames, cosine_frames]):
+                    result = add_layered_metadata(
+                        result, input_layer=input_layer, evaluation_method="syndri",
+                        probability_layer=resolved_probability_layer, counts_layer=input_layer,
+                        sample_replicate=sample_replicate, dropout_label=layer_dropout_label,
+                        dropout_fraction=layer_dropout_fraction)
+                    if isinstance(result, list):
+                        destination.extend(result)
+                    else:
+                        destination.append(result)
+
             if not args.skip_cell_type_separation:
                 rows = run_cell_type_separation(work, tissue, source_file, method_args)
                 rows = [row for row in rows if row.get("case") != "admixed"]
@@ -2643,6 +2707,50 @@ def run_layered_evaluations_for_file(
     return cell_type_rows, tcell_frames, coefficient_frames, profile_frames, cosine_frames
 
 
+def run_reference_cosine_evaluation(
+    adata, tissue, source_file, args, *, input_layer="X",
+    reference_adata=None, reference_profile_cache=None,
+):
+    from syndri_reference_cleaning import prepare_reference_cleaned
+
+    cleaned, achieved, profile_path = prepare_reference_cleaned(
+        adata, args, source_file, input_layer=input_layer)
+    name = "syndri_reference_cosine"
+    adaptive_args = copy.copy(args)
+    adaptive_args.target_removed_fractions = ""
+    adaptive_args.additional_counts_layer = ""
+    adaptive_args.cleaning_mode = "zero"
+    adaptive_args.cell_type_specific_removal = False
+    adaptive_args.uncorrected_condition_label = name
+    adaptive_args.admix_probs_layer = "_metrics_zero_probs"
+    work = ad.AnnData(X=cleaned, obs=adata.obs.copy(), var=adata.var.copy())
+    if args.coord_key in adata.obsm:
+        work.obsm[args.coord_key] = adata.obsm[args.coord_key].copy()
+    work.layers[adaptive_args.admix_probs_layer] = sparse.csr_matrix(work.shape)
+    rows = []
+    if not args.skip_cell_type_separation:
+        rows = run_cell_type_separation(work, tissue, source_file, adaptive_args)
+        for row in rows:
+            row["case"] = name
+    frames = [pd.DataFrame() for _ in range(4)]
+    if not args.skip_tcell_contamination:
+        frames = list(run_tcell_contamination(
+            work, tissue, source_file, adaptive_args, reference_adata=reference_adata,
+            reference_profile_cache=reference_profile_cache))
+    metadata = dict(cleaning_mode="zero", threshold_selection="per_cell_rolling_reference_cosine",
+                    cosine_window=args.syndri_cosine_window, reference_profiles=profile_path,
+                    achieved_removed_fraction=achieved, probability_transform="",
+                    cell_type_specific_removal=False)
+    for row in rows:
+        row.update(metadata)
+    for frame in frames:
+        if not frame.empty:
+            frame["condition"] = name
+            for key, value in metadata.items():
+                frame[key] = value
+    return (rows, *frames)
+
+
 def output_identity_columns(df: pd.DataFrame) -> list[str]:
     candidates = [
         "source_file",
@@ -2657,6 +2765,9 @@ def output_identity_columns(df: pd.DataFrame) -> list[str]:
         "case",
         "condition",
         "target_removed_fraction",
+        "threshold_selection",
+        "cosine_window",
+        "reference_profiles",
         "target_cell_type_i",
         "contaminating_cell_type_j",
         "spatial_cell_type",
@@ -2729,6 +2840,19 @@ def remove_stale_tcell_cosine_errors(df: pd.DataFrame) -> pd.DataFrame:
 def main() -> None:
     parser = build_parser()
     args = parser.parse_args()
+
+    if args.syndri_cosine_window < 1:
+        parser.error("--syndri-cosine-window must be positive")
+    if args.only_additional_counts and not args.additional_counts_layer:
+        parser.error("--only-additional-counts requires --additional-counts-layer")
+    if args.only_additional_counts and parse_str_list(args.evaluation_layers):
+        parser.error("--only-additional-counts is not supported in layered mode")
+    if args.only_syndri_reference_cosine and not args.syndri_reference_cosine:
+        parser.error("--only-syndri-reference-cosine requires --syndri-reference-cosine")
+    if args.only_syndri_reference_cosine and args.only_additional_counts:
+        parser.error("The two single-case evaluation modes are mutually exclusive")
+    if args.only_syndri_reference_cosine and parse_str_list(args.evaluation_layers):
+        parser.error("--only-syndri-reference-cosine is not supported in layered mode")
 
     files = discover_input_files(args)
     output_dir = Path(args.output_dir).expanduser().resolve()
@@ -2811,11 +2935,11 @@ def main() -> None:
             tcell_cosine_frames.extend(layered_cosine_frames)
             continue
 
-        if not args.skip_cell_type_separation:
+        if not args.skip_cell_type_separation and not args.only_syndri_reference_cosine:
             print(f"Computing cell-type separation metrics: {tissue}")
             cell_type_rows.extend(run_cell_type_separation(adata, tissue, str(path), args))
 
-        if not args.skip_tcell_contamination:
+        if not args.skip_tcell_contamination and not args.only_syndri_reference_cosine:
             print(f"Computing T-cell contamination metrics: {tissue}")
             tcell_df, coefficient_df, profile_df, cosine_df = run_tcell_contamination(
                 adata.copy(),
@@ -2829,6 +2953,17 @@ def main() -> None:
             tcell_coefficient_frames.append(coefficient_df)
             cell_type_profile_frames.append(profile_df)
             tcell_cosine_frames.append(cosine_df)
+
+        if args.syndri_reference_cosine and not args.only_additional_counts:
+            adaptive_rows, adaptive_tcell, adaptive_coefficients, adaptive_profiles, adaptive_cosines = (
+                run_reference_cosine_evaluation(
+                    adata, tissue, str(path), args, reference_adata=reference_adata,
+                    reference_profile_cache=reference_profile_cache))
+            cell_type_rows.extend(adaptive_rows)
+            tcell_frames.append(adaptive_tcell)
+            tcell_coefficient_frames.append(adaptive_coefficients)
+            cell_type_profile_frames.append(adaptive_profiles)
+            tcell_cosine_frames.append(adaptive_cosines)
 
     if not args.skip_cell_type_separation:
         cell_type_df = pd.DataFrame(cell_type_rows)

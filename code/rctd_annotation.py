@@ -59,10 +59,19 @@ def build_reference(
     cell_type_col: str = "cell_type",
     cell_min: int = 25,
     n_max_cells: int = 10000,
-    min_UMI: int = 100,
+    min_UMI: int = 10,
+    max_UMI: int = 2000,
 ) -> Reference:
+    if min_UMI < 1 or max_UMI < min_UMI:
+        raise ValueError("Reference UMI bounds must satisfy 1 <= min_UMI <= max_UMI")
+    # Reference does not implement an upper bound. Apply both bounds before
+    # its cell-type minimum and subsampling, using the already shared gene panel.
+    totals = np.asarray(reference_adata.X.sum(axis=1)).ravel()
+    keep = np.isfinite(totals) & (totals >= min_UMI) & (totals <= max_UMI)
+    if not keep.any():
+        raise ValueError(f"No reference cells have {min_UMI}–{max_UMI} shared-panel UMIs")
     return Reference(
-        reference_adata,
+        reference_adata[keep].copy(),
         cell_type_col=cell_type_col,
         cell_min=cell_min,
         n_max_cells=n_max_cells,
@@ -211,7 +220,8 @@ def annotate_single_layer(
         cell_type_col=cell_type_col,
         cell_min=config_kwargs.get("cell_min", 25),
         n_max_cells=config_kwargs.get("n_max_cells", 10000),
-        min_UMI=config_kwargs.get("reference_min_UMI", 100),
+        min_UMI=config_kwargs.get("reference_min_UMI", 10),
+        max_UMI=config_kwargs.get("reference_max_UMI", 2000),
     )
     config = build_rctd_config(
         class_df=class_df,
@@ -223,7 +233,7 @@ def annotate_single_layer(
         **{
             k: v
             for k, v in config_kwargs.items()
-            if k not in {"cell_min", "n_max_cells", "reference_min_UMI", "UMI_min", "counts_MIN", "UMI_min_sigma", "device", "compile"}
+            if k not in {"cell_min", "n_max_cells", "reference_min_UMI", "reference_max_UMI", "UMI_min", "counts_MIN", "UMI_min_sigma", "device", "compile"}
         },
     )
 
@@ -249,6 +259,13 @@ def annotate_single_layer(
         config,
         source_h5_files=[str(spatial_path), str(reference_path)],
     )
+    uns_metadata["reference_filtering"] = {
+        "min_UMI": config_kwargs.get("reference_min_UMI", 10),
+        "max_UMI": config_kwargs.get("reference_max_UMI", 2000),
+        "cell_min": config_kwargs.get("cell_min", 25),
+        "n_max_cells": config_kwargs.get("n_max_cells", 10000),
+        "umi_gene_scope": "shared_spatial_reference_genes",
+    }
 
     harmony_key = output_keys["harmony"]
     if "X_pca_harmony" in adata.obsm:
@@ -393,9 +410,13 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--reference-min-umi",
         type=int,
-        default=100,
-        help="Minimum UMI threshold for reference cell filtering.",
+        default=10,
+        help="Inclusive minimum shared-panel UMIs for reference cells (independent of sigma estimation).",
     )
+    parser.add_argument("--reference-max-umi", type=int, default=2000,
+                        help="Inclusive maximum shared-panel UMIs for reference cells.")
+    parser.add_argument("--umi-min-sigma", type=int, default=100,
+                        help="Spatial UMI threshold for sigma estimation; does not filter reference cells.")
     parser.add_argument(
         "--cell-min",
         type=int,
@@ -408,6 +429,8 @@ def build_parser() -> argparse.ArgumentParser:
 def parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
     parser = build_parser()
     args = parser.parse_args(argv)
+    if args.reference_min_umi < 1 or args.reference_max_umi < args.reference_min_umi:
+        parser.error("Reference UMI bounds must satisfy 1 <= minimum <= maximum")
     args.class_df = parse_class_df(args.class_df)
     args.simulated_dropout = parse_class_df(args.simulated_dropout)
     if args.batch_size != "auto":
@@ -439,6 +462,8 @@ def main(argv: Optional[Sequence[str]] = None) -> None:
             sigma_override=args.sigma_override,
             cell_min=args.cell_min,
             reference_min_UMI=args.reference_min_umi,
+            reference_max_UMI=args.reference_max_umi,
+            UMI_min_sigma=args.umi_min_sigma,
         )
 
 

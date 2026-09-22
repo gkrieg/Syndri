@@ -1,238 +1,0 @@
-Running Heimdall admixture inference
-  task id: 0
-  st data: /compute/oven-0-13/jwinchel/scRNA-seq/adata/GSE127465_tumor_integrated.h5ad
-  config source: checkpoint
-  checkpoint dir: /home/jwinchel/Heimdall/admixture_prediction_results/pca_gene2vec_transformer_syndri_medium_posweight_1p0
-  split column: split
-  split value: train
-  preserve split column: 1
-  coord cols: sampled_st_x,sampled_st_y
-  tissue col: <default>
-  apply admixture: 1
-  extra overrides: <none>
-  prepared name: GSE127465_tumor_integrated_prepared.h5ad
-  output name: GSE127465_tumor_integrated_train_med_with_admix_probs.h5ad
-/home/jwinchel/miniconda3/envs/heimdall/lib/python3.10/site-packages/anndata/utils.py:429: FutureWarning: Importing read_csv from `anndata` is deprecated. Import anndata.io.read_csv instead.
-  warnings.warn(msg, FutureWarning)
-/home/jwinchel/miniconda3/envs/heimdall/lib/python3.10/site-packages/anndata/utils.py:429: FutureWarning: Importing read_excel from `anndata` is deprecated. Import anndata.io.read_excel instead.
-  warnings.warn(msg, FutureWarning)
-/home/jwinchel/miniconda3/envs/heimdall/lib/python3.10/site-packages/anndata/utils.py:429: FutureWarning: Importing read_hdf from `anndata` is deprecated. Import anndata.io.read_hdf instead.
-  warnings.warn(msg, FutureWarning)
-/home/jwinchel/miniconda3/envs/heimdall/lib/python3.10/site-packages/anndata/utils.py:429: FutureWarning: Importing read_loom from `anndata` is deprecated. Import anndata.io.read_loom instead.
-  warnings.warn(msg, FutureWarning)
-/home/jwinchel/miniconda3/envs/heimdall/lib/python3.10/site-packages/anndata/utils.py:429: FutureWarning: Importing read_mtx from `anndata` is deprecated. Import anndata.io.read_mtx instead.
-  warnings.warn(msg, FutureWarning)
-/home/jwinchel/miniconda3/envs/heimdall/lib/python3.10/site-packages/anndata/utils.py:429: FutureWarning: Importing read_text from `anndata` is deprecated. Import anndata.io.read_text instead.
-  warnings.warn(msg, FutureWarning)
-/home/jwinchel/miniconda3/envs/heimdall/lib/python3.10/site-packages/anndata/utils.py:429: FutureWarning: Importing read_umi_tools from `anndata` is deprecated. Import anndata.io.read_umi_tools instead.
-  warnings.warn(msg, FutureWarning)
-/home/jwinchel/miniconda3/envs/heimdall/lib/python3.10/site-packages/torch/nn/modules/transformer.py:392: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
-  warnings.warn(
-/home/jwinchel/Syndri/Heimdall/Heimdall/cell_representations.py:64: UserWarning: Need to improve to explicitly handle multiclass vs. multilabel
-  return meth(self, *args, **kwargs)
-Detected kernel version 4.18.0, which is below the recommended minimum of 5.5.0; this can cause the process to hang. It is recommended to upgrade the kernel to the minimum version or higher.
-> Dropped 0 cells with missing/'nan' 'cell_type'.
-> Subset spatial AnnData to 957 notebook genes in notebook order.
-> Copied cell_type_dict from reference AnnData.
-> Preserved 'split'; 318,960 cells match split value 'train'.
-> Wrote prepared AnnData: /compute/oven-0-13/jwinchel/spatial_adata/heimdall_inference/GSE127465_tumor_integrated_prepared.h5ad
-> Disabling fast inference because apply_admixture=true requires the standard dataset path.
-> Loaded model config from checkpoint: /home/jwinchel/Heimdall/admixture_prediction_results/pca_gene2vec_transformer_syndri_medium_posweight_1p0/config.txt
-project_name: admixture_prediction
-run_name: admixture_pca_gene2vec_transformer_syndri_medium_posweight_1p0
-work_dir: admixture_prediction_results/pca_gene2vec_transformer_syndri_medium_posweight_1p0
-float_dtype: float32
-seed: 54
-data_path: /work/magroup/shared/Heimdall/data
-ensembl_dir: /work/magroup/shared/Heimdall/data
-cache_preprocessed_dataset_dir: null
-entity: Heimdall
-model:
-  type: Heimdall.models.Transformer
-  name: transformer_syndri_medium
-  args:
-    d_model: 128
-    pos_enc: BERT
-    num_encoder_layers: 4
-    nhead: 8
-    hidden_act: gelu
-    hidden_dropout_prob: 0.1
-    attention_probs_dropout_prob: 0.1
-    use_flash_attn: false
-    pooling: cls_pooling
-dataset:
-  dataset_name: admixture_nsclc_augmented
-  preprocess_args:
-    data_path: /compute/oven-0-13/jwinchel/spatial_adata/heimdall_inference/GSE127465_tumor_integrated_prepared.h5ad
-    top_n_genes: false
-    normalize: false
-    log_1p: false
-    scale_data: false
-    admixture: true
-    admix_layer: admixed_0
-    binary_layer: is_transcript_added_0
-    species: human
-    admixture_args:
-      k_neighbors: 3
-      frac_transcript_per_cell: 0.05
-      min_sampled_transcript_threshold: 0
-      min_source_transcript_count: 400
-      mask_out_random_genes: false
-      mask_out_frac: 0.0
-      tau_range:
-      - 0.0
-      - 0.15
-      n_repeats: 1
-      coord_cols:
-      - sampled_st_x
-      - sampled_st_y
-    apply_admixture: true
-tasks:
-  args:
-    task_type: admixture_binary
-    context_length: 509
-    label_obsm_name: is_transcript_added_0
-    splits:
-      type: predefined
-      keys_:
-        train: train
-        val: val
-        test: train
-      col: split
-    metrics:
-    - F1Score
-    - Accuracy
-    - ConfusionMatrix
-    track_metric: F1Score
-    shuffle: true
-    batchsize: 256
-    epochs: 50
-    dataset_config:
-      type: Heimdall.datasets.AdmixtureInstanceDataset
-    head_config:
-      type: Heimdall.models.LinearCellPredHead
-scheduler:
-  name: cosine
-  lr_schedule_type: cosine
-  warmup_ratio: 0.1
-  num_epochs: 20
-trainer:
-  accelerator: cuda
-  precision: 32-true
-  random_seed: 54
-  per_device_batch_size: 64
-  accumulate_grad_batches: 5
-  grad_norm_clip: 1.0
-  log_every: 1
-  fastdev: false
-optimizer:
-  name: AdamW
-  args:
-    lr: 0.0002
-    weight_decay: 0.1
-    betas:
-    - 0.9
-    - 0.95
-    foreach: false
-fc:
-  type: Heimdall.fc.AdmixtureFc
-  args:
-    max_input_length: 512
-    species: human
-    ensembl_dir: /work/magroup/shared/Heimdall/data
-    gene_metadata_filepath: /work/magroup/shared/Heimdall/data/gene_metadata/species_chrom.csv
-    embedding_parameters:
-      type: Heimdall.embedding.GaussianInitEmbedding
-      args:
-        num_embeddings: 100
-        embedding_dim: 128
-    tailor_config:
-      type: Heimdall.tailor.AdmixtureTailor
-      args:
-        sample_size: 509
-    order_config:
-      type: Heimdall.order.ExpressionOrder
-    reduce_config:
-      type: Heimdall.reduce.AdmixtureSumReduce
-fe:
-  type: Heimdall.fe.IdentityFe
-  name: Heimdall.fe.IdentityFe
-  args:
-    embedding_parameters:
-      type: Heimdall.embedding.FlexibleTypeLinear
-      args:
-        in_features: 1
-        out_features: 128
-    d_embedding: 128
-    drop_zeros: true
-fg:
-  type: Heimdall.fg.Gene2VecFg
-  args:
-    embedding_parameters:
-      type: Heimdall.embedding.FlexibleTypeEmbedding
-      constructor: from_pretrained
-      args:
-        embeddings: gene_embeddings
-    embedding_filepath: /work/magroup/shared/Heimdall/data/pca_embeds/new_gene2vec_embeds.pt
-    d_embedding: 128
-    frozen: true
-loss:
-  name: MaskedBCEWithLogitsLoss
-  args:
-    pos_weight: 1.0
-
-> Finished Loading in /compute/oven-0-13/jwinchel/spatial_adata/heimdall_inference/GSE127465_tumor_integrated_prepared.h5ad
-> Converting gene names to Ensembl IDs...
-human
-/work/magroup/shared/Heimdall/data
-Mapping data directory: /work/magroup/shared/Heimdall/data/gene_mapping/ensembl/human
-Loading mapping from cache: /work/magroup/shared/Heimdall/data/gene_mapping/ensembl/human/symbol_to_ensembl.json
-Successfully mapped 954 out of 957 identifiers (99.7%)
-> Matrix is already dense.
-> Getting nearest neighbors using coordinates: ('sampled_st_x', 'sampled_st_y')
-> Initialized lazy admixture epoch store at admixture_prediction_results/pca_gene2vec_transformer_syndri_medium_posweight_1p0/admixture_epochs
-> Skipping Normalizing anndata...
-> Skipping Log Transforming anndata..
-> No highly variable subset... using entire dataset
-> Not Scaling the data...
-> Finished Processing Anndata Object:
-AnnData object with n_obs × n_vars = 322891 × 957
-    obs: 'species', 'filename', 'sample', 'GSM_ID', 'cell_ID', 'Patient', 'Tissue', 'Barcoding emulsion', 'Library', 'Barcode', 'Total counts', 'Percent counts from mitochondrial genes', 'Most likely LM22 cell type', 'Major cell type', 'Minor subset', 'used_in_NSCLC_all_cells', 'x_NSCLC_all_cells', 'y_NSCLC_all_cells', 'used_in_NSCLC_and_blood_immune', 'x_NSCLC_and_blood_immune', 'y_NSCLC_and_blood_immune', 'used_in_NSCLC_immune', 'x_NSCLC_immune', 'y_NSCLC_immune', 'used_in_NSCLC_non_immune', 'x_NSCLC_non_immune', 'y_NSCLC_non_immune', 'used_in_blood', 'x_blood', 'y_blood', 'Barcode_Library', 'batch', 'cell_type', 'harmony_spatial_tissue', 'harmony_spatial_id', 'st_match_1_id', 'st_match_1_dist', 'st_match_1_x', 'st_match_1_y', 'st_match_2_id', 'st_match_2_dist', 'st_match_2_x', 'st_match_2_y', 'st_match_3_id', 'st_match_3_dist', 'st_match_3_x', 'st_match_3_y', 'sampled_st_id', 'sampled_st_x', 'sampled_st_y', 'selected_match_idx', 'split'
-    var: 'gene_ensembl', 'gene_symbol'
-    uns: 'cell_type_dict', 'gene_mapping:ensembl_to_symbol', 'neighbor_dict', 'neighbor_celltype_dict'
-    obsm: 'X_pca_harmony'
-> Data was provided in dense format, converting to CSR. Please consider pre-computing it to save memory.
-Found 924 genes with mappings out of 957 genes.
-> Finished calculating fg with Heimdall.fg.Gene2VecFg
-> Finished dropping invalid genes from AnnData
-> Finished calculating fe with Heimdall.fe.IdentityFe
-labels shape (322891, 509)
-> Dataset splits sizes (predefined):
-  train: 318,955
-  val: 3,936
-  test: 318,955
-> Finished setting up datasets (and loaders):
-	{'full': AdmixtureInstanceDataset(size=322,891) wrapping: <Heimdall.cell_representations.CellRepresentation object at 0x7fbaa7198ca0>,
-	 'test': <torch.utils.data.dataset.Subset object at 0x7fbafaa025f0>,
-	 'train': <torch.utils.data.dataset.Subset object at 0x7fbafaa00df0>,
-	 'val': <torch.utils.data.dataset.Subset object at 0x7fbafaa02680>}
-> Freezing all params in F_g
-> Task dimension: 509 (task type 'admixture_binary', self.labels.shape=(322891, 509))
-> Model parameters: 937,597
-is_transcript_added_0
-> Using Device: cuda
-> Number of Devices: 1
-!!! Remember that config batchsize here is GLOBAL Batchsize !!!
-> global batchsize: 256
-> total_samples: 318955
-> Warm Up Steps: 6225
-> Total Steps: 62250
-> per_device_batch_size: 256
-> Finished Wrapping the model, optimizer, and dataloaders in accelerate
-> run HeimdallTrainer.train() to begin training
-> Checkpoint directory initialized at /home/jwinchel/Heimdall/admixture_prediction_results/pca_gene2vec_transformer_syndri_medium_posweight_1p0
-> Loading checkpoint from /home/jwinchel/Heimdall/admixture_prediction_results/pca_gene2vec_transformer_syndri_medium_posweight_1p0/model-49.pt
-> Checkpoint version: 1.0
-> Resumed from epoch 49, step 99700
-  0%|          | 0/1246 [00:00<?, ?it/s]  0%|          | 1/1246 [00:08<2:52:32,  8.32s/it]  0%|          | 4/1246 [00:08<33:15,  1.61s/it]    1%|          | 7/1246 [00:08<15:48,  1.31it/s]  1%|          | 10/1246 [00:08<09:18,  2.21it/s]  1%|          | 13/1246 [00:08<06:04,  3.38it/s]  1%|▏         | 16/1246 [00:08<04:14,  4.84it/s]  2%|▏         | 19/1246 [00:09<03:04,  6.65it/s]  2%|▏         | 22/1246 [00:09<02:22,  8.60it/s]  2%|▏         | 25/1246 [00:09<01:54, 10.67it/s]  2%|▏         | 28/1246 [00:09<01:33, 12.98it/s]  2%|▏         | 31/1246 [00:09<01:20, 15.04it/s]  3%|▎         | 34/1246 [00:09<01:12, 16.71it/s]  3%|▎         | 37/1246 [00:09<01:05, 18.44it/s]  3%|▎         | 40/1246 [00:10<01:05, 18.54it/s]  3%|▎         | 43/1246 [00:10<01:07, 17.70it/s]  4%|▎         | 46/1246 [00:10<01:02, 19.11it/s]  4%|▍         | 49/1246 [00:10<00:58, 20.49it/s]  4%|▍         | 52/1246 [00:10<00:58, 20.54it/s]  4%|▍         | 55/1246 [00:10<00:56, 20.96it/s]  5%|▍         | 58/1246 [00:10<00:54, 21.70it/s]  5%|▍         | 61/1246 [00:10<00:54, 21.70it/s]  5%|▌         | 64/1246 [00:11<00:55, 21.40it/s]  5%|▌         | 67/1246 [00:11<00:55, 21.28it/s]  6%|▌         | 70/1246 [00:11<00:51, 22.67it/s]  6%|▌         | 73/1246 [00:11<00:53, 22.11it/s]  6%|▌         | 76/1246 [00:11<00:52, 22.18it/s]  6%|▋         | 79/1246 [00:11<00:53, 21.90it/s]  7%|▋         | 82/1246 [00:11<00:50, 22.88it/s]  7%|▋         | 85/1246 [00:12<00:50, 22.92it/s]  7%|▋         | 88/1246 [00:12<00:51, 22.66it/s]  7%|▋         | 91/1246 [00:12<00:52, 21.95it/s]  8%|▊         | 94/1246 [00:12<00:53, 21.48it/s]  8%|▊         | 97/1246 [00:12<00:50, 22.80it/s]  8%|▊         | 100/1246 [00:12<00:50, 22.50it/s]  8%|▊         | 103/1246 [00:12<00:50, 22.58it/s]  9%|▊         | 106/1246 [00:12<00:50, 22.77it/s]  9%|▊         | 109/1246 [00:13<00:50, 22.72it/s]  9%|▉         | 112/1246 [00:13<00:49, 22.77it/s]  9%|▉         | 115/1246 [00:13<00:48, 23.45it/s]  9%|▉         | 118/1246 [00:13<00:48, 23.28it/s] 10%|▉         | 121/1246 [00:13<00:48, 23.18it/s] 10%|▉         | 124/1246 [00:13<00:47, 23.45it/s] 10%|█         | 127/1246 [00:13<00:47, 23.37it/s] 10%|█         | 130/1246 [00:14<00:48, 23.02it/s] 11%|█         | 133/1246 [00:14<00:49, 22.48it/s] 11%|█         | 136/1246 [00:14<00:47, 23.48it/s] 11%|█         | 139/1246 [00:14<00:48, 22.71it/s] 11%|█▏        | 142/1246 [00:14<00:49, 22.20it/s] 12%|█▏        | 145/1246 [00:14<00:50, 21.72it/s] 12%|█▏        | 148/1246 [00:14<00:48, 22.87it/s] 12%|█▏        | 151/1246 [00:14<00:49, 22.27it/s] 12%|█▏        | 154/1246 [00:15<00:51, 21.09it/s] 13%|█▎        | 157/1246 [00:15<00:53, 20.51it/s] 13%|█▎        | 160/1246 [00:15<00:49, 21.92it/s] 13%|█▎        | 163/1246 [00:15<00:51, 20.98it/s] 13%|█▎        | 166/1246 [00:15<00:53, 20.34it/s] 14%|█▎        | 169/1246 [00:15<00:53, 19.98it/s] 14%|█▍        | 172/1246 [00:15<00:49, 21.49it/s] 14%|█▍        | 175/1246 [00:16<00:51, 20.78it/s] 14%|█▍        | 178/1246 [00:16<00:52, 20.29it/s] 15%|█▍        | 181/1246 [00:16<00:56, 18.87it/s] 15%|█▍        | 184/1246 [00:16<00:51, 20.63it/s] 15%|█▌        | 187/1246 [00:16<00:50, 20.85it/s] 15%|█▌        | 190/1246 [00:16<00:54, 19.23it/s] 15%|█▌        | 193/1246 [00:17<00:53, 19.85it/s] 16%|█▌        | 196/1246 [00:17<00:48, 21.43it/s] 16%|█▌        | 199/1246 [00:17<00:48, 21.49it/s] 16%|█▌        | 202/1246 [00:17<00:47, 21.88it/s] 16%|█▋        | 205/1246 [00:17<00:46, 22.45it/s] 17%|█▋        | 208/1246 [00:17<00:46, 22.30it/s] 17%|█▋        | 211/1246 [00:17<00:47, 21.90it/s] 17%|█▋        | 214/1246 [00:17<00:47, 21.80it/s] 17%|█▋        | 217/1246 [00:18<00:44, 22.87it/s] 18%|█▊        | 220/1246 [00:18<00:46, 22.24it/s] 18%|█▊        | 223/1246 [00:18<00:46, 21.91it/s] 18%|█▊        | 226/1246 [00:18<00:47, 21.60it/s] 18%|█▊        | 229/1246 [00:18<00:44, 22.78it/s] 19%|█▊        | 232/1246 [00:18<00:46, 21.98it/s] 19%|█▉        | 235/1246 [00:18<00:47, 21.14it/s] 19%|█▉        | 238/1246 [00:19<00:48, 20.65it/s] 19%|█▉        | 241/1246 [00:19<00:45, 22.03it/s] 20%|█▉        | 244/1246 [00:19<00:47, 21.22it/s] 20%|█▉        | 247/1246 [00:19<00:48, 20.58it/s] 20%|██        | 250/1246 [00:19<00:49, 20.28it/s] 20%|██        | 253/1246 [00:19<00:45, 21.76it/s] 21%|██        | 256/1246 [00:19<00:46, 21.07it/s] 21%|██        | 259/1246 [00:20<00:48, 20.46it/s] 21%|██        | 262/1246 [00:20<00:49, 20.03it/s] 21%|██▏       | 265/1246 [00:20<00:45, 21.53it/s] 22%|██▏       | 268/1246 [00:20<00:46, 20.93it/s] 22%|██▏       | 271/1246 [00:20<00:47, 20.52it/s] 22%|██▏       | 274/1246 [00:20<00:48, 20.16it/s] 22%|██▏       | 277/1246 [00:20<00:44, 21.63it/s] 22%|██▏       | 280/1246 [00:21<00:46, 20.84it/s] 23%|██▎       | 283/1246 [00:21<00:47, 20.37it/s] 23%|██▎       | 286/1246 [00:21<00:47, 20.13it/s] 23%|██▎       | 289/1246 [00:21<00:44, 21.62it/s] 23%|██▎       | 292/1246 [00:21<00:45, 20.81it/s] 24%|██▎       | 295/1246 [00:21<00:48, 19.70it/s] 24%|██▍       | 298/1246 [00:22<00:51, 18.51it/s] 24%|██▍       | 301/1246 [00:22<00:46, 20.29it/s] 24%|██▍       | 304/1246 [00:22<00:45, 20.81it/s] 25%|██▍       | 307/1246 [00:22<00:44, 20.89it/s] 25%|██▍       | 310/1246 [00:22<00:44, 20.93it/s] 25%|██▌       | 313/1246 [00:22<00:41, 22.27it/s] 25%|██▌       | 316/1246 [00:22<00:42, 22.03it/s] 26%|██▌       | 319/1246 [00:22<00:42, 21.69it/s] 26%|██▌       | 322/1246 [00:23<00:43, 21.48it/s] 26%|██▌       | 325/1246 [00:23<00:40, 22.68it/s] 26%|██▋       | 328/1246 [00:23<00:42, 21.48it/s] 27%|██▋       | 331/1246 [00:23<00:43, 20.82it/s] 27%|██▋       | 334/1246 [00:23<00:45, 20.12it/s] 27%|██▋       | 337/1246 [00:23<00:42, 21.59it/s] 27%|██▋       | 340/1246 [00:23<00:43, 20.82it/s] 28%|██▊       | 343/1246 [00:24<00:44, 20.30it/s] 28%|██▊       | 346/1246 [00:24<00:44, 20.07it/s] 28%|██▊       | 349/1246 [00:24<00:41, 21.56it/s] 28%|██▊       | 352/1246 [00:24<00:42, 20.86it/s] 28%|██▊       | 355/1246 [00:24<00:43, 20.59it/s] 29%|██▊       | 358/1246 [00:24<00:46, 19.26it/s] 29%|██▉       | 361/1246 [00:25<00:42, 20.99it/s] 29%|██▉       | 364/1246 [00:25<00:44, 20.00it/s] 29%|██▉       | 367/1246 [00:25<00:46, 18.75it/s] 30%|██▉       | 370/1246 [00:25<00:44, 19.63it/s] 30%|██▉       | 373/1246 [00:25<00:41, 21.19it/s] 30%|███       | 376/1246 [00:25<00:41, 21.16it/s] 30%|███       | 379/1246 [00:25<00:40, 21.35it/s] 31%|███       | 382/1246 [00:26<00:39, 22.15it/s] 31%|███       | 385/1246 [00:26<00:38, 22.12it/s] 31%|███       | 388/1246 [00:26<00:39, 21.89it/s] 31%|███▏      | 391/1246 [00:26<00:39, 21.57it/s] 32%|███▏      | 394/1246 [00:26<00:37, 22.84it/s] 32%|███▏      | 397/1246 [00:26<00:37, 22.53it/s] 32%|███▏      | 400/1246 [00:26<00:37, 22.47it/s] 32%|███▏      | 403/1246 [00:26<00:38, 22.04it/s] 33%|███▎      | 406/1246 [00:27<00:37, 22.64it/s] 33%|███▎      | 409/1246 [00:27<00:36, 23.00it/s] 33%|███▎      | 412/1246 [00:27<00:36, 22.81it/s] 33%|███▎      | 415/1246 [00:27<00:37, 22.21it/s] 34%|███▎      | 418/1246 [00:27<00:36, 22.47it/s] 34%|███▍      | 421/1246 [00:27<00:36, 22.73it/s] 34%|███▍      | 424/1246 [00:27<00:37, 22.08it/s] 34%|███▍      | 427/1246 [00:28<00:35, 22.83it/s] 35%|███▍      | 430/1246 [00:28<00:36, 22.57it/s] 35%|███▍      | 433/1246 [00:28<00:35, 22.93it/s] 35%|███▍      | 436/1246 [00:28<00:35, 22.82it/s] 35%|███▌      | 439/1246 [00:28<00:35, 22.80it/s] 35%|███▌      | 442/1246 [00:28<00:35, 22.43it/s] 36%|███▌      | 445/1246 [00:28<00:34, 23.33it/s] 36%|███▌      | 448/1246 [00:28<00:35, 22.58it/s] 36%|███▌      | 451/1246 [00:29<00:34, 23.07it/s] 36%|███▋      | 454/1246 [00:29<00:34, 22.99it/s] 37%|███▋      | 457/1246 [00:29<00:34, 22.58it/s] 37%|███▋      | 460/1246 [00:29<00:34, 22.78it/s] 37%|███▋      | 463/1246 [00:29<00:32, 23.82it/s] 37%|███▋      | 466/1246 [00:29<00:33, 23.34it/s] 38%|███▊      | 469/1246 [00:29<00:33, 23.32it/s] 38%|███▊      | 472/1246 [00:29<00:32, 23.58it/s] 38%|███▊      | 475/1246 [00:30<00:34, 22.38it/s] 38%|███▊      | 478/1246 [00:30<00:36, 21.16it/s] 39%|███▊      | 481/1246 [00:30<00:40, 18.77it/s] 39%|███▉      | 484/1246 [00:30<00:36, 20.62it/s] 39%|███▉      | 487/1246 [00:30<00:35, 21.32it/s] 39%|███▉      | 490/1246 [00:30<00:34, 22.14it/s] 40%|███▉      | 493/1246 [00:30<00:34, 22.12it/s] 40%|███▉      | 496/1246 [00:31<00:34, 21.82it/s] 40%|████      | 499/1246 [00:31<00:34, 21.51it/s] 40%|████      | 502/1246 [00:31<00:32, 22.68it/s] 41%|████      | 505/1246 [00:31<00:33, 22.18it/s] 41%|████      | 508/1246 [00:31<00:34, 21.34it/s] 41%|████      | 511/1246 [00:31<00:35, 20.57it/s] 41%|████▏     | 514/1246 [00:31<00:33, 21.99it/s] 41%|████▏     | 517/1246 [00:32<00:33, 21.80it/s] 42%|████▏     | 520/1246 [00:32<00:33, 21.52it/s] 42%|████▏     | 523/1246 [00:32<00:33, 21.67it/s] 42%|████▏     | 526/1246 [00:32<00:31, 22.77it/s] 42%|████▏     | 529/1246 [00:32<00:32, 22.18it/s] 43%|████▎     | 532/1246 [00:32<00:32, 21.82it/s] 43%|████▎     | 535/1246 [00:32<00:31, 22.87it/s] 43%|████▎     | 538/1246 [00:33<00:31, 22.74it/s] 43%|████▎     | 541/1246 [00:33<00:31, 22.49it/s] 44%|████▎     | 544/1246 [00:33<00:30, 22.93it/s] 44%|████▍     | 547/1246 [00:33<00:30, 23.07it/s] 44%|████▍     | 550/1246 [00:33<00:30, 22.81it/s] 44%|████▍     | 553/1246 [00:33<00:29, 23.22it/s] 45%|████▍     | 556/1246 [00:33<00:30, 22.41it/s] 45%|████▍     | 559/1246 [00:33<00:31, 21.90it/s] 45%|████▌     | 562/1246 [00:34<00:31, 22.05it/s] 45%|████▌     | 565/1246 [00:34<00:29, 23.35it/s] 46%|████▌     | 568/1246 [00:34<00:30, 22.01it/s] 46%|████▌     | 571/1246 [00:34<00:35, 19.27it/s] 46%|████▌     | 574/1246 [00:34<00:31, 21.09it/s] 46%|████▋     | 577/1246 [00:34<00:35, 19.07it/s] 47%|████▋     | 580/1246 [00:35<00:35, 18.60it/s] 47%|████▋     | 583/1246 [00:35<00:38, 17.42it/s] 47%|████▋     | 586/1246 [00:35<00:33, 19.45it/s] 47%|████▋     | 589/1246 [00:35<00:35, 18.72it/s] 47%|████▋     | 591/1246 [00:35<00:38, 17.04it/s] 48%|████▊     | 594/1246 [00:35<00:33, 19.23it/s] 48%|████▊     | 597/1246 [00:35<00:32, 20.03it/s] 48%|████▊     | 600/1246 [00:36<00:31, 20.66it/s] 48%|████▊     | 603/1246 [00:36<00:31, 20.73it/s] 49%|████▊     | 606/1246 [00:36<00:29, 21.70it/s] 49%|████▉     | 609/1246 [00:36<00:29, 21.88it/s] 49%|████▉     | 612/1246 [00:36<00:28, 22.11it/s] 49%|████▉     | 615/1246 [00:36<00:28, 21.96it/s] 50%|████▉     | 618/1246 [00:36<00:28, 22.23it/s] 50%|████▉     | 621/1246 [00:36<00:26, 23.42it/s] 50%|█████     | 624/1246 [00:37<00:27, 22.78it/s] 50%|█████     | 627/1246 [00:37<00:27, 22.53it/s] 51%|█████     | 630/1246 [00:37<00:27, 22.81it/s] 51%|█████     | 633/1246 [00:37<00:26, 23.03it/s] 51%|█████     | 636/1246 [00:37<00:27, 22.36it/s] 51%|█████▏    | 639/1246 [00:37<00:27, 22.29it/s] 52%|█████▏    | 642/1246 [00:37<00:26, 22.89it/s] 52%|█████▏    | 645/1246 [00:38<00:26, 22.95it/s] 52%|█████▏    | 648/1246 [00:38<00:26, 22.99it/s] 52%|█████▏    | 651/1246 [00:38<00:25, 23.76it/s] 52%|█████▏    | 654/1246 [00:38<00:25, 23.66it/s] 53%|█████▎    | 657/1246 [00:38<00:25, 23.05it/s] 53%|█████▎    | 660/1246 [00:38<00:27, 21.41it/s] 53%|█████▎    | 663/1246 [00:38<00:26, 22.08it/s] 53%|█████▎    | 666/1246 [00:38<00:25, 22.99it/s] 54%|█████▎    | 669/1246 [00:39<00:25, 22.91it/s] 54%|█████▍    | 672/1246 [00:39<00:25, 22.38it/s] 54%|█████▍    | 675/1246 [00:39<00:25, 22.38it/s] 54%|█████▍    | 678/1246 [00:39<00:25, 22.48it/s] 55%|█████▍    | 681/1246 [00:39<00:25, 22.25it/s] 55%|█████▍    | 684/1246 [00:39<00:25, 21.79it/s] 55%|█████▌    | 687/1246 [00:39<00:25, 22.19it/s] 55%|█████▌    | 690/1246 [00:40<00:25, 21.71it/s] 56%|█████▌    | 693/1246 [00:40<00:24, 23.02it/s] 56%|█████▌    | 696/1246 [00:40<00:24, 22.79it/s] 56%|█████▌    | 699/1246 [00:40<00:25, 21.84it/s] 56%|█████▋    | 702/1246 [00:40<00:26, 20.92it/s] 57%|█████▋    | 705/1246 [00:40<00:24, 22.38it/s] 57%|█████▋    | 708/1246 [00:40<00:24, 22.18it/s] 57%|█████▋    | 711/1246 [00:40<00:23, 22.47it/s] 57%|█████▋    | 714/1246 [00:41<00:23, 22.41it/s] 58%|█████▊    | 717/1246 [00:41<00:23, 22.63it/s] 58%|█████▊    | 720/1246 [00:41<00:23, 22.07it/s] 58%|█████▊    | 723/1246 [00:41<00:24, 21.62it/s] 58%|█████▊    | 726/1246 [00:41<00:24, 21.35it/s] 59%|█████▊    | 729/1246 [00:41<00:22, 22.55it/s] 59%|█████▊    | 732/1246 [00:41<00:23, 22.08it/s] 59%|█████▉    | 735/1246 [00:42<00:23, 21.62it/s] 59%|█████▉    | 738/1246 [00:42<00:25, 19.73it/s] 59%|█████▉    | 741/1246 [00:42<00:23, 21.41it/s] 60%|█████▉    | 744/1246 [00:42<00:23, 21.56it/s] 60%|█████▉    | 747/1246 [00:42<00:22, 21.97it/s] 60%|██████    | 750/1246 [00:42<00:21, 22.55it/s] 60%|██████    | 753/1246 [00:42<00:21, 22.70it/s] 61%|██████    | 756/1246 [00:43<00:24, 20.21it/s] 61%|██████    | 759/1246 [00:43<00:25, 19.21it/s] 61%|██████    | 762/1246 [00:43<00:23, 21.02it/s] 61%|██████▏   | 765/1246 [00:43<00:25, 18.76it/s] 62%|██████▏   | 767/1246 [00:43<00:26, 17.86it/s] 62%|██████▏   | 770/1246 [00:43<00:23, 20.03it/s] 62%|██████▏   | 773/1246 [00:43<00:25, 18.46it/s] 62%|██████▏   | 775/1246 [00:44<00:27, 17.38it/s] 62%|██████▏   | 778/1246 [00:44<00:23, 19.71it/s] 63%|██████▎   | 781/1246 [00:44<00:25, 18.09it/s] 63%|██████▎   | 783/1246 [00:44<00:27, 17.00it/s] 63%|██████▎   | 786/1246 [00:44<00:23, 19.42it/s] 63%|██████▎   | 789/1246 [00:44<00:25, 17.77it/s] 63%|██████▎   | 791/1246 [00:45<00:26, 17.00it/s] 64%|██████▎   | 794/1246 [00:45<00:23, 19.41it/s] 64%|██████▍   | 797/1246 [00:45<00:25, 17.79it/s] 64%|██████▍   | 799/1246 [00:45<00:26, 16.80it/s] 64%|██████▍   | 802/1246 [00:45<00:23, 19.24it/s] 65%|██████▍   | 805/1246 [00:45<00:24, 17.98it/s] 65%|██████▍   | 807/1246 [00:45<00:24, 17.63it/s] 65%|██████▌   | 810/1246 [00:46<00:22, 19.77it/s] 65%|██████▌   | 813/1246 [00:46<00:22, 19.63it/s] 65%|██████▌   | 816/1246 [00:46<00:21, 19.66it/s] 66%|██████▌   | 819/1246 [00:46<00:20, 20.37it/s] 66%|██████▌   | 822/1246 [00:46<00:19, 22.04it/s] 66%|██████▌   | 825/1246 [00:46<00:18, 22.38it/s] 66%|██████▋   | 828/1246 [00:46<00:18, 22.37it/s] 67%|██████▋   | 831/1246 [00:46<00:18, 22.48it/s] 67%|██████▋   | 834/1246 [00:47<00:19, 21.11it/s] 67%|██████▋   | 837/1246 [00:47<00:21, 19.31it/s] 67%|██████▋   | 840/1246 [00:47<00:19, 20.50it/s] 68%|██████▊   | 843/1246 [00:47<00:19, 20.54it/s] 68%|██████▊   | 846/1246 [00:47<00:19, 20.64it/s] 68%|██████▊   | 849/1246 [00:47<00:18, 21.34it/s] 68%|██████▊   | 852/1246 [00:47<00:18, 21.47it/s] 69%|██████▊   | 855/1246 [00:48<00:17, 22.43it/s] 69%|██████▉   | 858/1246 [00:48<00:17, 21.93it/s] 69%|██████▉   | 861/1246 [00:48<00:16, 22.92it/s] 69%|██████▉   | 864/1246 [00:48<00:18, 20.19it/s] 70%|██████▉   | 867/1246 [00:48<00:18, 20.49it/s] 70%|██████▉   | 870/1246 [00:48<00:17, 20.90it/s] 70%|███████   | 873/1246 [00:48<00:16, 22.44it/s] 70%|███████   | 876/1246 [00:49<00:19, 19.37it/s] 71%|███████   | 879/1246 [00:49<00:18, 19.63it/s] 71%|███████   | 882/1246 [00:49<00:17, 20.77it/s] 71%|███████   | 885/1246 [00:49<00:16, 21.35it/s] 71%|███████▏  | 888/1246 [00:49<00:16, 21.48it/s] 72%|███████▏  | 891/1246 [00:49<00:16, 22.02it/s] 72%|███████▏  | 894/1246 [00:49<00:16, 21.50it/s] 72%|███████▏  | 897/1246 [00:50<00:16, 21.29it/s] 72%|███████▏  | 900/1246 [00:50<00:15, 22.18it/s] 72%|███████▏  | 903/1246 [00:50<00:15, 22.11it/s] 73%|███████▎  | 906/1246 [00:50<00:15, 21.74it/s] 73%|███████▎  | 909/1246 [00:50<00:15, 21.80it/s] 73%|███████▎  | 912/1246 [00:50<00:14, 23.15it/s] 73%|███████▎  | 915/1246 [00:50<00:14, 23.13it/s] 74%|███████▎  | 918/1246 [00:51<00:14, 22.93it/s] 74%|███████▍  | 921/1246 [00:51<00:14, 22.30it/s] 74%|███████▍  | 924/1246 [00:51<00:14, 22.59it/s] 74%|███████▍  | 927/1246 [00:51<00:14, 22.34it/s] 75%|███████▍  | 930/1246 [00:51<00:14, 22.15it/s] 75%|███████▍  | 933/1246 [00:51<00:14, 22.11it/s] 75%|███████▌  | 936/1246 [00:51<00:14, 21.75it/s] 75%|███████▌  | 939/1246 [00:51<00:13, 22.99it/s] 76%|███████▌  | 942/1246 [00:52<00:13, 22.89it/s] 76%|███████▌  | 945/1246 [00:52<00:13, 22.73it/s] 76%|███████▌  | 948/1246 [00:52<00:13, 21.89it/s] 76%|███████▋  | 951/1246 [00:52<00:12, 22.98it/s] 77%|███████▋  | 954/1246 [00:52<00:13, 21.90it/s] 77%|███████▋  | 957/1246 [00:52<00:13, 20.98it/s] 77%|███████▋  | 960/1246 [00:52<00:14, 20.41it/s] 77%|███████▋  | 963/1246 [00:53<00:12, 21.83it/s] 78%|███████▊  | 966/1246 [00:53<00:13, 21.05it/s] 78%|███████▊  | 969/1246 [00:53<00:12, 21.40it/s] 78%|███████▊  | 972/1246 [00:53<00:12, 21.50it/s] 78%|███████▊  | 975/1246 [00:53<00:12, 22.27it/s] 78%|███████▊  | 978/1246 [00:53<00:12, 22.23it/s] 79%|███████▊  | 981/1246 [00:53<00:12, 21.75it/s] 79%|███████▉  | 984/1246 [00:54<00:11, 22.00it/s] 79%|███████▉  | 987/1246 [00:54<00:11, 21.95it/s] 79%|███████▉  | 990/1246 [00:54<00:11, 23.08it/s] 80%|███████▉  | 993/1246 [00:54<00:11, 22.78it/s] 80%|███████▉  | 996/1246 [00:54<00:11, 22.40it/s] 80%|████████  | 999/1246 [00:54<00:12, 20.01it/s] 80%|████████  | 1002/1246 [00:54<00:11, 21.66it/s] 81%|████████  | 1005/1246 [00:55<00:12, 19.77it/s] 81%|████████  | 1008/1246 [00:55<00:12, 19.07it/s] 81%|████████  | 1011/1246 [00:55<00:13, 17.85it/s] 81%|████████▏ | 1014/1246 [00:55<00:11, 19.83it/s] 82%|████████▏ | 1017/1246 [00:55<00:12, 18.66it/s] 82%|████████▏ | 1019/1246 [00:55<00:12, 17.84it/s] 82%|████████▏ | 1022/1246 [00:55<00:11, 20.03it/s] 82%|████████▏ | 1025/1246 [00:56<00:11, 19.12it/s] 83%|████████▎ | 1028/1246 [00:56<00:10, 19.90it/s] 83%|████████▎ | 1031/1246 [00:56<00:10, 20.18it/s] 83%|████████▎ | 1034/1246 [00:56<00:09, 21.68it/s] 83%|████████▎ | 1037/1246 [00:56<00:09, 21.81it/s] 83%|████████▎ | 1040/1246 [00:56<00:09, 21.70it/s] 84%|████████▎ | 1043/1246 [00:56<00:09, 22.51it/s] 84%|████████▍ | 1046/1246 [00:57<00:08, 22.40it/s] 84%|████████▍ | 1049/1246 [00:57<00:08, 22.24it/s] 84%|████████▍ | 1052/1246 [00:57<00:08, 21.99it/s] 85%|████████▍ | 1055/1246 [00:57<00:08, 23.28it/s] 85%|████████▍ | 1058/1246 [00:57<00:08, 23.13it/s] 85%|████████▌ | 1061/1246 [00:57<00:08, 22.90it/s] 85%|████████▌ | 1064/1246 [00:57<00:08, 22.40it/s] 86%|████████▌ | 1067/1246 [00:57<00:08, 22.00it/s] 86%|████████▌ | 1070/1246 [00:58<00:08, 21.90it/s] 86%|████████▌ | 1073/1246 [00:58<00:07, 22.98it/s] 86%|████████▋ | 1076/1246 [00:58<00:07, 22.32it/s] 87%|████████▋ | 1079/1246 [00:58<00:07, 21.86it/s] 87%|████████▋ | 1082/1246 [00:58<00:07, 21.32it/s] 87%|████████▋ | 1085/1246 [00:58<00:07, 22.71it/s] 87%|████████▋ | 1088/1246 [00:58<00:07, 22.32it/s] 88%|████████▊ | 1091/1246 [00:59<00:06, 22.71it/s] 88%|████████▊ | 1094/1246 [00:59<00:06, 23.02it/s] 88%|████████▊ | 1097/1246 [00:59<00:06, 23.29it/s] 88%|████████▊ | 1100/1246 [00:59<00:06, 22.57it/s] 89%|████████▊ | 1103/1246 [00:59<00:06, 22.81it/s] 89%|████████▉ | 1106/1246 [00:59<00:06, 23.05it/s] 89%|████████▉ | 1109/1246 [00:59<00:05, 23.09it/s] 89%|████████▉ | 1112/1246 [00:59<00:06, 22.28it/s] 89%|████████▉ | 1115/1246 [01:00<00:06, 19.41it/s] 90%|████████▉ | 1118/1246 [01:00<00:06, 20.85it/s] 90%|████████▉ | 1121/1246 [01:00<00:05, 22.05it/s] 90%|█████████ | 1124/1246 [01:00<00:05, 20.85it/s] 90%|█████████ | 1127/1246 [01:00<00:05, 20.96it/s] 91%|█████████ | 1130/1246 [01:00<00:05, 21.11it/s] 91%|█████████ | 1133/1246 [01:00<00:05, 22.38it/s] 91%|█████████ | 1136/1246 [01:01<00:05, 21.88it/s] 91%|█████████▏| 1139/1246 [01:01<00:04, 22.17it/s] 92%|█████████▏| 1142/1246 [01:01<00:04, 22.09it/s] 92%|█████████▏| 1145/1246 [01:01<00:04, 22.39it/s] 92%|█████████▏| 1148/1246 [01:01<00:04, 22.82it/s] 92%|█████████▏| 1151/1246 [01:01<00:04, 23.19it/s] 93%|█████████▎| 1154/1246 [01:01<00:04, 22.96it/s] 93%|█████████▎| 1157/1246 [01:02<00:03, 23.56it/s] 93%|█████████▎| 1160/1246 [01:02<00:03, 23.52it/s] 93%|█████████▎| 1163/1246 [01:02<00:03, 23.52it/s] 94%|█████████▎| 1166/1246 [01:02<00:03, 23.67it/s] 94%|█████████▍| 1169/1246 [01:02<00:03, 24.09it/s] 94%|█████████▍| 1172/1246 [01:02<00:03, 21.83it/s] 94%|█████████▍| 1175/1246 [01:02<00:03, 21.67it/s] 95%|█████████▍| 1178/1246 [01:02<00:03, 21.00it/s] 95%|█████████▍| 1181/1246 [01:03<00:02, 22.29it/s] 95%|█████████▌| 1184/1246 [01:03<00:02, 21.38it/s] 95%|█████████▌| 1187/1246 [01:03<00:02, 20.92it/s] 96%|█████████▌| 1190/1246 [01:03<00:02, 19.64it/s] 96%|█████████▌| 1193/1246 [01:03<00:02, 21.20it/s] 96%|█████████▌| 1196/1246 [01:03<00:02, 20.70it/s] 96%|█████████▌| 1199/1246 [01:03<00:02, 20.38it/s] 96%|█████████▋| 1202/1246 [01:04<00:02, 19.87it/s] 97%|█████████▋| 1205/1246 [01:04<00:01, 21.59it/s] 97%|█████████▋| 1208/1246 [01:04<00:01, 22.06it/s] 97%|█████████▋| 1211/1246 [01:04<00:01, 22.43it/s] 97%|█████████▋| 1214/1246 [01:04<00:01, 21.87it/s] 98%|█████████▊| 1217/1246 [01:04<00:01, 22.64it/s] 98%|█████████▊| 1220/1246 [01:04<00:01, 22.11it/s] 98%|█████████▊| 1223/1246 [01:05<00:01, 21.42it/s] 98%|█████████▊| 1226/1246 [01:05<00:00, 20.67it/s] 99%|█████████▊| 1229/1246 [01:05<00:00, 22.06it/s] 99%|█████████▉| 1232/1246 [01:05<00:00, 21.79it/s] 99%|█████████▉| 1235/1246 [01:05<00:00, 21.91it/s] 99%|█████████▉| 1238/1246 [01:05<00:00, 21.69it/s]100%|█████████▉| 1241/1246 [01:05<00:00, 22.69it/s]100%|█████████▉| 1244/1246 [01:06<00:00, 23.73it/s]100%|██████████| 1246/1246 [01:06<00:00, 18.85it/s]
-> Wrote predictions to /compute/oven-0-13/jwinchel/spatial_adata/heimdall_inference/GSE127465_tumor_integrated_train_med_with_admix_probs.h5ad in layer 'admix_probs'.

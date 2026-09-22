@@ -25,6 +25,19 @@ sample=$(basename "$input" .h5ad)
 output="$OUTPUT_ROOT/$sample"
 fractions=${TARGET_REMOVED_FRACTIONS:-0.01,0.02,0.05,0.1,0.2,0.3,0.4,0.5}
 mkdir -p "$output"
+source /home/jwinchel/Syndri/scripts/slurm/syndri_reference_cosine_args.sh
+METRIC_MODE_ARGS=()
+config_output=non_tcell_metrics_config.json
+validation_mode=${SYNDRI_REFERENCE_COSINE:-0}
+if [[ "${SPLIT_ONLY:-0}" == 1 ]]; then
+  METRIC_MODE_ARGS=(--only-additional-counts --append-output)
+  config_output=non_tcell_metrics_split_rerun_config.json
+  validation_mode=split_only
+elif [[ "${SYNDRI_COSINE_ONLY:-0}" == 1 ]]; then
+  METRIC_MODE_ARGS=(--only-syndri-reference-cosine --append-output)
+  config_output=non_tcell_metrics_syndri_cosine_rerun_config.json
+  validation_mode=syndri_cosine_only
+fi
 
 # Each call evaluates raw X, the removal sweep, and SPLIT on the same cells.
 # Empty exclude-labels includes every annotated cell type, including malignant
@@ -33,7 +46,7 @@ python /home/jwinchel/Syndri/eval/metrics_eval.py \
   --input-files "$input" \
   --output-dir "$output" \
   --cell-type-output non_tcell_metrics.csv \
-  --config-output non_tcell_metrics_config.json \
+  --config-output "$config_output" \
   --label-key "$LABEL_KEY" \
   --exclude-labels "${EXCLUDE_LABELS:-}" \
   --admix-probs-layer syndri_admix_probs_X \
@@ -57,22 +70,32 @@ python /home/jwinchel/Syndri/eval/metrics_eval.py \
   --skip-tcell-contamination \
   --skip-tcell-neighborhood-metrics \
   --skip-tcell-cosine-similarity \
-  --skip-cell-type-profiles
+  --skip-cell-type-profiles \
+  "${SYNDRI_COSINE_ARGS[@]}" \
+  "${METRIC_MODE_ARGS[@]}"
 
 # The evaluator records individual failures in CSV instead of raising them.
 # Surface these as failed Slurm tasks rather than reporting false success.
-python - "$output/non_tcell_metrics.csv" "$fractions" <<'PY'
+python - "$output/non_tcell_metrics.csv" "$fractions" "$validation_mode" <<'PY'
 import sys
 import pandas as pd
 
-path, fractions = sys.argv[1:]
+path, fractions, adaptive = sys.argv[1:]
 table = pd.read_csv(path)
-expected = 2 + len(fractions.split(","))
+if adaptive == "split_only":
+    table = table[table["case"].astype(str) == "SPLIT"]
+    expected = 1
+elif adaptive == "syndri_cosine_only":
+    table = table[table["case"].astype(str) == "syndri_reference_cosine"]
+    expected = 1
+else:
+    expected = 2 + len([f for f in fractions.split(",") if f.strip()]) + (adaptive.lower() in {"1", "true"})
 metrics = ["silhouette_score", "calinski_harabasz", "davies_bouldin",
-           "leiden_nmi_vs_label", "leiden_adjusted_rand_vs_label"]
+           "leiden_nmi_vs_label", "leiden_adjusted_rand_vs_label",
+           "median_genes_per_cell", "median_transcripts_per_cell"]
 errors = table["error"].fillna("").astype(str).str.len() > 0
 if len(table) != expected or errors.any() or table[metrics].isna().any().any():
     print(table[["case", "error"]].to_string(index=False))
     raise SystemExit(f"Incomplete metrics in {path}; expected {expected} successful cases.")
-print(f"Completed {len(table)} cases with all five metrics: {path}")
+print(f"Completed {len(table)} cases with all requested metrics: {path}")
 PY

@@ -106,8 +106,8 @@ def get_scrna_admixture_scores_from_spatial_K(
     return_gene_sets: bool = False,
 ) -> pd.DataFrame:
     """
-    Compute per-cell admixture ("doublet") scores on scRNA-seq cells (adata),
-    using the spatial-derived cell_type adjacency matrix K.
+    Compute count-weighted admixture scores on spatial_adata using reference
+    detection frequencies from adata and the spatial adjacency matrix K.
 
     This is equivalent in spirit to:
       estimate_contamination_scores_seurat(so_rna, so_rna, cell.type.adj.mat=K, ...)
@@ -147,6 +147,10 @@ def get_scrna_admixture_scores_from_spatial_K(
         X_sp = X_sp[np.array([sp_g2i[g] for g in keep], dtype=int), :]
 
         gene_names = keep
+    else:
+        if sc_gene_names != sp_gene_names:
+            raise ValueError("Reference and spatial genes must match in order.")
+        gene_names = sc_gene_names
 
     # ---- drop cells with missing types ----
     good_cells = annot.notna()
@@ -166,7 +170,7 @@ def get_scrna_admixture_scores_from_spatial_K(
 
     # ---- compute gene probabilities per type from scRNA ----
     # estimate_gene_prob_per_type expects cell_annot length == n_cells, aligned to columns\
-    annot_sc = pd.Series(adata.obs[cell_type_key].values, index=sc_cell_names, name="cell_type")
+    annot_sc = annot
 
     prob_gene_per_type = estimate_gene_prob_per_type(
         X_sc, cell_annot=annot_sc, expr_thres=0.0, use_counts=use_counts
@@ -230,23 +234,7 @@ def get_scrna_admixture_scores_from_spatial_K(
     cont_fracs_null = pd.Series(cont_fracs_null)
 
 
-     # ---- make a normalized/log1p copy for scoring only ----
-    # X_sp is genes x cells (counts)
-    
-    col_sums = np.asarray(X_sp.sum(axis=0)).ravel()
-    col_sums[col_sums == 0] = 1.0
-
-    target_sum = 1e4  # Seurat default-ish
-    scale = target_sum / col_sums  # per-cell scaling
-
-    # scale columns (genes x cells): multiply each column j by scale[j]
-    X_sp_norm = X_sp @ sparse.diags(scale, offsets=0, format="csr")
-
-    # log1p transform (only affects nonzeros)
-    X_sp_norm = X_sp_norm.copy()
-    X_sp_norm.data = np.log1p(X_sp_norm.data)
-    
-    # ---- score each scRNA cell, grouped by its annotated type ----
+    # Match cellAdmix: weight probabilities by counts, not log expression.
 
     spatial_annot = pd.Series(
         spatial_adata.obs[spatial_cell_type_key].values,
@@ -274,7 +262,7 @@ def get_scrna_admixture_scores_from_spatial_K(
             continue
 
         cols = np.array([obs_to_col[c] for c in ct_obs], dtype=int)
-        cm_ct = X_sp_norm[:, cols]  # genes x cells (subset)
+        cm_ct = X_sp[:, cols]  # genes x spatial cells, original count scale
 
         cont_probs = cont_probs_per_type[ct]
         cont_genes = cont_probs.index[cont_probs.values > signal_thres].tolist()
@@ -322,7 +310,7 @@ def get_scrna_admixture_scores_from_spatial_K(
         return out, {
             "celltype_specific_genes": celltype_specific,      # optional: for inspection
             "contamination_genes": cont_genes_by_type,         # actually used in score
-            "auto_masked_bad_genes": bad_genes_by_type,        # masked due to high expression in ct
+            "high_expression_warning_genes": bad_genes_by_type,  # warnings only
             "prob_gene_per_type": prob_gene_per_type,          # optional: for inspection
             "cont_probs_per_type": cont_probs_per_type,        # optional: for inspection
         }

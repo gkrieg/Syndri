@@ -79,6 +79,9 @@ PYTHON_ARGS=(
   --cell-type-col "$CELL_TYPE_COL"
   --mode "$MODE"
   --batch-size "$BATCH_SIZE"
+  --reference-min-umi "${REFERENCE_MIN_UMI:-10}"
+  --reference-max-umi "${REFERENCE_MAX_UMI:-2000}"
+  --umi-min-sigma "${UMI_MIN_SIGMA:-100}"
 )
 
 if [[ -n "$OUTPUT_DIR" ]]; then
@@ -145,4 +148,3 @@ python /home/jwinchel/Syndri/code/rctd_annotation.py "${PYTHON_ARGS[@]}"
 # sbatch --job-name=rctd-cosmx --array=0-7%2 \
 #   --export=ALL,REFERENCE_FILE=/work/magroup/skrieger/Syndri/data/datasets/nsclc_cosmx/interim/single-cell/sc_integrated.h5ad,SPATIAL_DIR=/work/magroup/skrieger/Syndri/data/datasets/nsclc_cosmx/interim/spatial,INPUT_GLOB='*annotated.h5ad',INPUT_LIST_FILE=,INPUT_FILES=,OUTPUT_DIR=,LAYER_PATTERN='^X$',CELL_TYPE_COL=cell_type,MODE=doublet,FORCE=0 \
 #   /home/jwinchel/Syndri/scripts/slurm/rctd_annotation.sbatch
-

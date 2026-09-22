@@ -39,6 +39,7 @@ def estimate_cell_adjacency(
     random_shift: float = 1e-3,
     edge_max_mad: float = 4.0,
     n_jobs: int = 1,
+    random_state: Optional[int] = None,
 ) -> pd.DataFrame:
     """
     Python version of estimate_cell_adjacency().
@@ -55,7 +56,7 @@ def estimate_cell_adjacency(
     cdf = df_spatial.loc[df_spatial['cell_type'].notna()].copy()
 
     # jitter
-    rng = np.random.default_rng()
+    rng = np.random.default_rng(random_state)
     cdf['x'] = cdf['x'] + rng.uniform(-random_shift, random_shift, size=len(cdf))
     cdf['y'] = cdf['y'] + rng.uniform(-random_shift, random_shift, size=len(cdf))
 
@@ -293,7 +294,7 @@ def estimate_gene_contamination_probabilities(
     num = p_cu * gene_scores['cont'].to_numpy()
     den = num + (1.0 - p_cu) * gene_scores['ref'].to_numpy()
     with np.errstate(divide='ignore', invalid='ignore'):
-        out = np.divide(num, den, where=(den != 0))
+        out = np.divide(num, den, out=np.zeros_like(num), where=(den != 0))
     out = np.nan_to_num(out, nan=0.0)
     return pd.Series(out, index=gene_scores.index)
 
@@ -336,8 +337,8 @@ def estimate_cell_admixture_fractions(
     Xw = X.multiply(w[:, None])  # genes x cells
     num = np.asarray(Xw.sum(axis=0)).ravel()
     den = np.asarray(X.sum(axis=0)).ravel()
-    den[den == 0] = 1.0
-    fracs = num / den
+    # No molecules means the fraction is undefined, not perfect purification.
+    fracs = np.divide(num, den, out=np.full(num.shape, np.nan), where=den > 0)
     return pd.Series(fracs)
 
 
@@ -361,9 +362,9 @@ def mask_out_genes(
 
     if not isinstance(genes, dict):
         # iterable → zero all these genes in all columns
-        cols = list(set(cont_probs.columns).intersection(set(genes)))
-        if cols:
-            cp.loc[:, cols] = 0.0
+        rows = list(set(cont_probs.index).intersection(set(genes)))
+        if rows:
+            cp.loc[rows, :] = 0.0
         return cp
 
     # dict case
