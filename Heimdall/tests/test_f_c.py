@@ -7,6 +7,8 @@ import pytest
 from pytest import fixture
 from scipy.sparse import csr_array
 
+from Heimdall.fc import AdmixtureFc
+
 
 # def test_dummy_getitem(geneformer_fc, scgpt_fc):
 #     dummy_index = -1
@@ -241,6 +243,47 @@ def test_admixture_fc_predicted_cls_query_cell_type_token_raises(admixture_fc):
 
     with pytest.raises(NotImplementedError):
         admixture_fc[0]
+
+
+@pytest.mark.parametrize(
+    ("include_query", "include_neighbors"),
+    ((True, False), (False, True), (False, False)),
+)
+def test_admixture_fc_cell_type_token_ablations(
+    include_query,
+    include_neighbors,
+):
+    adata = ad.AnnData(np.zeros((1, 1)))
+    adata.obs_names = ["query"]
+    adata.obs["cell_type"] = ["query_type"]
+    adata.uns["cell_type_dict"] = {
+        "query_type": -1,
+        "neighbor_a": -2,
+        "neighbor_b": -3,
+    }
+    adata.uns["neighbor_celltype_dict"] = {
+        "query": ["neighbor_a", "neighbor_b"],
+    }
+
+    admixture_fc = AdmixtureFc.__new__(AdmixtureFc)
+    admixture_fc._adata = adata
+    admixture_fc.query_cell_type_token_mode = "metadata"
+    admixture_fc.query_cell_type_col = "cell_type"
+    admixture_fc.include_query_cell_type_token = include_query
+    admixture_fc.include_neighbor_cell_type_tokens = include_neighbors
+    admixture_fc.admixture_token_offset = 1
+
+    surr_types, surr_tokens, metadata_prefix = admixture_fc.get_metadata_prefix_tokens("query")
+    expected_prefix = []
+    if include_neighbors:
+        expected_prefix.extend([-2, -3])
+    if include_query:
+        expected_prefix.append(-1)
+
+    assert surr_types == ["neighbor_a", "neighbor_b"]
+    assert surr_tokens == [-2, -3]
+    assert metadata_prefix == expected_prefix
+    assert admixture_fc.num_prefix_tokens == len(expected_prefix)
 
 
 

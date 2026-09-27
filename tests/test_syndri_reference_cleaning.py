@@ -115,7 +115,11 @@ class ReferenceCleaningTests(unittest.TestCase):
             self.assertEqual(rows[0]["cleaning_mode"], "zero")
             for frame in frames:
                 self.assertEqual(frame.condition.iloc[0], "syndri_reference_cosine")
-                self.assertEqual(frame.cosine_window.iloc[0], 1)
+                self.assertEqual(
+                    frame.threshold_selection.iloc[0],
+                    "cell_type_smallest_near_optimal_k",
+                )
+                self.assertTrue(frame.cell_type_specific_removal.iloc[0])
             np.testing.assert_array_equal(spatial.X, [[10., 1.]])
 
 

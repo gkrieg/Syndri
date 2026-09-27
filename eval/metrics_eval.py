@@ -99,6 +99,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--syndri-profile-max-cells", type=int, default=10000)
     parser.add_argument("--syndri-profile-cell-type-col", default="cell_type")
     parser.add_argument(
+        "--syndri-one-se-multiplier",
+        type=float,
+        default=1.0,
+        help="Choose the smallest cell-type gene prefix within this many SEs of the best mean cosine improvement.",
+    )
+    parser.add_argument(
         "--only-syndri-reference-cosine",
         action="store_true",
         help="Evaluate only the adaptive per-cell Syndri reference-cosine case.",
@@ -2737,10 +2743,16 @@ def run_reference_cosine_evaluation(
         frames = list(run_tcell_contamination(
             work, tissue, source_file, adaptive_args, reference_adata=reference_adata,
             reference_profile_cache=reference_profile_cache))
-    metadata = dict(cleaning_mode="zero", threshold_selection="per_cell_rolling_reference_cosine",
-                    cosine_window=args.syndri_cosine_window, reference_profiles=profile_path,
-                    achieved_removed_fraction=achieved, probability_transform="",
-                    cell_type_specific_removal=False)
+    metadata = dict(
+        cleaning_mode="zero",
+        threshold_selection="cell_type_smallest_near_optimal_k",
+        reference_profiles=profile_path,
+        achieved_removed_fraction=achieved,
+        probability_transform="",
+        cell_type_specific_removal=True,
+        syndri_probability_ordering="cell_type_expressed_mean",
+        syndri_one_se_multiplier=getattr(args, "syndri_one_se_multiplier", 1.0),
+    )
     for row in rows:
         row.update(metadata)
     for frame in frames:
@@ -2811,11 +2823,17 @@ def write_csv(
     append: bool = False,
     replace_layer_count_baselines: bool = False,
     uncorrected_condition_label: str = "uncorrected",
+    replace_labels: tuple[str, ...] = (),
 ) -> pd.DataFrame:
     path.parent.mkdir(parents=True, exist_ok=True)
     output = df.copy()
     if append and path.exists():
         existing = pd.read_csv(path)
+        if replace_labels:
+            replace = pd.Series(False, index=existing.index)
+            for column in [col for col in ["case", "condition"] if col in existing]:
+                replace |= existing[column].astype(str).isin(replace_labels)
+            existing = existing.loc[~replace].copy()
         if replace_layer_count_baselines:
             existing = remove_layer_count_baselines(existing, uncorrected_condition_label)
         output = pd.concat([existing, output], ignore_index=True, sort=False)
@@ -2843,6 +2861,8 @@ def main() -> None:
 
     if args.syndri_cosine_window < 1:
         parser.error("--syndri-cosine-window must be positive")
+    if not np.isfinite(args.syndri_one_se_multiplier) or args.syndri_one_se_multiplier < 0:
+        parser.error("--syndri-one-se-multiplier must be finite and nonnegative")
     if args.only_additional_counts and not args.additional_counts_layer:
         parser.error("--only-additional-counts requires --additional-counts-layer")
     if args.only_additional_counts and parse_str_list(args.evaluation_layers):
@@ -2965,6 +2985,10 @@ def main() -> None:
             cell_type_profile_frames.append(adaptive_profiles)
             tcell_cosine_frames.append(adaptive_cosines)
 
+    replace_labels = (
+        ("syndri_reference_cosine",) if args.only_syndri_reference_cosine else ()
+    )
+
     if not args.skip_cell_type_separation:
         cell_type_df = pd.DataFrame(cell_type_rows)
         write_csv(
@@ -2973,6 +2997,7 @@ def main() -> None:
             append=args.append_output,
             replace_layer_count_baselines=args.replace_layer_count_baselines,
             uncorrected_condition_label=args.uncorrected_condition_label,
+            replace_labels=replace_labels,
         )
 
     if not args.skip_tcell_contamination:
@@ -2987,6 +3012,7 @@ def main() -> None:
             append=args.append_output,
             replace_layer_count_baselines=args.replace_layer_count_baselines,
             uncorrected_condition_label=args.uncorrected_condition_label,
+            replace_labels=replace_labels,
         )
         write_csv(summarize_tcell_effects(tcell_df, args), output_dir / args.tcell_effect_output)
         tcell_coefficient_df = (
@@ -3000,6 +3026,7 @@ def main() -> None:
             append=args.append_output,
             replace_layer_count_baselines=args.replace_layer_count_baselines,
             uncorrected_condition_label=args.uncorrected_condition_label,
+            replace_labels=replace_labels,
         )
         cell_type_profile_df = (
             pd.concat(cell_type_profile_frames, ignore_index=True)
@@ -3012,6 +3039,7 @@ def main() -> None:
             append=args.append_output,
             replace_layer_count_baselines=args.replace_layer_count_baselines,
             uncorrected_condition_label=args.uncorrected_condition_label,
+            replace_labels=replace_labels,
         )
         if not args.skip_tcell_cosine_similarity and reference_adata is not None:
             tcell_cosine_df = (
@@ -3031,6 +3059,7 @@ def main() -> None:
                 append=args.append_output,
                 replace_layer_count_baselines=args.replace_layer_count_baselines,
                 uncorrected_condition_label=args.uncorrected_condition_label,
+                replace_labels=replace_labels,
             )
 
 

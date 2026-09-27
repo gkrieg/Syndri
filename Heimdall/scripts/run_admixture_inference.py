@@ -109,6 +109,12 @@ def parse_args() -> argparse.Namespace:
         ),
     )
     parser.add_argument("--apply-admixture", action=argparse.BooleanOptionalAction, default=False)
+    parser.add_argument(
+        "--use-precomputed-neighbor",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+        help="Use and validate st_data.uns['neighbor_dict'] instead of rebuilding spatial nearest neighbors.",
+    )
     parser.add_argument("--fast-inference", action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument(
         "--dry-run-tokenization",
@@ -249,6 +255,7 @@ def _runtime_overrides(args: argparse.Namespace, prepared_path: Path) -> list[st
     overrides = [
         f"dataset.preprocess_args.data_path={prepared_path}",
         f"++dataset.preprocess_args.apply_admixture={str(args.apply_admixture).lower()}",
+        f"++dataset.preprocess_args.use_precomputed_neighbor={str(args.use_precomputed_neighbor).lower()}",
         f"++dataset.preprocess_args.admixture_args.coord_cols=[{coord_cols[0]},{coord_cols[1]}]",
         f"++dataset.preprocess_args.admixture_args.cell_type_col={args.cell_type_col}",
         f"tasks.args.splits.col={args.split_col}",

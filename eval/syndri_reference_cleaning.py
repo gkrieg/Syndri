@@ -93,8 +93,10 @@ def prepare_reference_cleaned(adata, args, source_file, *, input_layer="X"):
     labels = adata.obs[label_key]
     original = sparse.csr_matrix(adata.X)
     probs = adata.layers[args.admix_probs_layer]
-    cleaned, diagnostics = clean_cells_by_reference(
-        original[:, indices], probs[:, indices], labels, frame, window=args.syndri_cosine_window)
+    cleaned, diagnostics, curves = clean_cells_by_reference(
+        original[:, indices], probs[:, indices], labels, frame,
+        one_se_multiplier=getattr(args, "syndri_one_se_multiplier", 1.0),
+        return_curves=True)
     if len(diagnostics) and diagnostics.status.eq("missing_reference").all():
         raise ValueError(f"No obs[{label_key!r}] labels match the reference profiles; "
                          "set --syndri-cell-type-key to the matching annotation column")
@@ -106,13 +108,17 @@ def prepare_reference_cleaned(adata, args, source_file, *, input_layer="X"):
     diagnostics.insert(0, "input_layer", input_layer)
     diagnostics.insert(0, "source_file", source_file)
     diagnostics["reference_profiles"] = str(profile_path)
-    diagnostics["window"] = args.syndri_cosine_window
     diagnostics["n_shared_genes"] = len(genes)
     diagnostics["label_key"] = label_key
     directory = Path(args.output_dir) / "syndri_thresholds"
     directory.mkdir(parents=True, exist_ok=True)
     key = hashlib.sha256(f"{source_file}\0{input_layer}".encode()).hexdigest()[:12]
     diagnostics.to_csv(directory / f"{Path(source_file).stem}.{key}.csv", index=False)
+    curve_directory = Path(args.output_dir) / "syndri_cosine_curves"
+    curve_directory.mkdir(parents=True, exist_ok=True)
+    curves.insert(0, "input_layer", input_layer)
+    curves.insert(0, "source_file", source_file)
+    curves.to_csv(curve_directory / f"{Path(source_file).stem}.{key}.csv", index=False)
     statuses = diagnostics.status.value_counts().to_dict()
     print(f"Syndri reference-cosine selection ({input_layer}): {statuses}; profiles={profile_path}")
     total = float(original.sum())

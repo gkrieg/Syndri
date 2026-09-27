@@ -9,6 +9,8 @@ args:
   # One of: none, metadata, predicted_cls.
   query_cell_type_token_mode: metadata
   query_cell_type_col: cell_type_harmonized
+  include_query_cell_type_token: true
+  include_neighbor_cell_type_tokens: true
   embedding_parameters:
     type: Heimdall.embedding.GaussianInitEmbedding
     args:

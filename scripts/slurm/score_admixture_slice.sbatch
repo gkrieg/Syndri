@@ -50,6 +50,19 @@ args=(
 [[ "${OVERWRITE:-0}" == 1 ]] && args+=(--overwrite)
 [[ "${SKIP_CORRELATION_FILTER:-0}" == 1 ]] && args+=(--skip-correlation-filter)
 [[ "${ADJUST_SCORES:-1}" == 0 ]] && args+=(--no-adjust)
+if [[ "${SYNDRI_REFERENCE_COSINE:-0}" =~ ^(1|true|TRUE)$ ]]; then
+  args+=(
+    --syndri-reference-cosine
+    --syndri-reference-profiles "${SYNDRI_REFERENCE_PROFILES:-/home/jwinchel/Syndri/data/cache/rctd_profiles}"
+    --syndri-cell-type-key "${SYNDRI_CELL_TYPE_KEY:-$spatial_ct}"
+    --syndri-one-se-multiplier "${SYNDRI_ONE_SE_MULTIPLIER:-1}"
+    --syndri-profile-min-umi "${SYNDRI_PROFILE_MIN_UMI:-10}"
+    --syndri-profile-max-umi "${SYNDRI_PROFILE_MAX_UMI:-2000}"
+    --syndri-profile-cell-min "${SYNDRI_PROFILE_CELL_MIN:-25}"
+    --syndri-profile-max-cells "${SYNDRI_PROFILE_MAX_CELLS:-10000}"
+    --syndri-profile-cell-type-col "${SYNDRI_PROFILE_CELL_TYPE_COL:-$reference_ct}"
+  )
+fi
 [[ "$dataset" == nsclc_cosmx ]] && args+=(--collapse-prefix tumor=tumor)
 
 python /home/jwinchel/Syndri/eval/score_admixture_slice.py "${args[@]}"

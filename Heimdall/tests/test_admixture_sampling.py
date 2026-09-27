@@ -1,8 +1,64 @@
 import anndata as ad
 import numpy as np
+import pytest
 from scipy.sparse import csr_array
 
-from Heimdall.admixture_sampling import build_neighbor_dict, sample_admixture_from_neighbor_dict
+from Heimdall.admixture_sampling import (
+    build_neighbor_dict,
+    sample_admixture_from_neighbor_dict,
+    validate_precomputed_neighbor_celltype_dict,
+    validate_precomputed_neighbor_dict,
+)
+
+
+def test_validate_precomputed_neighbor_dict_accepts_query_subset():
+    adata = ad.AnnData(X=csr_array(np.ones((3, 2))))
+    adata.obs_names = ["query", "neighbor_a", "neighbor_b"]
+    adata.uns["neighbor_dict"] = {"query": ["neighbor_a", "neighbor_b"]}
+
+    result = validate_precomputed_neighbor_dict(adata)
+
+    assert result == {"query": ["neighbor_a", "neighbor_b"]}
+
+
+def test_validate_precomputed_neighbor_dict_rejects_missing_ids():
+    adata = ad.AnnData(X=csr_array(np.ones((2, 2))))
+    adata.obs_names = ["query", "neighbor"]
+    adata.uns["neighbor_dict"] = {"query": ["missing"]}
+
+    with pytest.raises(ValueError, match="missing"):
+        validate_precomputed_neighbor_dict(adata)
+
+
+def test_validate_precomputed_neighbor_dict_requires_nonempty_dict():
+    adata = ad.AnnData(X=csr_array(np.ones((2, 2))))
+    adata.uns["neighbor_dict"] = {}
+
+    with pytest.raises(ValueError, match="non-empty dictionary"):
+        validate_precomputed_neighbor_dict(adata)
+
+
+def test_validate_precomputed_neighbor_dict_enforces_context_capacity():
+    adata = ad.AnnData(X=csr_array(np.ones((3, 2))))
+    adata.obs_names = ["query", "neighbor_a", "neighbor_b"]
+    adata.uns["neighbor_dict"] = {"query": ["neighbor_a", "neighbor_b"]}
+
+    with pytest.raises(ValueError, match="k_neighbors=1"):
+        validate_precomputed_neighbor_dict(adata, max_neighbors=1)
+
+
+def test_validate_precomputed_neighbor_celltypes_supports_query_only_adata():
+    adata = ad.AnnData(X=csr_array(np.ones((2, 2))))
+    adata.obs_names = ["query_a", "query_b"]
+    adata.uns["cell_type_dict"] = {"T cell": -1, "tumor": -2}
+    adata.uns["neighbor_celltype_dict"] = {
+        "query_a": ["T cell", "tumor"],
+        "query_b": ["tumor", "tumor"],
+    }
+
+    result = validate_precomputed_neighbor_celltype_dict(adata, max_neighbors=2)
+
+    assert result["query_a"] == ["T cell", "tumor"]
 
 
 def test_build_neighbor_dict_can_toggle_same_cell_type_neighbors():

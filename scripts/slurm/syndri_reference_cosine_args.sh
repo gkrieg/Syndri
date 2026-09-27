@@ -4,7 +4,6 @@ case "${SYNDRI_REFERENCE_COSINE:-0}" in
   1|true|TRUE)
     SYNDRI_COSINE_ARGS=(
       --syndri-reference-cosine
-      --syndri-cosine-window "${SYNDRI_COSINE_WINDOW:-5}"
       --syndri-reference-profiles "${SYNDRI_REFERENCE_PROFILES:-/home/jwinchel/Syndri/data/cache/rctd_profiles}"
       --syndri-cell-type-key "${SYNDRI_CELL_TYPE_KEY:-${LABEL_KEY:-}}"
       --syndri-profile-min-umi "${SYNDRI_PROFILE_MIN_UMI:-10}"
@@ -12,6 +11,7 @@ case "${SYNDRI_REFERENCE_COSINE:-0}" in
       --syndri-profile-cell-min "${SYNDRI_PROFILE_CELL_MIN:-25}"
       --syndri-profile-max-cells "${SYNDRI_PROFILE_MAX_CELLS:-10000}"
       --syndri-profile-cell-type-col "${SYNDRI_PROFILE_CELL_TYPE_COL:-cell_type}"
+      --syndri-one-se-multiplier "${SYNDRI_ONE_SE_MULTIPLIER:-1}"
     )
     if [[ -n "${REFERENCE_DATA:-}" ]]; then
       SYNDRI_COSINE_ARGS+=(--reference-data "$REFERENCE_DATA")

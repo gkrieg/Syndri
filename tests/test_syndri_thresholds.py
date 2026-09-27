@@ -74,10 +74,81 @@ class ThresholdTests(unittest.TestCase):
         pd.testing.assert_frame_equal(da, db)
         np.testing.assert_array_equal(a.toarray()[2], x[2])
         self.assertEqual(da.status.tolist(), ["ok", "ok", "missing_reference", "zero_cell"])
-        for i in [0, 1]:
-            selected = select_cell_threshold(x[i], p[i], profiles.loc[labels[i]], window=1)
-            self.assertEqual(selected.threshold, da.threshold[i])
-            np.testing.assert_array_equal(a.toarray()[i], np.where(p[i] >= selected.threshold, 0, x[i]))
+        self.assertTrue(da.loc[:1, "selected_k"].notna().all())
+        self.assertTrue(da.loc[:1, "threshold"].isna().all())
+
+    def test_cell_type_expressed_mean_ordering_and_shared_k(self):
+        x = np.array([[10., 1.], [10., 1.]])
+        probabilities = np.array([[.9, .1], [.2, .8]])
+        profiles = pd.DataFrame([[0., 1.]], index=["A"])
+
+        grouped, diagnostics, curves = clean_cells_by_reference(
+            x, probabilities, ["A", "A"], profiles, return_curves=True)
+
+        # Mean probabilities are [.55, .45], so both cells rank gene 0 first.
+        np.testing.assert_array_equal(grouped.toarray(), [[0., 1.], [0., 1.]])
+        self.assertTrue((diagnostics.probability_ordering == "cell_type_expressed_mean").all())
+        self.assertTrue((diagnostics.n_expressed_genes_before == 2).all())
+        self.assertTrue((diagnostics.selected_k == 1).all())
+        self.assertEqual(curves.loc[curves.k.eq(1), "removed_gene"].iloc[0], 0)
+        self.assertAlmostEqual(curves.loc[curves.k.eq(1), "removed_gene_score"].iloc[0], .55)
+
+    def test_probabilities_are_averaged_only_where_gene_is_expressed(self):
+        x = np.array([[10., 1., 0.], [10., 1., 1.]])
+        probabilities = np.array([[.9, .1, 0.], [.2, .8, .99]])
+        profiles = pd.DataFrame([[0., 1., 1.]], index=["A"])
+
+        _, diagnostics, curves = clean_cells_by_reference(
+            x, probabilities, ["A", "A"], profiles, return_curves=True)
+
+        # Gene 2's score is .99, not .495: cell 0 does not express it and is
+        # excluded from that gene's probability mean.
+        self.assertEqual(curves.loc[curves.k.eq(1), "removed_gene"].iloc[0], 2)
+        self.assertAlmostEqual(curves.loc[curves.k.eq(1), "removed_gene_score"].iloc[0], .99)
+        self.assertEqual(diagnostics.selected_k.nunique(), 1)
+
+    def test_cell_type_curve_and_one_se_selection_match_brute_force(self):
+        rng = np.random.default_rng(91)
+        x = rng.integers(0, 8, size=(7, 9)).astype(float)
+        p = rng.random(x.shape)
+        reference = rng.random(9)
+        profiles = pd.DataFrame([reference], index=["A"])
+
+        cleaned, diagnostics, curves = clean_cells_by_reference(
+            sparse.csr_matrix(x), sparse.csr_matrix(p), ["A"] * len(x),
+            profiles, one_se_multiplier=1.0, return_curves=True)
+
+        scores = np.array([
+            p[x[:, gene] > 0, gene].mean() if np.any(x[:, gene] > 0) else -np.inf
+            for gene in range(x.shape[1])
+        ])
+        ranking = np.argsort(-scores, kind="stable")
+        baseline = np.array([
+            row @ reference / (np.linalg.norm(row) * np.linalg.norm(reference))
+            for row in x
+        ])
+        deltas = []
+        for k in range(x.shape[1] + 1):
+            candidate = x.copy()
+            candidate[:, ranking[:k]] = 0
+            cosine = np.array([
+                row @ reference / (np.linalg.norm(row) * np.linalg.norm(reference))
+                if np.linalg.norm(row) else 0.0
+                for row in candidate
+            ])
+            deltas.append(cosine - baseline)
+        deltas = np.asarray(deltas)
+        mean = deltas.mean(axis=1)
+        se = deltas.std(axis=1, ddof=0) / np.sqrt(len(x))
+        k_max = int(np.argmax(mean))
+        selected = int(np.flatnonzero(mean >= mean[k_max] - se[k_max] - 1e-14)[0])
+
+        np.testing.assert_allclose(curves.mean_cosine_improvement, mean, atol=1e-14)
+        np.testing.assert_allclose(curves.bootstrap_se, se, atol=1e-14)
+        self.assertEqual(diagnostics.selected_k.iloc[0], selected)
+        expected = x.copy()
+        expected[:, ranking[:selected]] = 0
+        np.testing.assert_array_equal(cleaned.toarray(), expected)
 
 
 if __name__ == "__main__":

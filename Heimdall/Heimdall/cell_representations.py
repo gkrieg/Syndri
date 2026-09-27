@@ -30,7 +30,12 @@ from Heimdall.utils import (
     heimdall_collate_fn,
     instantiate_from_config,
 )
-from Heimdall.admixture_sampling import build_neighbor_dict, build_neighbor_celltype_dict
+from Heimdall.admixture_sampling import (
+    build_neighbor_celltype_dict,
+    build_neighbor_dict,
+    validate_precomputed_neighbor_celltype_dict,
+    validate_precomputed_neighbor_dict,
+)
 
 def check_states(
     meth: Optional[Callable] = None,
@@ -290,6 +295,9 @@ class CellRepresentation(SpecialTokenMixin):
             tissue_col = get_value(admix_params, "tissue_col", "harmony_spatial_tissue" if apply_admixture else None)
             cell_type_col = get_value(admix_params, "cell_type_col", "cell_type")
             use_same_cell_type_neighbors = bool(get_value(admix_params, "use_same_cell_type_neighbors", False))
+            use_precomputed_neighbor = bool(
+                get_value(self.dataset_preproc_cfg, "use_precomputed_neighbor", False)
+            )
             neighbor_dict_config = {
                 "k_neighbors": k_neighbors,
                 "coord_cols": list(coord_cols),
@@ -300,9 +308,23 @@ class CellRepresentation(SpecialTokenMixin):
                 "truncate_counts_max_value": effective_truncate_counts_max_value,
             }
             neighbor_dict = self.adata.uns.get("neighbor_dict")
-            neighbor_dict_needs_build = not isinstance(neighbor_dict, dict) or not neighbor_dict
-            if not neighbor_dict_needs_build:
-                neighbor_dict_needs_build = self.adata.uns.get("neighbor_dict_config") != neighbor_dict_config
+            if use_precomputed_neighbor:
+                if isinstance(neighbor_dict, dict) and neighbor_dict:
+                    validate_precomputed_neighbor_dict(self.adata, max_neighbors=k_neighbors)
+                    # A neighbor-ID dictionary is authoritative; refresh its
+                    # derived cell-type cache below.
+                    self.adata.uns.pop("neighbor_celltype_dict", None)
+                else:
+                    validate_precomputed_neighbor_celltype_dict(
+                        self.adata,
+                        max_neighbors=k_neighbors,
+                    )
+                neighbor_dict_needs_build = False
+                print("> Using precomputed neighbor context; skipping nearest-neighbor construction.")
+            else:
+                neighbor_dict_needs_build = not isinstance(neighbor_dict, dict) or not neighbor_dict
+                if not neighbor_dict_needs_build:
+                    neighbor_dict_needs_build = self.adata.uns.get("neighbor_dict_config") != neighbor_dict_config
 
             if neighbor_dict_needs_build:
                 print(f"> Getting nearest neighbors using coordinates: {coord_cols}")
@@ -330,7 +352,8 @@ class CellRepresentation(SpecialTokenMixin):
                     cell_type_col=cell_type_col,
                 )
 
-            self.adata = self.adata[self.adata.obs[list(coord_cols)].notna().all(axis=1)].copy()
+            if not use_precomputed_neighbor:
+                self.adata = self.adata[self.adata.obs[list(coord_cols)].notna().all(axis=1)].copy()
 
             if apply_admixture:
                 cache_dir = Path(self._cfg.work_dir) / "admixture_epochs"

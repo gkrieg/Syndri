@@ -182,6 +182,8 @@ class AdmixtureFc(Fc):
         species: str,
         query_cell_type_token_mode: str = "none",
         query_cell_type_col: str = "cell_type",
+        include_query_cell_type_token: bool = True,
+        include_neighbor_cell_type_tokens: bool = True,
         **fc_kwargs,
         ):
 
@@ -190,6 +192,8 @@ class AdmixtureFc(Fc):
         self.species = species
         self.query_cell_type_token_mode = query_cell_type_token_mode
         self.query_cell_type_col = query_cell_type_col
+        self.include_query_cell_type_token = include_query_cell_type_token
+        self.include_neighbor_cell_type_tokens = include_neighbor_cell_type_tokens
         self.admixture_token_offset = 1
         self._cell_type_extract_debug_count = 0
         
@@ -200,9 +204,13 @@ class AdmixtureFc(Fc):
     def num_prefix_tokens(self) -> int:
         self._validate_query_cell_type_token_mode()
         neighbor_celltype_dict = self.adata.uns.get("neighbor_celltype_dict", {})
-        num_query_cell_type_tokens = int(self.query_cell_type_token_mode == "metadata")
-        if neighbor_celltype_dict:
+        num_query_cell_type_tokens = int(
+            self.include_query_cell_type_token and self.query_cell_type_token_mode == "metadata"
+        )
+        if self.include_neighbor_cell_type_tokens and neighbor_celltype_dict:
             return max(len(cell_types) for cell_types in neighbor_celltype_dict.values()) + num_query_cell_type_tokens
+        if not self.include_neighbor_cell_type_tokens:
+            return num_query_cell_type_tokens
         return len(getattr(self, "metadata_prefix_tokens", getattr(self, "surr_cell_tokens", [])))
 
     def _validate_query_cell_type_token_mode(self):
@@ -212,7 +220,7 @@ class AdmixtureFc(Fc):
                 f"query_cell_type_token_mode must be one of: {valid}. "
                 f"Got {self.query_cell_type_token_mode!r}.",
             )
-        if self.query_cell_type_token_mode == "predicted_cls":
+        if self.include_query_cell_type_token and self.query_cell_type_token_mode == "predicted_cls":
             raise NotImplementedError(
                 "query_cell_type_token_mode='predicted_cls' requires a two-pass model that first predicts "
                 "query cell type from the CLS embedding, then re-encodes with that predicted cell-type token. "
@@ -224,9 +232,9 @@ class AdmixtureFc(Fc):
 
         surr_cell_types = self.adata.uns['neighbor_celltype_dict'][cell_id]
         surr_cell_tokens = [self.adata.uns['cell_type_dict'][t] for t in surr_cell_types]
-        metadata_prefix_tokens = list(surr_cell_tokens)
+        metadata_prefix_tokens = list(surr_cell_tokens) if self.include_neighbor_cell_type_tokens else []
 
-        if self.query_cell_type_token_mode == "metadata":
+        if self.include_query_cell_type_token and self.query_cell_type_token_mode == "metadata":
             if self.query_cell_type_col not in self.adata.obs:
                 raise KeyError(f"{self.query_cell_type_col!r} not found in adata.obs")
             query_cell_type = self.adata.obs.loc[cell_id, self.query_cell_type_col]
@@ -249,6 +257,8 @@ class AdmixtureFc(Fc):
             print(f"  neighbor_cell_types={surr_cell_types}")
             print(f"  neighbor_tokens={surr_cell_tokens}")
             print(f"  query_cell_type_token_mode={self.query_cell_type_token_mode}")
+            print(f"  include_query_cell_type_token={self.include_query_cell_type_token}")
+            print(f"  include_neighbor_cell_type_tokens={self.include_neighbor_cell_type_tokens}")
             print(f"  metadata_prefix_tokens={metadata_prefix_tokens}")
             print(f"  token_pairs={list(zip(surr_cell_types, surr_cell_tokens))}")
             print(f"  metadata_indices={[-tok - self.admixture_token_offset for tok in metadata_prefix_tokens]}")

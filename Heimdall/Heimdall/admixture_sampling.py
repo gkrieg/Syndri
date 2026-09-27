@@ -6,6 +6,111 @@ from tqdm import tqdm
 import warnings
 
 
+def validate_precomputed_neighbor_dict(
+    adata,
+    uns_key="neighbor_dict",
+    id_col=None,
+    max_neighbors=None,
+):
+    """Validate a user-supplied neighbor dictionary without changing it.
+
+    Precomputed dictionaries may contain only the query cells that will be
+    inferred, but every query and neighbor ID they contain must resolve to a
+    row in ``adata``.
+    """
+    if uns_key not in adata.uns:
+        raise KeyError(
+            f"use_precomputed_neighbor=True requires adata.uns[{uns_key!r}]",
+        )
+
+    neighbor_dict = adata.uns[uns_key]
+    if not isinstance(neighbor_dict, dict) or not neighbor_dict:
+        raise ValueError(
+            f"adata.uns[{uns_key!r}] must be a non-empty dictionary when "
+            "use_precomputed_neighbor=True",
+        )
+
+    if id_col is None:
+        valid_ids = set(adata.obs_names.astype(str))
+        id_name = "obs_names"
+    else:
+        if id_col not in adata.obs:
+            raise KeyError(f"{id_col!r} not found in adata.obs")
+        ids = adata.obs[id_col].astype(str)
+        if ids.duplicated().any():
+            raise ValueError(f"Values in {id_col!r} must be unique.")
+        valid_ids = set(ids)
+        id_name = id_col
+
+    referenced_ids = set()
+    for query_id, neighbor_ids in neighbor_dict.items():
+        query_id = str(query_id)
+        referenced_ids.add(query_id)
+        if isinstance(neighbor_ids, (str, bytes)) or not hasattr(neighbor_ids, "__iter__"):
+            raise TypeError(
+                f"Neighbors for query {query_id!r} must be a sequence of cell IDs, "
+                f"got {type(neighbor_ids).__name__}.",
+            )
+        if max_neighbors is not None and len(neighbor_ids) > max_neighbors:
+            raise ValueError(
+                f"Query {query_id!r} has {len(neighbor_ids)} precomputed neighbors, "
+                f"but k_neighbors={max_neighbors}.",
+            )
+        referenced_ids.update(str(neighbor_id) for neighbor_id in neighbor_ids)
+
+    missing_ids = sorted(referenced_ids - valid_ids)
+    if missing_ids:
+        raise ValueError(
+            f"{len(missing_ids)} IDs from {uns_key} were not found in adata.{id_name}. "
+            f"First 20 missing IDs: {missing_ids[:20]}",
+        )
+
+    return neighbor_dict
+
+
+def validate_precomputed_neighbor_celltype_dict(
+    adata,
+    uns_key="neighbor_celltype_dict",
+    max_neighbors=None,
+):
+    """Validate precomputed neighbor cell types for query-only AnnData files."""
+    if uns_key not in adata.uns:
+        raise KeyError(
+            "use_precomputed_neighbor=True requires either "
+            "adata.uns['neighbor_dict'] or adata.uns['neighbor_celltype_dict']",
+        )
+
+    neighbor_celltype_dict = adata.uns[uns_key]
+    if not isinstance(neighbor_celltype_dict, dict) or not neighbor_celltype_dict:
+        raise ValueError(f"adata.uns[{uns_key!r}] must be a non-empty dictionary")
+
+    valid_query_ids = set(adata.obs_names.astype(str))
+    missing_queries = sorted(set(map(str, neighbor_celltype_dict)) - valid_query_ids)
+    if missing_queries:
+        raise ValueError(
+            f"{len(missing_queries)} query IDs from {uns_key} were not found in adata.obs_names. "
+            f"First 20 missing IDs: {missing_queries[:20]}",
+        )
+
+    known_cell_types = set(map(str, adata.uns.get("cell_type_dict", {})))
+    for query_id, neighbor_types in neighbor_celltype_dict.items():
+        if isinstance(neighbor_types, (str, bytes)) or not hasattr(neighbor_types, "__iter__"):
+            raise TypeError(f"Neighbor cell types for query {query_id!r} must be a sequence.")
+        if max_neighbors is not None and len(neighbor_types) > max_neighbors:
+            raise ValueError(
+                f"Query {query_id!r} has {len(neighbor_types)} precomputed neighbors, "
+                f"but k_neighbors={max_neighbors}.",
+            )
+        if known_cell_types:
+            unknown = sorted(set(map(str, neighbor_types)) - known_cell_types)
+            if unknown:
+                raise ValueError(
+                    f"Query {query_id!r} contains cell types absent from cell_type_dict: {unknown[:20]}",
+                )
+
+    return neighbor_celltype_dict
+
+
 
 
 

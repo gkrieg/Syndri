@@ -11,6 +11,7 @@ preprocess_args:
   truncate_counts_max_value: null
   admixture: true
   apply_admixture: false
+  use_precomputed_neighbor: false
   admix_layer: "admixed"
   binary_layer: "is_transcript_added"
   species: "human"

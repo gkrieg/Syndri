@@ -81,6 +81,18 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--edge-max-mad", type=float, default=4.0)
     parser.add_argument("--n-jobs", type=int, default=1)
     parser.add_argument("--random-seed", type=int, default=0)
+    parser.add_argument("--syndri-reference-cosine", action="store_true")
+    parser.add_argument(
+        "--syndri-reference-profiles",
+        default="/home/jwinchel/Syndri/data/cache/rctd_profiles",
+    )
+    parser.add_argument("--syndri-cell-type-key", default="")
+    parser.add_argument("--syndri-one-se-multiplier", type=float, default=1.0)
+    parser.add_argument("--syndri-profile-min-umi", type=int, default=10)
+    parser.add_argument("--syndri-profile-max-umi", type=int, default=2000)
+    parser.add_argument("--syndri-profile-cell-min", type=int, default=25)
+    parser.add_argument("--syndri-profile-max-cells", type=int, default=10000)
+    parser.add_argument("--syndri-profile-cell-type-col", default="cell_type")
     parser.add_argument(
         "--label-map-json",
         default="{}",
@@ -365,6 +377,8 @@ def score_counts(reference, spatial, adjacency, excluded_genes, args, X, setting
 
 def main() -> None:
     args = parse_args()
+    if not np.isfinite(args.syndri_one_se_multiplier) or args.syndri_one_se_multiplier < 0:
+        raise ValueError("--syndri-one-se-multiplier must be finite and nonnegative")
     if args.backend == "celladmix":
         from score_admixture_celladmix import run
         run(args)
@@ -382,8 +396,28 @@ def main() -> None:
         else infer_reference_path(spatial)
     )
     print(f"Using reference: {reference_path}")
+    if args.syndri_reference_cosine:
+        from syndri_reference_cleaning import prepare_reference_cleaned
+
+        # Adapter compatibility: profile-cache matching uses the original RCTD
+        # reference recorded in spatial.uns, independently of the p_admix
+        # reference used below for scoring.
+        args.reference_data = ""
+        args.label_key = args.spatial_cell_type_key
+        args.admix_probs_layer = args.probability_layer
+        adaptive_counts, adaptive_achieved, adaptive_profile_path = prepare_reference_cleaned(
+            spatial, args, str(args.spatial_h5ad.expanduser().resolve()), input_layer="X"
+        )
+        spatial.layers["_syndri_reference_cosine_counts"] = adaptive_counts
+
     reference = ad.read_h5ad(reference_path)
     spatial, reference = align_and_prepare(spatial, reference, args)
+    if args.syndri_reference_cosine:
+        original_total = float(spatial.X.sum())
+        adaptive_total = float(spatial.layers["_syndri_reference_cosine_counts"].sum())
+        adaptive_achieved = (
+            (original_total - adaptive_total) / original_total if original_total else 0.0
+        )
     adjacency = build_adjacency(spatial, args)
     excluded_genes, correlations = correlation_exclusions(spatial, reference, args)
     probabilities = spatial.layers[args.probability_layer]
@@ -414,6 +448,26 @@ def main() -> None:
         )
         frames.append(split_scores)
         gene_sets["SPLIT"] = split_sets
+
+    if args.syndri_reference_cosine:
+        adaptive_scores, adaptive_sets = score_counts(
+            reference,
+            spatial,
+            adjacency,
+            excluded_genes,
+            args,
+            spatial.layers["_syndri_reference_cosine_counts"],
+            "syndri_reference_cosine",
+            np.nan,
+            adaptive_achieved,
+            np.nan,
+        )
+        adaptive_scores["threshold_selection"] = "cell_type_smallest_near_optimal_k"
+        adaptive_scores["syndri_probability_ordering"] = "cell_type_expressed_mean"
+        adaptive_scores["syndri_one_se_multiplier"] = args.syndri_one_se_multiplier
+        adaptive_scores["reference_profiles"] = adaptive_profile_path
+        frames.append(adaptive_scores)
+        gene_sets["syndri_reference_cosine"] = adaptive_sets
 
     for fraction in parse_csv(args.target_removed_fractions):
         target = float(fraction)
