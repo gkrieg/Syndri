@@ -74,7 +74,8 @@ python train.py \
   "fc.args.include_neighbor_cell_type_tokens=${include_neighbors}" \
   "fc.args.max_input_length=${max_input_length}" \
   "run_name=${ablation_name}" \
-  "work_dir=${output_root}/${ablation_name}"
+  "work_dir=${output_root}/${ablation_name}" \
+  "$@"
 
 # Submit all three conditions with:
 # sbatch /home/jwinchel/Syndri/scripts/slurm/train_syndri_ablations.sbatch
