@@ -76,6 +76,10 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--config-output", default="metrics_eval_config.json")
     parser.add_argument("--sample-frac", type=float, default=1.0)
     parser.add_argument("--sample-random-state", type=int, default=0)
+    parser.add_argument("--separation-min-counts", type=float, default=0.0,
+                        help="Minimum count total per cell for cell-type separation metrics; 0 disables this filter.")
+    parser.add_argument("--separation-min-genes", type=int, default=0,
+                        help="Minimum number of expressed genes per cell for cell-type separation metrics; 0 disables this filter.")
 
     parser.add_argument("--label-key", default="harmony_cell_type")
     parser.add_argument("--exclude-labels", default="malignant cell")
@@ -83,7 +87,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--tissue-name-regex", default=None)
     parser.add_argument("--admix-probs-layer", default="admix_probs")
     parser.add_argument("--target-removed-fractions", default="0.01,0.02,0.05,0.1,0.2")
-    parser.add_argument("--clean-prob-threshold", type=float, default=0.5)
+    parser.add_argument("--clean-prob-threshold", type=float, default=0.5,
+                        help="Minimum admixture probability eligible for target-fraction removal.")
     parser.add_argument("--syndri-reference-cosine", action="store_true",
                         help="Add a per-cell Syndri zeroing case selected by rolling reference cosine.")
     parser.add_argument("--syndri-cosine-window", type=int, default=5,
@@ -433,6 +438,9 @@ def expressed_counts_and_probabilities(probs, X) -> tuple[np.ndarray, np.ndarray
 def transformed_probability_weights(pvals, args: argparse.Namespace) -> np.ndarray:
     pvals = np.nan_to_num(np.asarray(pvals, dtype=float), nan=0.0, posinf=1.0, neginf=0.0)
     pvals = np.clip(pvals, 0.0, 1.0)
+    minimum = float(getattr(args, "clean_prob_threshold", 0.5))
+    if not np.isfinite(minimum) or not 0 <= minimum <= 1:
+        raise ValueError("clean_prob_threshold must be in [0, 1].")
 
     if args.probability_transform == "identity":
         weights = pvals
@@ -448,7 +456,7 @@ def transformed_probability_weights(pvals, args: argparse.Namespace) -> np.ndarr
     else:
         raise ValueError(f"Unsupported probability transform: {args.probability_transform!r}")
 
-    return np.clip(weights, 0.0, 1.0)
+    return np.where(pvals >= minimum, np.clip(weights, 0.0, 1.0), 0.0)
 
 
 def zeroed_counts(X, admix_probs, thresh: float):
@@ -518,12 +526,14 @@ def cleaned_counts(
     raise ValueError(f"Unsupported cleaning mode: {args.cleaning_mode!r}")
 
 
-def threshold_for_removed_fraction(probs, X, target_removed_frac: float) -> tuple[float, float]:
+def threshold_for_removed_fraction(
+    probs, X, target_removed_frac: float, min_probability: float = 0.5,
+) -> tuple[float, float]:
     r = min(max(float(target_removed_frac), 0.0), 1.0)
+    if not np.isfinite(min_probability) or not 0 <= min_probability <= 1:
+        raise ValueError("min_probability must be in [0, 1].")
     if r == 0.0:
         return np.inf, 0.0
-    if r == 1.0:
-        return -np.inf, 1.0
 
     counts, pvals = expressed_counts_and_probabilities(probs, X)
     if counts.size == 0:
@@ -531,9 +541,14 @@ def threshold_for_removed_fraction(probs, X, target_removed_frac: float) -> tupl
 
     total = float(counts.sum())
     target = r * total
-    order = np.argsort(pvals)[::-1]
-    p_sorted = pvals[order]
-    c_sorted = counts[order]
+    eligible = pvals >= min_probability
+    if not np.any(eligible):
+        return np.inf, 0.0
+    eligible_counts = counts[eligible]
+    eligible_pvals = pvals[eligible]
+    order = np.argsort(eligible_pvals)[::-1]
+    p_sorted = eligible_pvals[order]
+    c_sorted = eligible_counts[order]
     cum = np.cumsum(c_sorted)
     idx = min(int(np.searchsorted(cum, target, side="left")), len(p_sorted) - 1)
     thr = float(p_sorted[idx])
@@ -560,7 +575,7 @@ def removal_scale_for_removed_fraction(
     target = r * total
     positive = weights > 0
     if not np.any(positive):
-        raise ValueError("Probability transform produced zero weights for all expressed transcripts.")
+        return np.inf, 0.0
 
     max_removed = float(counts[positive].sum())
     if target >= max_removed:
@@ -596,6 +611,7 @@ def cleaned_counts_for_removed_fraction(
             admix_probs,
             X,
             target_removed_fraction,
+            min_probability=getattr(args, "clean_prob_threshold", 0.5),
         )
         return (
             cleaned_counts(X, admix_probs, threshold=threshold, args=args),
@@ -878,6 +894,19 @@ def score_case(
 
     try:
         X_raw, labels_prepared = prepare_matrix_and_labels(X, labels)
+        row["n_cells_before_qc"] = int(X_raw.shape[0])
+        if args.separation_min_counts > 0 or args.separation_min_genes > 0:
+            if sparse.issparse(X_raw):
+                cell_counts = np.asarray(X_raw.sum(axis=1)).ravel()
+                cell_genes = np.asarray((X_raw > 0).sum(axis=1)).ravel()
+            else:
+                cell_counts = np.asarray(X_raw).sum(axis=1)
+                cell_genes = np.count_nonzero(np.asarray(X_raw) > 0, axis=1)
+            keep = ((cell_counts >= args.separation_min_counts)
+                    & (cell_genes >= args.separation_min_genes))
+            X_raw = X_raw[keep]
+            labels_prepared = labels_prepared[keep]
+        row["n_cells_dropped_qc"] = row["n_cells_before_qc"] - int(X_raw.shape[0])
         unique_labels = pd.unique(labels_prepared)
         row["n_cells"] = int(X_raw.shape[0])
         row["n_genes"] = int(X_raw.shape[1])
@@ -938,7 +967,8 @@ def run_cell_type_separation(
         row = empty_metric_row(tissue, source_file, "all")
         row["error"] = f"Missing label key {args.label_key!r}."
         return [row]
-    if args.admix_probs_layer not in adata.layers:
+    needs_admix_probs = not args.only_additional_counts or args.additional_counts_zero_high_prob
+    if needs_admix_probs and args.admix_probs_layer not in adata.layers:
         row = empty_metric_row(tissue, source_file, "all")
         row["error"] = f"Missing admixture probability layer {args.admix_probs_layer!r}."
         return [row]
@@ -964,7 +994,7 @@ def run_cell_type_separation(
             return rows
         removal_labels = adata.obs[removal_group_key]
 
-    admix_probs = adata.layers[args.admix_probs_layer]
+    admix_probs = adata.layers[args.admix_probs_layer] if needs_admix_probs else None
     target_fractions = [] if args.only_additional_counts else parse_float_list(args.target_removed_fractions)
     for target_removed_fraction in target_fractions:
         try:
@@ -2354,6 +2384,8 @@ def run_layered_evaluations_for_file(
                 fallback_keys=probability_fallbacks,
             )
             method_args = copy.copy(args)
+            if method == "mlp":
+                method_args.clean_prob_threshold = 0.0
             method_args.admix_probs_layer = "_metrics_admix_probs"
             method_args.additional_counts_layer = ""
             method_args.uncorrected_condition_label = f"{label}_uncorrected"
@@ -2858,6 +2890,11 @@ def remove_stale_tcell_cosine_errors(df: pd.DataFrame) -> pd.DataFrame:
 def main() -> None:
     parser = build_parser()
     args = parser.parse_args()
+
+    if not np.isfinite(args.separation_min_counts) or args.separation_min_counts < 0:
+        parser.error("--separation-min-counts must be finite and nonnegative")
+    if args.separation_min_genes < 0:
+        parser.error("--separation-min-genes must be nonnegative")
 
     if args.syndri_cosine_window < 1:
         parser.error("--syndri-cosine-window must be positive")

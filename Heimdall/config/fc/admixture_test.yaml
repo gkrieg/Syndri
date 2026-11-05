@@ -8,9 +8,13 @@ args:
   gene_metadata_filepath: ${data_path}/gene_metadata/species_chrom.csv
   # One of: none, metadata, predicted_cls.
   query_cell_type_token_mode: metadata
-  query_cell_type_col: cell_type_harmonized
+  query_cell_type_col: cell_type
   include_query_cell_type_token: true
   include_neighbor_cell_type_tokens: true
+  # None uses every sampled neighbor; otherwise expose only the first N types.
+  num_neighbor_cell_type_tokens: null
+  # Learned <NEIGHBORS>, <QUERY_TYPE>, and <GENES> section markers.
+  include_separator_tokens: false
   embedding_parameters:
     type: Heimdall.embedding.GaussianInitEmbedding
     args:

@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH -p gpu-small
+#SBATCH -p cpu,gpu-large
 #SBATCH --mem=32Gb
 #SBATCH --job-name=split-h5ad-layers
 #SBATCH --output=/home/jwinchel/Syndri/logs/split-h5ad-layers-%A_%a.txt

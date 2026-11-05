@@ -6,7 +6,7 @@
 
 defaults:
   - override /model: transformer_syndri_medium #transformer # the chosen model
-  - override /dataset: 10x_nsclc-cosmx_Lung9-Rep1 # dataset for the relevant task
+  - override /dataset: admixture_nsclc # dataset for the relevant task
   - override /tasks: admixture_correction # dataset for the relevant task
   - override /scheduler: cosine # contains scheduler
   - override /trainer: default # contains optimizer and trainer details
@@ -31,14 +31,40 @@ seed: 54
 # run_name: ${fg.type}_${fe.type}_${fc.type}_${model.type}_lr${optimizer.args.lr}_bz${tasks.args.batchsize}  ## what is set for WandB
 # work_dir: '${project_name}_results/${fg.type}_${fe.name}_${fc.type}_${dataset.dataset_name}_lr${optimizer.args.lr}_bz${tasks.args.batchsize}_seed${seed}_ag${fe.args.drop_zeros}'  ## set your custom working directory
 
-run_name: 10x_nsclc-cosmx_Lung9-Rep1 ## what is set for WandB
-work_dir: '${project_name}_results/10x_nsclc-cosmx_Lung9-Rep1'  ## set your custom working directory
+run_name: nsclc_cosmx_train_val_k9_tau0_0p95
+work_dir: '${project_name}_results/nsclc_cosmx_train_val_k9_tau0_0p95'
 
 
 project_name: 'admixture_prediction' #project name for WandB
 dataset:
+  dataset_name: nsclc_cosmx_spillover_train_val
   preprocess_args:
+    data_path: "/work/magroup/skrieger/Syndri/data/datasets/nsclc_cosmx/spillover-benchmark/train_val.h5ad"
+    admixture: true
+    apply_admixture: true
     fix_admixture: false
+    use_precomputed_neighbor: false
+    top_n_genes: false
+    normalize: false
+    log_1p: false
+    scale_data: false
+    truncate_counts_max_value: null
+    admix_layer: "admixed"
+    binary_layer: "is_transcript_added"
+    species: "human"
+    admixture_args:
+      k_neighbors: 9
+      min_sampled_transcript_threshold: 10
+      min_source_transcript_count: 400
+      use_same_cell_type_neighbors: false
+      only_sample_unexpressed_genes: true
+      mask_out_random_genes: false
+      mask_out_frac: 0.0
+      tau_range: [0.0, 0.95]
+      n_repeats: 1
+      coord_cols: [CenterX_global_px, CenterY_global_px]
+      tissue_col: spatial_slice
+      cell_type_col: cell_type
 
 tasks:
   args:

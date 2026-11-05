@@ -24,6 +24,7 @@ input=${files[$task]}
 sample=$(basename "$input" .h5ad)
 output="$OUTPUT_ROOT/$sample"
 fractions=${TARGET_REMOVED_FRACTIONS:-0.01,0.02,0.05,0.1,0.2,0.3,0.4,0.5}
+OMIT_ADDITIONAL_COUNTS=${OMIT_ADDITIONAL_COUNTS:-0}
 mkdir -p "$output"
 source /home/jwinchel/Syndri/scripts/slurm/syndri_reference_cosine_args.sh
 METRIC_MODE_ARGS=()
@@ -39,9 +40,13 @@ elif [[ "${SYNDRI_COSINE_ONLY:-0}" == 1 ]]; then
   validation_mode=syndri_cosine_only
 fi
 
-# Each call evaluates raw X, the removal sweep, and SPLIT on the same cells.
+# Each call evaluates raw X and the removal sweep (plus SPLIT unless omitted).
 # Empty exclude-labels includes every annotated cell type, including malignant
 # cells. Skipping the T-cell metric family does not exclude T cells themselves.
+ADDITIONAL_COUNTS_ARGS=(--additional-counts-layer split_purified_counts_X --additional-counts-case-label SPLIT)
+if [[ "$OMIT_ADDITIONAL_COUNTS" == 1 ]]; then
+  ADDITIONAL_COUNTS_ARGS=(--additional-counts-layer "")
+fi
 python /home/jwinchel/Syndri/eval/metrics_eval.py \
   --input-files "$input" \
   --output-dir "$output" \
@@ -50,8 +55,7 @@ python /home/jwinchel/Syndri/eval/metrics_eval.py \
   --label-key "$LABEL_KEY" \
   --exclude-labels "${EXCLUDE_LABELS:-}" \
   --admix-probs-layer syndri_admix_probs_X \
-  --additional-counts-layer split_purified_counts_X \
-  --additional-counts-case-label SPLIT \
+  "${ADDITIONAL_COUNTS_ARGS[@]}" \
   --target-removed-fractions "$fractions" \
   --cleaning-mode probability_scale \
   --cell-type-specific-removal \
@@ -89,7 +93,8 @@ elif adaptive == "syndri_cosine_only":
     table = table[table["case"].astype(str) == "syndri_reference_cosine"]
     expected = 1
 else:
-    expected = 2 + len([f for f in fractions.split(",") if f.strip()]) + (adaptive.lower() in {"1", "true"})
+    n_baselines = 1 if __import__("os").environ.get("OMIT_ADDITIONAL_COUNTS", "0") == "1" else 2
+    expected = n_baselines + len([f for f in fractions.split(",") if f.strip()]) + (adaptive.lower() in {"1", "true"})
 metrics = ["silhouette_score", "calinski_harabasz", "davies_bouldin",
            "leiden_nmi_vs_label", "leiden_adjusted_rand_vs_label",
            "median_genes_per_cell", "median_transcripts_per_cell"]

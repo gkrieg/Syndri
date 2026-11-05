@@ -14,6 +14,7 @@ module load cuda-12.1
 cd /home/jwinchel/Syndri/Heimdall
 source /home/jwinchel/miniconda3/etc/profile.d/conda.sh
 conda activate "${CONDA_ENV:-heimdall}"
+PYTHON=${PYTHON:-/home/jwinchel/miniconda3/envs/heimdall/bin/python}
 
 REFERENCE_DATA=${REFERENCE_DATA:-/compute/oven-0-13/jwinchel/scRNA-seq/adata/chromium_GSM9509174_breast_integrated.h5ad}
 CHECKPOINT_DIR=${CHECKPOINT_DIR:-/home/jwinchel/Syndri/Heimdall/admixture_prediction_results/chromium_breast_GS95019174_augmented}
@@ -171,7 +172,7 @@ merge_prediction_layer() {
   local prediction_file=$2
   local layer_name=$3
 
-  python - "$target_file" "$prediction_file" "$layer_name" "$OVERWRITE_LAYERS" <<'PY'
+  "$PYTHON" - "$target_file" "$prediction_file" "$layer_name" "$OVERWRITE_LAYERS" <<'PY'
 import os
 import sys
 from pathlib import Path
@@ -269,7 +270,7 @@ for ((i = 0; i < ${#INPUT_LAYER_NAMES[@]}; i++)); do
   echo "  input expression layer: $INPUT_LAYER"
   echo "  output probability layer: $PRED_LAYER"
 
-  python scripts/run_admixture_inference.py \
+  "$PYTHON" scripts/run_admixture_inference.py \
     --st-data "$ST_DATA" \
     --reference-data "$REFERENCE_DATA" \
     --output-dir "$RUN_DIR" \

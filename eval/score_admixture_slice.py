@@ -69,6 +69,8 @@ def parse_args() -> argparse.Namespace:
         "--target-removed-fractions",
         default="0.01,0.02,0.05,0.1,0.2,0.3,0.4,0.5",
     )
+    parser.add_argument("--clean-prob-threshold", type=float, default=0.5,
+                        help="Minimum admixture probability eligible for target-fraction removal.")
     parser.add_argument("--correlation-threshold", type=float, default=0.2)
     parser.add_argument("--skip-correlation-filter", action="store_true")
     parser.add_argument("--adjust", action=argparse.BooleanOptionalAction, default=True,
@@ -184,22 +186,28 @@ def expressed_counts_and_probabilities(X, probabilities):
     return counts[valid], probs[valid]
 
 
-def threshold_for_removed_fraction(X, probabilities, fraction: float):
+def threshold_for_removed_fraction(X, probabilities, fraction: float,
+                                   min_probability: float = 0.5):
     fraction = float(np.clip(fraction, 0.0, 1.0))
+    if not np.isfinite(min_probability) or not 0 <= min_probability <= 1:
+        raise ValueError("min_probability must be in [0, 1].")
     if fraction == 0:
         return np.inf, 0.0
     counts, probs = expressed_counts_and_probabilities(X, probabilities)
     if counts.size == 0:
         raise ValueError("No positive, finite transcript counts were found.")
-    order = np.argsort(probs)[::-1]
-    sorted_probs = probs[order]
-    sorted_counts = counts[order]
+    eligible = probs >= min_probability
+    if not np.any(eligible):
+        return np.inf, 0.0
+    order = np.argsort(probs[eligible])[::-1]
+    sorted_probs = probs[eligible][order]
+    sorted_counts = counts[eligible][order]
     index = min(
-        int(np.searchsorted(np.cumsum(sorted_counts), fraction * sorted_counts.sum())),
+        int(np.searchsorted(np.cumsum(sorted_counts), fraction * counts.sum())),
         len(sorted_probs) - 1,
     )
     threshold = float(sorted_probs[index])
-    achieved = float(sorted_counts[sorted_probs >= threshold].sum() / sorted_counts.sum())
+    achieved = float(sorted_counts[sorted_probs >= threshold].sum() / counts.sum())
     return threshold, achieved
 
 
@@ -471,7 +479,8 @@ def main() -> None:
 
     for fraction in parse_csv(args.target_removed_fractions):
         target = float(fraction)
-        threshold, achieved = threshold_for_removed_fraction(spatial.X, probabilities, target)
+        threshold, achieved = threshold_for_removed_fraction(
+            spatial.X, probabilities, target, args.clean_prob_threshold)
         cleaned = zero_counts_at_probability(spatial.X, probabilities, threshold)
         setting = f"syndri_remove_{target:g}"
         scored, sets = score_counts(

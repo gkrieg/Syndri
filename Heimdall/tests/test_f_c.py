@@ -271,6 +271,7 @@ def test_admixture_fc_cell_type_token_ablations(
     admixture_fc.query_cell_type_col = "cell_type"
     admixture_fc.include_query_cell_type_token = include_query
     admixture_fc.include_neighbor_cell_type_tokens = include_neighbors
+    admixture_fc.num_neighbor_cell_type_tokens = None
     admixture_fc.admixture_token_offset = 1
 
     surr_types, surr_tokens, metadata_prefix = admixture_fc.get_metadata_prefix_tokens("query")
@@ -284,6 +285,32 @@ def test_admixture_fc_cell_type_token_ablations(
     assert surr_tokens == [-2, -3]
     assert metadata_prefix == expected_prefix
     assert admixture_fc.num_prefix_tokens == len(expected_prefix)
+
+
+@pytest.mark.parametrize("visible_neighbors", [10, 8, 6, 4, 2, 1])
+def test_admixture_fc_limits_visible_neighbor_types(visible_neighbors):
+    adata = ad.AnnData(np.zeros((1, 1)))
+    adata.obs_names = ["query"]
+    adata.obs["cell_type"] = ["query_type"]
+    neighbors = [f"neighbor_{i}" for i in range(10)]
+    adata.uns["neighbor_celltype_dict"] = {"query": neighbors}
+    adata.uns["cell_type_dict"] = {"query_type": -1, **{
+        cell_type: -(i + 2) for i, cell_type in enumerate(neighbors)
+    }}
+
+    fc = AdmixtureFc.__new__(AdmixtureFc)
+    fc._adata = adata
+    fc.query_cell_type_token_mode = "metadata"
+    fc.query_cell_type_col = "cell_type"
+    fc.include_query_cell_type_token = True
+    fc.include_neighbor_cell_type_tokens = True
+    fc.num_neighbor_cell_type_tokens = visible_neighbors
+
+    all_types, all_tokens, prefix = fc.get_metadata_prefix_tokens("query")
+    assert all_types == neighbors
+    assert len(all_tokens) == 10
+    assert prefix == all_tokens[:visible_neighbors] + [-1]
+    assert fc.num_prefix_tokens == visible_neighbors + 1
 
 
 

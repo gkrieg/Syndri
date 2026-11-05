@@ -447,26 +447,27 @@ def sample_tau_admixture_from_neighbors(
 
         admixed_total / (admixed_total + query_total) >= tau
 
-    This implies:
-
-        target added count = tau / (1 - tau) * query_total
-
-    The returned fraction may exceed tau because counts are added one whole
-    gene at a time. If all eligible genes cannot reach target, use all genes.
+    This implies a target added count of tau / (1 - tau) * query_total for
+    tau < 1. The returned fraction may exceed tau because counts are added one
+    whole gene at a time. If available eligible counts cannot reach the target,
+    use all available genes. For tau >= 1, the target is unattainable, so all
+    available eligible neighbor counts are used.
     """
     if rng is None:
         rng = np.random.default_rng()
 
     if len(neighbor_gene_counts) == 0 or query_total <= 0 or tau <= 0:
         return np.array([], dtype=int), np.array([], dtype=int)
-    if tau >= 1:
-        raise ValueError("tau must be less than 1.")
-
     genes = np.fromiter(neighbor_gene_counts.keys(), dtype=int)
     counts = np.fromiter(neighbor_gene_counts.values(), dtype=np.int64)
 
     total_available = int(counts.sum())
-    target_n = int(round((tau / (1.0 - tau)) * query_total))
+    if tau >= 1:
+        # The requested final-mixture fraction is unattainable with finite
+        # query counts; saturate at the available neighbor counts.
+        target_n = total_available
+    else:
+        target_n = int(round((tau / (1.0 - tau)) * query_total))
 
     if target_n < min_n:
         return np.array([], dtype=int), np.array([], dtype=int)
