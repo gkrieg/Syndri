@@ -1,0 +1,7 @@
+CC=/usr/bin/gcc
+CXX=/usr/bin/g++
+CXX11=/usr/bin/g++
+CXX14=/usr/bin/g++
+CXX17=/usr/bin/g++
+FC=/usr/bin/gfortran
+F77=/usr/bin/gfortran
