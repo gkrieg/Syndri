@@ -1,0 +1,39 @@
+{
+  "description": "Original public study sources supplied in Appendix A.2. These landing pages are not download URLs for the frozen processed assets or trained checkpoints.",
+  "datasets": {
+    "NC": {
+      "name": "NSCLC CosMx",
+      "spatial": {
+        "url": "https://nanostring.com/products/cosmx-spatial-molecular-imager/ffpe-dataset/nsclc-ffpe-dataset/",
+        "current_portal": "https://brukerspatialbiology.com/products/cosmx-spatial-molecular-imager/ffpe-dataset/nsclc-ffpe-dataset/"
+      },
+      "reference": {
+        "accession": "GSE127465",
+        "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE127465"
+      }
+    },
+    "BX": {
+      "name": "Breast cancer Xenium",
+      "spatial": {
+        "accession": "GSE311609",
+        "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE311609"
+      },
+      "reference": {
+        "collection_id": "bd552f76-1f1b-43a3-b9ee-0aace57e90d6",
+        "url": "https://cellxgene.cziscience.com/collections/bd552f76-1f1b-43a3-b9ee-0aace57e90d6"
+      }
+    },
+    "BM": {
+      "name": "Whole mouse brain MERFISH",
+      "spatial": {
+        "collection_id": "0cca8620-8dee-45d0-aef5-23f032a5cf09",
+        "url": "https://cellxgene.cziscience.com/collections/0cca8620-8dee-45d0-aef5-23f032a5cf09",
+        "note": "Use measured, non-imputed MERFISH counts."
+      },
+      "reference": {
+        "url": "https://github.com/AllenInstitute/abc_atlas_access/blob/main/descriptions/WMB-10X.md",
+        "note": "Allen Brain Cell Atlas whole mouse brain 10x Genomics reference."
+      }
+    }
+  }
+}

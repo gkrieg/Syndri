@@ -1,0 +1,97 @@
+slice,query_family,query_burden_quantile,beta_ctrl,beta_native,n_queries,n_query_types,contributing_cell_types,status
+GSM9509156_breast_breast_B17_B17_rctd_annotated,Lymphoid,high,0.005147586579525214,0.01169092723046264,400,4,"CD4-positive, alpha-beta memory T cell; cytotoxic T cell; natural T-regulatory cell; natural killer cell",valid
+GSM9509156_breast_breast_B17_B17_rctd_annotated,Lymphoid,low,0.006206114725232763,-0.035066277832489695,317,4,"CD4-positive, alpha-beta memory T cell; cytotoxic T cell; natural T-regulatory cell; natural killer cell",valid
+GSM9509156_breast_breast_B17_B17_rctd_annotated,Lymphoid,medium,0.006350899585492685,-0.016895215829120132,353,4,"CD4-positive, alpha-beta memory T cell; cytotoxic T cell; natural T-regulatory cell; natural killer cell",valid
+GSM9509156_breast_breast_B17_B17_rctd_annotated,Myeloid,high,0.0034819807065730552,0.01646760660101999,344,4,classical monocyte; macrophage; mast cell; plasmacytoid dendritic cell,valid
+GSM9509156_breast_breast_B17_B17_rctd_annotated,Myeloid,low,0.007531785397748266,0.009407733516840681,323,4,classical monocyte; macrophage; mast cell; plasmacytoid dendritic cell,valid
+GSM9509156_breast_breast_B17_B17_rctd_annotated,Myeloid,medium,0.00538577196209645,0.015525817784913389,350,4,classical monocyte; macrophage; mast cell; plasmacytoid dendritic cell,valid
+GSM9509156_breast_breast_B17_B17_rctd_annotated,Stromal,high,0.0007761163149984004,0.007019641065972652,288,3,fibroblast of breast; fibroblast of lung; smooth muscle cell,valid
+GSM9509156_breast_breast_B17_B17_rctd_annotated,Stromal,low,0.007145556301294435,0.00277236052939219,283,3,fibroblast of breast; fibroblast of lung; smooth muscle cell,valid
+GSM9509156_breast_breast_B17_B17_rctd_annotated,Stromal,medium,0.0021479490684606552,0.01197529329768184,299,3,fibroblast of breast; fibroblast of lung; smooth muscle cell,valid
+GSM9509156_breast_breast_B17_B17_rctd_annotated,Vascular,high,-0.005391614870809857,-0.00023212479192814958,95,1,capillary endothelial cell,valid
+GSM9509156_breast_breast_B17_B17_rctd_annotated,Vascular,low,-0.008851763071269848,-0.015077778769159824,81,1,capillary endothelial cell,valid
+GSM9509156_breast_breast_B17_B17_rctd_annotated,Vascular,medium,-0.005228798992070461,-0.0007652611236496538,93,1,capillary endothelial cell,valid
+GSM9509162_breast_breast_B12_B12_rctd_annotated,Lymphoid,high,0.004808771080969273,0.00743048245057022,452,5,"CD4-positive, alpha-beta memory T cell; cytotoxic T cell; natural T-regulatory cell; natural killer cell; plasma cell",valid
+GSM9509162_breast_breast_B12_B12_rctd_annotated,Lymphoid,low,0.00780602764414203,0.0195273676147863,337,4,"CD4-positive, alpha-beta memory T cell; cytotoxic T cell; natural T-regulatory cell; natural killer cell",valid
+GSM9509162_breast_breast_B12_B12_rctd_annotated,Lymphoid,medium,0.006696677314789927,-0.0018895230617009444,390,4,"CD4-positive, alpha-beta memory T cell; cytotoxic T cell; natural T-regulatory cell; natural killer cell",valid
+GSM9509162_breast_breast_B12_B12_rctd_annotated,Myeloid,high,0.003255175606400199,0.019397342085738605,344,4,classical monocyte; macrophage; mast cell; plasmacytoid dendritic cell,valid
+GSM9509162_breast_breast_B12_B12_rctd_annotated,Myeloid,low,0.006913725513389574,0.009005979536120895,322,4,classical monocyte; macrophage; mast cell; plasmacytoid dendritic cell,valid
+GSM9509162_breast_breast_B12_B12_rctd_annotated,Myeloid,medium,0.004946766771729654,0.0025097046305138666,366,4,classical monocyte; macrophage; mast cell; plasmacytoid dendritic cell,valid
+GSM9509162_breast_breast_B12_B12_rctd_annotated,Stromal,high,0.00737465552019981,0.018266307388864738,289,3,fibroblast of breast; fibroblast of lung; smooth muscle cell,valid
+GSM9509162_breast_breast_B12_B12_rctd_annotated,Stromal,low,0.006942163022822512,0.020898740824470904,282,3,fibroblast of breast; fibroblast of lung; smooth muscle cell,valid
+GSM9509162_breast_breast_B12_B12_rctd_annotated,Stromal,medium,0.009226821702775058,0.023154718007631636,286,3,fibroblast of breast; fibroblast of lung; smooth muscle cell,valid
+GSM9509162_breast_breast_B12_B12_rctd_annotated,Vascular,high,-0.0063609652540664065,0.009786283464247033,100,1,capillary endothelial cell,valid
+GSM9509162_breast_breast_B12_B12_rctd_annotated,Vascular,low,-0.011463640926621473,-0.005607737546048506,98,1,capillary endothelial cell,valid
+GSM9509162_breast_breast_B12_B12_rctd_annotated,Vascular,medium,-0.00922681123895303,0.0009231881094728312,99,1,capillary endothelial cell,valid
+GSM9509164_breast_breast_B10_B10_rctd_annotated,Lymphoid,high,0.0064822441177960835,0.012750421363639877,456,4,"CD4-positive, alpha-beta memory T cell; cytotoxic T cell; natural T-regulatory cell; natural killer cell",valid
+GSM9509164_breast_breast_B10_B10_rctd_annotated,Lymphoid,low,0.006357994333191878,0.015135828250259014,312,4,"CD4-positive, alpha-beta memory T cell; cytotoxic T cell; natural T-regulatory cell; natural killer cell",valid
+GSM9509164_breast_breast_B10_B10_rctd_annotated,Lymphoid,medium,0.006230905293544283,0.018267401256337797,390,4,"CD4-positive, alpha-beta memory T cell; cytotoxic T cell; natural T-regulatory cell; natural killer cell",valid
+GSM9509164_breast_breast_B10_B10_rctd_annotated,Myeloid,high,0.003195707391930032,0.027362277883190244,370,4,classical monocyte; macrophage; mast cell; plasmacytoid dendritic cell,valid
+GSM9509164_breast_breast_B10_B10_rctd_annotated,Myeloid,low,0.0003308806500991993,0.034776235860590525,325,4,classical monocyte; macrophage; mast cell; plasmacytoid dendritic cell,valid
+GSM9509164_breast_breast_B10_B10_rctd_annotated,Myeloid,medium,0.002597725435327847,0.02165548837112155,345,4,classical monocyte; macrophage; mast cell; plasmacytoid dendritic cell,valid
+GSM9509164_breast_breast_B10_B10_rctd_annotated,Stromal,high,0.00804927523075572,0.023706006336836203,296,3,fibroblast of breast; fibroblast of lung; smooth muscle cell,valid
+GSM9509164_breast_breast_B10_B10_rctd_annotated,Stromal,low,0.00464470325776813,0.007107822909366945,294,3,fibroblast of breast; fibroblast of lung; smooth muscle cell,valid
+GSM9509164_breast_breast_B10_B10_rctd_annotated,Stromal,medium,0.006218035203202934,0.01365648364602321,300,3,fibroblast of breast; fibroblast of lung; smooth muscle cell,valid
+GSM9509164_breast_breast_B10_B10_rctd_annotated,Vascular,high,-0.0044507173271042914,0.003614962136353745,99,1,capillary endothelial cell,valid
+GSM9509164_breast_breast_B10_B10_rctd_annotated,Vascular,low,-0.006557324822843293,0.00443430634381617,97,1,capillary endothelial cell,valid
+GSM9509164_breast_breast_B10_B10_rctd_annotated,Vascular,medium,-0.006818946647906379,0.003155871989126391,100,1,capillary endothelial cell,valid
+GSM9509166_breast_breast_B9_B9_rctd_annotated,Lymphoid,high,0.010467359781089949,0.0169360088930057,446,5,"CD4-positive, alpha-beta memory T cell; cytotoxic T cell; natural T-regulatory cell; natural killer cell; plasma cell",valid
+GSM9509166_breast_breast_B9_B9_rctd_annotated,Lymphoid,low,0.01130730551265241,0.014629147151252306,413,5,"CD4-positive, alpha-beta memory T cell; cytotoxic T cell; natural T-regulatory cell; natural killer cell; plasma cell",valid
+GSM9509166_breast_breast_B9_B9_rctd_annotated,Lymphoid,medium,0.012153179675151388,0.010811148668382325,437,5,"CD4-positive, alpha-beta memory T cell; cytotoxic T cell; natural T-regulatory cell; natural killer cell; plasma cell",valid
+GSM9509166_breast_breast_B9_B9_rctd_annotated,Myeloid,high,0.004961264188576573,0.02124091587504325,345,4,classical monocyte; macrophage; mast cell; plasmacytoid dendritic cell,valid
+GSM9509166_breast_breast_B9_B9_rctd_annotated,Myeloid,low,0.0031828940487443566,0.0039056146994396012,367,4,classical monocyte; macrophage; mast cell; plasmacytoid dendritic cell,valid
+GSM9509166_breast_breast_B9_B9_rctd_annotated,Myeloid,medium,0.004960220998857456,0.009401178669657726,389,4,classical monocyte; macrophage; mast cell; plasmacytoid dendritic cell,valid
+GSM9509166_breast_breast_B9_B9_rctd_annotated,Stromal,high,0.003313644758890979,0.025981217138931034,298,3,fibroblast of breast; fibroblast of lung; smooth muscle cell,valid
+GSM9509166_breast_breast_B9_B9_rctd_annotated,Stromal,low,0.00313882844082607,0.02600455691843269,282,3,fibroblast of breast; fibroblast of lung; smooth muscle cell,valid
+GSM9509166_breast_breast_B9_B9_rctd_annotated,Stromal,medium,0.0021506848625631983,0.022583752650961113,298,3,fibroblast of breast; fibroblast of lung; smooth muscle cell,valid
+GSM9509166_breast_breast_B9_B9_rctd_annotated,Vascular,high,-0.0035474684727192086,-0.00474436094812402,100,1,capillary endothelial cell,valid
+GSM9509166_breast_breast_B9_B9_rctd_annotated,Vascular,low,-0.006151072629795647,-0.005127611393623803,97,1,capillary endothelial cell,valid
+GSM9509166_breast_breast_B9_B9_rctd_annotated,Vascular,medium,-0.005148545784916899,0.006957326792755699,99,1,capillary endothelial cell,valid
+GSM9509171_breast_breast_B5_B5_rctd_annotated,Lymphoid,high,0.0038668543544606777,0.013759334964003911,409,5,"CD4-positive, alpha-beta memory T cell; cytotoxic T cell; natural T-regulatory cell; natural killer cell; plasma cell",valid
+GSM9509171_breast_breast_B5_B5_rctd_annotated,Lymphoid,low,0.005487317175353191,0.005094011036922564,370,5,"CD4-positive, alpha-beta memory T cell; cytotoxic T cell; natural T-regulatory cell; natural killer cell; plasma cell",valid
+GSM9509171_breast_breast_B5_B5_rctd_annotated,Lymphoid,medium,0.005104997243895511,0.001274876748720246,398,4,"CD4-positive, alpha-beta memory T cell; cytotoxic T cell; natural T-regulatory cell; natural killer cell",valid
+GSM9509171_breast_breast_B5_B5_rctd_annotated,Myeloid,high,0.0028657984999793233,0.008771141466384743,328,4,classical monocyte; macrophage; mast cell; plasmacytoid dendritic cell,valid
+GSM9509171_breast_breast_B5_B5_rctd_annotated,Myeloid,low,0.0004552406128141099,-0.0037167696903717276,355,4,classical monocyte; macrophage; mast cell; plasmacytoid dendritic cell,valid
+GSM9509171_breast_breast_B5_B5_rctd_annotated,Myeloid,medium,0.0024866401086435915,0.00996111134932609,346,4,classical monocyte; macrophage; mast cell; plasmacytoid dendritic cell,valid
+GSM9509171_breast_breast_B5_B5_rctd_annotated,Stromal,high,0.008255854493372008,0.008322203165442445,298,3,fibroblast of breast; fibroblast of lung; smooth muscle cell,valid
+GSM9509171_breast_breast_B5_B5_rctd_annotated,Stromal,low,0.006971264199761199,0.016061379022923736,291,3,fibroblast of breast; fibroblast of lung; smooth muscle cell,valid
+GSM9509171_breast_breast_B5_B5_rctd_annotated,Stromal,medium,0.008104224897573729,0.0025621298943202153,297,3,fibroblast of breast; fibroblast of lung; smooth muscle cell,valid
+GSM9509171_breast_breast_B5_B5_rctd_annotated,Vascular,high,-0.0057704551388936594,-0.0063086903526432475,99,1,capillary endothelial cell,valid
+GSM9509171_breast_breast_B5_B5_rctd_annotated,Vascular,low,-0.007338521578346517,0.007697409069693235,96,1,capillary endothelial cell,valid
+GSM9509171_breast_breast_B5_B5_rctd_annotated,Vascular,medium,-0.0067481497369152686,-0.0022653187203090963,99,1,capillary endothelial cell,valid
+GSM9509172_breast_breast_B1_B1_1_rctd_annotated,Lymphoid,high,0.005060684596156325,0.007189071992702275,477,5,"CD4-positive, alpha-beta memory T cell; cytotoxic T cell; natural T-regulatory cell; natural killer cell; plasma cell",valid
+GSM9509172_breast_breast_B1_B1_1_rctd_annotated,Lymphoid,low,0.006195012238121847,0.013644865598355847,394,5,"CD4-positive, alpha-beta memory T cell; cytotoxic T cell; natural T-regulatory cell; natural killer cell; plasma cell",valid
+GSM9509172_breast_breast_B1_B1_1_rctd_annotated,Lymphoid,medium,0.005714389101736869,0.013484355513886135,428,5,"CD4-positive, alpha-beta memory T cell; cytotoxic T cell; natural T-regulatory cell; natural killer cell; plasma cell",valid
+GSM9509172_breast_breast_B1_B1_1_rctd_annotated,Myeloid,high,0.0018328142908998115,0.0055439952149659655,378,4,classical monocyte; macrophage; mast cell; plasmacytoid dendritic cell,valid
+GSM9509172_breast_breast_B1_B1_1_rctd_annotated,Myeloid,low,0.0022294574570086685,0.0014980452096527033,346,4,classical monocyte; macrophage; mast cell; plasmacytoid dendritic cell,valid
+GSM9509172_breast_breast_B1_B1_1_rctd_annotated,Myeloid,medium,0.0008832394410517232,0.00640453040472861,374,4,classical monocyte; macrophage; mast cell; plasmacytoid dendritic cell,valid
+GSM9509172_breast_breast_B1_B1_1_rctd_annotated,Stromal,high,0.006236691162523574,0.009470382738743439,299,3,fibroblast of breast; fibroblast of lung; smooth muscle cell,valid
+GSM9509172_breast_breast_B1_B1_1_rctd_annotated,Stromal,low,0.004474597068382129,0.0065075742576401864,298,3,fibroblast of breast; fibroblast of lung; smooth muscle cell,valid
+GSM9509172_breast_breast_B1_B1_1_rctd_annotated,Stromal,medium,0.0060911686764375484,0.011624425779611596,299,3,fibroblast of breast; fibroblast of lung; smooth muscle cell,valid
+GSM9509172_breast_breast_B1_B1_1_rctd_annotated,Vascular,high,-0.007299903906666601,-0.006289825429047649,100,1,capillary endothelial cell,valid
+GSM9509172_breast_breast_B1_B1_1_rctd_annotated,Vascular,low,-0.007237355747330002,-0.005006870053395592,99,1,capillary endothelial cell,valid
+GSM9509172_breast_breast_B1_B1_1_rctd_annotated,Vascular,medium,-0.006039043382353365,0.00868995158289551,101,1,capillary endothelial cell,valid
+GSM9509173_breast_breast_B1_B1_2_rctd_annotated,Lymphoid,high,0.003961204981415133,0.006133755110969009,478,5,"CD4-positive, alpha-beta memory T cell; cytotoxic T cell; natural T-regulatory cell; natural killer cell; plasma cell",valid
+GSM9509173_breast_breast_B1_B1_2_rctd_annotated,Lymphoid,low,0.004840298262730686,0.01662095421852875,375,5,"CD4-positive, alpha-beta memory T cell; cytotoxic T cell; natural T-regulatory cell; natural killer cell; plasma cell",valid
+GSM9509173_breast_breast_B1_B1_2_rctd_annotated,Lymphoid,medium,0.00491579364203322,0.009882888747109929,412,5,"CD4-positive, alpha-beta memory T cell; cytotoxic T cell; natural T-regulatory cell; natural killer cell; plasma cell",valid
+GSM9509173_breast_breast_B1_B1_2_rctd_annotated,Myeloid,high,-0.00021804383653476096,0.016605055493346413,366,4,classical monocyte; macrophage; mast cell; plasmacytoid dendritic cell,valid
+GSM9509173_breast_breast_B1_B1_2_rctd_annotated,Myeloid,low,0.001994113693579058,0.016095215420545504,346,4,classical monocyte; macrophage; mast cell; plasmacytoid dendritic cell,valid
+GSM9509173_breast_breast_B1_B1_2_rctd_annotated,Myeloid,medium,0.0007311925388281211,0.025279301840474822,355,4,classical monocyte; macrophage; mast cell; plasmacytoid dendritic cell,valid
+GSM9509173_breast_breast_B1_B1_2_rctd_annotated,Stromal,high,0.0052280237216621,0.007950928463133172,299,3,fibroblast of breast; fibroblast of lung; smooth muscle cell,valid
+GSM9509173_breast_breast_B1_B1_2_rctd_annotated,Stromal,low,0.0018898386712240857,-0.00228622881526961,293,3,fibroblast of breast; fibroblast of lung; smooth muscle cell,valid
+GSM9509173_breast_breast_B1_B1_2_rctd_annotated,Stromal,medium,0.005687362774711373,0.009028690681112624,299,3,fibroblast of breast; fibroblast of lung; smooth muscle cell,valid
+GSM9509173_breast_breast_B1_B1_2_rctd_annotated,Vascular,high,-0.00833028771470119,0.003284507422114292,100,1,capillary endothelial cell,valid
+GSM9509173_breast_breast_B1_B1_2_rctd_annotated,Vascular,low,-0.009849087318691491,0.004675071464784782,99,1,capillary endothelial cell,valid
+GSM9509173_breast_breast_B1_B1_2_rctd_annotated,Vascular,medium,-0.008391937024335707,-0.002050720265812604,99,1,capillary endothelial cell,valid
+GSM9509174_breast_breast_B1_B1_3_rctd_annotated,Lymphoid,high,0.005511381401761989,0.00814510452651492,488,5,"CD4-positive, alpha-beta memory T cell; cytotoxic T cell; natural T-regulatory cell; natural killer cell; plasma cell",valid
+GSM9509174_breast_breast_B1_B1_3_rctd_annotated,Lymphoid,low,0.0058087136289379565,0.01996942772220594,372,5,"CD4-positive, alpha-beta memory T cell; cytotoxic T cell; natural T-regulatory cell; natural killer cell; plasma cell",valid
+GSM9509174_breast_breast_B1_B1_3_rctd_annotated,Lymphoid,medium,0.004911064518985367,0.00790586682914342,422,5,"CD4-positive, alpha-beta memory T cell; cytotoxic T cell; natural T-regulatory cell; natural killer cell; plasma cell",valid
+GSM9509174_breast_breast_B1_B1_3_rctd_annotated,Myeloid,high,0.0018981877485976103,0.01727840886408294,369,4,classical monocyte; macrophage; mast cell; plasmacytoid dendritic cell,valid
+GSM9509174_breast_breast_B1_B1_3_rctd_annotated,Myeloid,low,0.0023670288598731585,0.008719024402548086,358,4,classical monocyte; macrophage; mast cell; plasmacytoid dendritic cell,valid
+GSM9509174_breast_breast_B1_B1_3_rctd_annotated,Myeloid,medium,0.0005367820376686194,0.013918692940603782,371,4,classical monocyte; macrophage; mast cell; plasmacytoid dendritic cell,valid
+GSM9509174_breast_breast_B1_B1_3_rctd_annotated,Stromal,high,0.0070331683755697665,0.014531915636239434,302,3,fibroblast of breast; fibroblast of lung; smooth muscle cell,valid
+GSM9509174_breast_breast_B1_B1_3_rctd_annotated,Stromal,low,0.00512537810375456,0.018762781103491312,295,3,fibroblast of breast; fibroblast of lung; smooth muscle cell,valid
+GSM9509174_breast_breast_B1_B1_3_rctd_annotated,Stromal,medium,0.006538429643116583,0.021829277861544122,298,3,fibroblast of breast; fibroblast of lung; smooth muscle cell,valid
+GSM9509174_breast_breast_B1_B1_3_rctd_annotated,Vascular,high,-0.006313332685032557,0.006274269456215402,99,1,capillary endothelial cell,valid
+GSM9509174_breast_breast_B1_B1_3_rctd_annotated,Vascular,low,-0.006831681143963611,-0.0032621125953611768,100,1,capillary endothelial cell,valid
+GSM9509174_breast_breast_B1_B1_3_rctd_annotated,Vascular,medium,-0.005402768367808292,0.002693623610509982,100,1,capillary endothelial cell,valid

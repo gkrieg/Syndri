@@ -1,0 +1,83 @@
+seed: 54
+metrics:
+  random_state: 0
+  n_pcs: 50
+  leiden_resolution: 1.0
+  optimize_resolution: false
+  apply_qc: false  # Archived cross-dataset metrics are the unfiltered condition.
+  adjacency_k: 6
+correction:
+  target_fraction: 0.5
+  min_probability: 0.5
+  unit: cell_type  # Archived figure code; manuscript text describes 'cell'.
+qc:
+  min_counts: 10
+  min_genes: 5
+mapping:
+  n_matches: 50
+  reuse_penalty: 9.0
+  max_reuse_per_sc: 5000
+  seed: 0
+  n_pcs: 30
+datasets:
+  BM:
+    directory: assets/data/BM
+    label: class
+    reference_label: class
+    coords: [x, y]
+    representative: Zhuang-ABCA-4.003
+    matching_label: cluster
+    milestone: 130
+  NC:
+    directory: assets/data/NC
+    label: cell_type_harmonized
+    reference_label: cell_type_harmonized
+    coords: [CenterX_global_px, CenterY_global_px]
+    representative: Lung9_Rep1
+    matching_label: cell_type_harmonized
+    milestone: 68
+  BX:
+    directory: assets/data/BX
+    label: harmony_cell_type
+    reference_label: cell_type
+    coords: [x_centroid, y_centroid]
+    representative: GSM9509174_breast_breast_B1_B1_3
+    matching_label: cell_type
+    milestone: 50
+  SIM:
+    directory: assets/data/SIM
+    label: cell_type
+    reference_label: cell_type
+    coords: [CenterX_global_px, CenterY_global_px]
+    milestone: 29
+simulation:
+  k: 9
+  tau: [0.0, 0.95]
+  min_source_counts: 400
+  min_added_counts: 10
+  seeds: [0, 1, 2]
+  max_query_per_cell_type: 500
+  slice: Lung5_Rep1
+  # The notebook currently has four test files; the paper says three.
+  test_slices: [Lung12, Lung13, Lung9_Rep1, Lung9_Rep2]
+  partitions:
+    train: [Lung5_Rep1, Lung5_Rep2, Lung5_Rep3]
+    val: [Lung6]
+    test: [Lung9_Rep1, Lung9_Rep2, Lung12, Lung13]
+families:
+  Lymphoid: ['T CD4+', 'T CD8+', 'Treg', 'NK', 'B cells', 'Plasmablast']
+  Myeloid / innate: [Monocyte, Macrophage, DC, Neutrophil, Mast]
+  Stromal / vascular: [Endothelial, Fibroblast]
+  Epithelial: [Epithelial]
+  Malignant: [Malignant]
+fibroblasts:
+  slices: [Lung5_Rep1, Lung5_Rep2, Lung5_Rep3]
+  label: Fibroblast
+  region_column: niche
+  regions: {tumor interior: tumor, stroma: stroma}
+  tumor: [KRT19, KRT8, KRT18, TACSTD2, CEACAM6, CDH1, EPCAM, CLDN4, SFN, PHLDA2, DDR1, AGR2, KRT6A, KRT17, CD24, KRT5, AQP3, SLC2A1, KRT7, COL17A1, FASN, KRT15, ITGA2, ERBB3, S100A2, SPINK1, ITGB4, PIGR, SOX2, ITGA3, CYSTM1, NTRK2, MAPK13, CCND1, HDAC1, EGFR]
+  macrophage: [TYROBP, FCER1G, CD68, CSF1R, C1QA, C1QB, C1QC, CD163, MRC1, CD14, ITGAM]
+  native: [MYL9, CXCL12, PDGFRB, RARRES2, CDH11]
+  tumor_region: [IGFBP5, COL4A2, IGFBP3, FN1, BGN]
+  stromal_region: [DCN, COL14A1, FOS, MMP2, DUSP1]
+

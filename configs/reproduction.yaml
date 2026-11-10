@@ -1,0 +1,23 @@
+# Paths in this file are relative to the repository root.
+assets:
+  manifest: assets/manifest.json
+  auto_download: true
+  verify: true
+  # Set to the HTTPS root of a published asset mirror when available.
+  # The mirror must preserve the manifest's relative paths.
+  base_url: null
+  # Optional local mirror with the same assets/... and configs/... layout.
+  local_directory: null
+  # Optional per-file overrides: destination path -> local source path or HTTPS URL.
+  local_files: {}
+  urls: {}
+  timeout_seconds: 120
+configuration:
+  paper: configs/paper.yaml
+  context: configs/context.json
+  dataset_sources: configs/dataset_sources.json
+  models:
+    BM: configs/models/BM.yaml
+    NC: configs/models/NC.yaml
+    BX: configs/models/BX.yaml
+    SIM: configs/models/SIM.yaml

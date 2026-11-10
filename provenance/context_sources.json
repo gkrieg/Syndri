@@ -1,0 +1,192 @@
+{
+  "source_notebook": "ResponsivenessQueryNativeMarkers.ipynb",
+  "source_design_sha256": "4549b270b56bb38c807ab106bfe63b1eca32bba9b9522c9a05e3a29e506603ed",
+  "files": [
+    {
+      "path": "assets/context/query_native_marker_sets.json",
+      "source_name": "query_native_marker_sets.json",
+      "bundled_sha256": "363d604594c97f05ac0b1231662f28a7f07115009c7b69305fa625ec65d7f40c"
+    },
+    {
+      "path": "assets/context/query_native_marker_mapping.csv",
+      "source_name": "query_native_marker_mapping.csv",
+      "bundled_sha256": "6de449cf4e64e7bb38544f18370dd7c4fb3c50a6983de7fcd5dbd149b614712e"
+    },
+    {
+      "path": "assets/context/analysis_config.json",
+      "source_name": "analysis_config.json",
+      "bundled_sha256": "014b3e485af83cd66c9770d73df4b72d52bb8ff2f9d75bdbd816ea1d498eafd3"
+    },
+    {
+      "path": "assets/context/burden_stratified_context_auroc_response/cell_family_mapping.csv",
+      "source_name": "cell_family_mapping.csv",
+      "bundled_sha256": "3e5d7a9f239051845d1f8e2d93a284ba7a57af04061a2d3a7b66ce9ef235758a"
+    },
+    {
+      "path": "assets/context/burden_stratified_context_auroc_response/cell_family_grid_section_responses.csv.gz",
+      "source_name": "cell_family_grid_section_responses.csv.gz",
+      "bundled_sha256": "37aefa0170eb9bd2733f87b0ae9b595cdac3f0a415f618e12995323df86b7397"
+    },
+    {
+      "path": "assets/context/burden_stratified_context_auroc_response/combined_family_auroc_curves.csv",
+      "source_name": "combined_family_auroc_curves.csv",
+      "bundled_sha256": "ff2ec7eb9480b54774cfc21c063742da656bf195f894bf1a767ec44b05208985"
+    },
+    {
+      "path": "assets/context/gene_native_win_stratified_context_correlations/section_gene_win_correlations.csv",
+      "source_name": "section_gene_win_correlations.csv",
+      "bundled_sha256": "d6998582059ba27b6db604f39503b2e5cd42d1dfb2a29b0388796d9a59f2e953"
+    },
+    {
+      "path": "assets/context/gene_native_win_stratified_context_correlations/gene_win_correlation_summary.csv",
+      "source_name": "gene_win_correlation_summary.csv",
+      "bundled_sha256": "29fb8343d4874dc6c95a5c981e5ad118dcf0d52a31b9b6d9ae7c6cc3a5e2941f"
+    },
+    {
+      "path": "assets/context/auroc_control_native_within_type/section_control_native_slopes.csv",
+      "source_name": "section_control_native_slopes.csv",
+      "bundled_sha256": "4b1255445cbe89905f02b9a9d9593e199cb2c5bda069e8a83e3aa880be4daa1d"
+    },
+    {
+      "path": "assets/context/auroc_control_native_within_type/control_native_summary.csv",
+      "source_name": "control_native_summary.csv",
+      "bundled_sha256": "d4e170cb4209922af5fb47616a865060bb2c662b10ca4fe5ffa8f2c72d556e2f"
+    },
+    {
+      "path": "assets/context/vascular_all32_plausibility_vs_response.csv",
+      "source_name": "vascular_all32_plausibility_vs_response.csv",
+      "bundled_sha256": "dcf5c219927e03350adfbeda577bef2c56575a97fae727479bc4be907cd134ae"
+    },
+    {
+      "path": "assets/context/vascular_all32_plausibility_response_association.csv",
+      "source_name": "vascular_all32_plausibility_response_association.csv",
+      "bundled_sha256": "38e4df77fb73840b96b5b869ca68a9e390d24d713f1500c059073fb713ebfa23"
+    },
+    {
+      "path": "assets/context/sampling/GSM9509172_breast_breast_B1_B1_1_queries.csv",
+      "source_name": "GSM9509172_breast_breast_B1_B1_1_rctd_annotated_queries.csv",
+      "transformation": "Remove historical annotation suffix from section identifier only",
+      "bundled_sha256": "b56d1b91e24942572053fc3a7acd61ef3e468ec71473aa861a0181d567307dcd"
+    },
+    {
+      "path": "assets/context/sampling/GSM9509172_breast_breast_B1_B1_1_context_donors.csv",
+      "source_name": "GSM9509172_breast_breast_B1_B1_1_rctd_annotated_context_donors.csv",
+      "transformation": "Remove historical annotation suffix from section identifier only",
+      "bundled_sha256": "b5877966dddc9c2039f33fe006eca148c5e73551a647a9e4bece6c57b5e53f07"
+    },
+    {
+      "path": "assets/context/sampling/GSM9509173_breast_breast_B1_B1_2_queries.csv",
+      "source_name": "GSM9509173_breast_breast_B1_B1_2_rctd_annotated_queries.csv",
+      "transformation": "Remove historical annotation suffix from section identifier only",
+      "bundled_sha256": "1d176313abd6211093b1f98f8c5536d84961b43592efa31b0e87ac30d2a87b97"
+    },
+    {
+      "path": "assets/context/sampling/GSM9509173_breast_breast_B1_B1_2_context_donors.csv",
+      "source_name": "GSM9509173_breast_breast_B1_B1_2_rctd_annotated_context_donors.csv",
+      "transformation": "Remove historical annotation suffix from section identifier only",
+      "bundled_sha256": "8829e8e602e681c8fadbc762dbe08d51822f4d687fbcfcd30f41a35940e5187e"
+    },
+    {
+      "path": "assets/context/sampling/GSM9509174_breast_breast_B1_B1_3_queries.csv",
+      "source_name": "GSM9509174_breast_breast_B1_B1_3_rctd_annotated_queries.csv",
+      "transformation": "Remove historical annotation suffix from section identifier only",
+      "bundled_sha256": "d942b65904ae782d4c38ab31f5467055624c22b0bed43e5c2b63252f6fbfd337"
+    },
+    {
+      "path": "assets/context/sampling/GSM9509174_breast_breast_B1_B1_3_context_donors.csv",
+      "source_name": "GSM9509174_breast_breast_B1_B1_3_rctd_annotated_context_donors.csv",
+      "transformation": "Remove historical annotation suffix from section identifier only",
+      "bundled_sha256": "64563e1957c32d0835ce2ab4decaaf52ea24895310d4f4fc42c2a39cdd96b0dc"
+    },
+    {
+      "path": "assets/context/sampling/GSM9509171_breast_breast_B5_B5_queries.csv",
+      "source_name": "GSM9509171_breast_breast_B5_B5_rctd_annotated_queries.csv",
+      "transformation": "Remove historical annotation suffix from section identifier only",
+      "bundled_sha256": "ae35c282e4c5f38f5e87ee2ef2ddf9f697fa289fc6e96a0e0a97b4cbb0b2519f"
+    },
+    {
+      "path": "assets/context/sampling/GSM9509171_breast_breast_B5_B5_context_donors.csv",
+      "source_name": "GSM9509171_breast_breast_B5_B5_rctd_annotated_context_donors.csv",
+      "transformation": "Remove historical annotation suffix from section identifier only",
+      "bundled_sha256": "60d8422025c18bfc7ee30ed2b3c63af89d0d61f106f3c8bf9ab87e0a39333ca2"
+    },
+    {
+      "path": "assets/context/sampling/GSM9509162_breast_breast_B12_B12_queries.csv",
+      "source_name": "GSM9509162_breast_breast_B12_B12_rctd_annotated_queries.csv",
+      "transformation": "Remove historical annotation suffix from section identifier only",
+      "bundled_sha256": "9942b343e621d7f940f228fddd8c58d1a559bf89dd92867724b2f6170a6ee671"
+    },
+    {
+      "path": "assets/context/sampling/GSM9509162_breast_breast_B12_B12_context_donors.csv",
+      "source_name": "GSM9509162_breast_breast_B12_B12_rctd_annotated_context_donors.csv",
+      "transformation": "Remove historical annotation suffix from section identifier only",
+      "bundled_sha256": "657200efb67ce2950b937de6cabcba71350180b529d409baf74c1f41857a40f1"
+    },
+    {
+      "path": "assets/context/sampling/GSM9509164_breast_breast_B10_B10_queries.csv",
+      "source_name": "GSM9509164_breast_breast_B10_B10_rctd_annotated_queries.csv",
+      "transformation": "Remove historical annotation suffix from section identifier only",
+      "bundled_sha256": "bc2bef9265f5a3c5e765bf4107a0a26c960c1ecbf2a213a9024cfe62b37061d6"
+    },
+    {
+      "path": "assets/context/sampling/GSM9509164_breast_breast_B10_B10_context_donors.csv",
+      "source_name": "GSM9509164_breast_breast_B10_B10_rctd_annotated_context_donors.csv",
+      "transformation": "Remove historical annotation suffix from section identifier only",
+      "bundled_sha256": "f374882ec5dcd73c86f767734ba81af85972089122b949ccdb1ed0a342db1277"
+    },
+    {
+      "path": "assets/context/sampling/GSM9509156_breast_breast_B17_B17_queries.csv",
+      "source_name": "GSM9509156_breast_breast_B17_B17_rctd_annotated_queries.csv",
+      "transformation": "Remove historical annotation suffix from section identifier only",
+      "bundled_sha256": "588551814c2c7338ae41afa340b0265ebc21367c8f41799e37c27a78af9e2637"
+    },
+    {
+      "path": "assets/context/sampling/GSM9509156_breast_breast_B17_B17_context_donors.csv",
+      "source_name": "GSM9509156_breast_breast_B17_B17_rctd_annotated_context_donors.csv",
+      "transformation": "Remove historical annotation suffix from section identifier only",
+      "bundled_sha256": "11cb125aec4d91eab772b47833f44a0a137451f7015a2c87c72c2d8d6ca8d92a"
+    },
+    {
+      "path": "assets/context/sampling/GSM9509166_breast_breast_B9_B9_queries.csv",
+      "source_name": "GSM9509166_breast_breast_B9_B9_rctd_annotated_queries.csv",
+      "transformation": "Remove historical annotation suffix from section identifier only",
+      "bundled_sha256": "45b72470fa04b11415337a5e233acfdb03f0b561bb19c4870796cc068dd89bd2"
+    },
+    {
+      "path": "assets/context/sampling/GSM9509166_breast_breast_B9_B9_context_donors.csv",
+      "source_name": "GSM9509166_breast_breast_B9_B9_rctd_annotated_context_donors.csv",
+      "transformation": "Remove historical annotation suffix from section identifier only",
+      "bundled_sha256": "227d164583d903ce29fe496b65ac055404fc266fee34953306c1ecd77eca14aa"
+    },
+    {
+      "path": "syndri_repro/context_native.py",
+      "source_name": "native_marker_analysis.py",
+      "transformation": "Bundled with local metadata and relative imports",
+      "bundled_sha256": "40bb17757c894cce162a14ea61a0bb7a676d76d5de6d40e2b91b98d9b2c84b8a"
+    },
+    {
+      "path": "syndri_repro/context_control.py",
+      "source_name": "auroc_control_native.py",
+      "transformation": "Bundled with local metadata and relative imports",
+      "bundled_sha256": "1c0d96ef2fb7b54b5b370eb63a05a9149a034f4afa77dd47cd34fce112510724"
+    },
+    {
+      "path": "syndri_repro/context_within_type.py",
+      "source_name": "auroc_control_native_within_type.py",
+      "transformation": "Bundled with local metadata and relative imports",
+      "bundled_sha256": "9097515466e242dd08adfaa08eb3675c90ba3742130376e789d29319b88a2b62"
+    },
+    {
+      "path": "syndri_repro/context_design.py",
+      "source_name": "stratified_panel.py",
+      "transformation": "Local runtime imports, config families, frozen query/donor replay",
+      "bundled_sha256": "b11d0365dd411e3f18cbb197a6888cd3a2ad3ff4c6149b0ccfadb9316b3cdc79"
+    },
+    {
+      "path": "syndri_repro/context_vascular.py",
+      "source_name": "ResponsivenessQueryNativeMarkers.ipynb",
+      "transformation": "Standalone vascular calculation copied from cell 34; paths relocated to local predictions and BX reference",
+      "bundled_sha256": "199cd95e27483dde5e30947ec5d5c802cf9394faacc448f8ed25f34d9b3c61af"
+    }
+  ]
+}
