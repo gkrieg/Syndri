@@ -1,4 +1,4 @@
-# Pretrained Syndri models
+# Pretrained SYNDRI models
 
 These are copies of the trained checkpoints used to generate the paper results.
 

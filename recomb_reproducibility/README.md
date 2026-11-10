@@ -1,7 +1,7 @@
-# Syndri
+# SYNDRI
 
-![Syndri Overview](assets/overview.png)
-**Syndri** identifies transcript spillover in imaging-based spatial transcriptomics using gene expression, cell identity, and neighboring cell types. This repository provides data preparation, model training, inference, evaluation, and figure generation for *SYNDRI: Context-aware removal of transcript spillover in imaging-based spatial transcriptomics*.
+![SYNDRI Overview](assets/overview.png)
+**SYNDRI** identifies transcript spillover in imaging-based spatial transcriptomics using gene expression, cell identity, and neighboring cell types. This repository provides data preparation, model training, inference, evaluation, and figure generation for *SYNDRI: Context-aware removal of transcript spillover in imaging-based spatial transcriptomics*.
 
 Supported experiments are whole mouse brain MERFISH (**BM**), NSCLC CosMx (**NC**), breast cancer Xenium (**BX**), and the CosMx synthetic-admixture benchmark (**SIM**). All commands below run from the repository root.
 
@@ -89,7 +89,7 @@ configuration:
 | Breast cancer Xenium (BX) | [GEO GSE311609](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE311609) | [CELLxGENE breast collection](https://cellxgene.cziscience.com/collections/bd552f76-1f1b-43a3-b9ee-0aace57e90d6) |
 | Whole mouse brain MERFISH (BM) | [CELLxGENE whole mouse brain collection](https://cellxgene.cziscience.com/collections/0cca8620-8dee-45d0-aef5-23f032a5cf09); measured, non-imputed counts | [Allen Brain Cell Atlas WMB-10X](https://github.com/AllenInstitute/abc_atlas_access/blob/main/descriptions/WMB-10X.md) |
 
-The reproduction inputs under `assets/data/` contain processed counts, harmonized labels, spatial coordinates, training partitions, simulation ground truth, and Syndri probabilities. Public study portals provide the original studies; the release manifest identifies the exact processed files used for reproduction.
+The reproduction inputs under `assets/data/` contain processed counts, harmonized labels, spatial coordinates, training partitions, simulation ground truth, and SYNDRI probabilities. Public study portals provide the original studies; the release manifest identifies the exact processed files used for reproduction.
 
 ```bash
 # List public study sources.
@@ -170,8 +170,8 @@ python run.py figures --panel context
 | Panel group | Outputs |
 | --- | --- |
 | Figure 1 | T-cell tumor-transcript prevalence and normalized boundary-distance histograms |
-| Figure 2 | Reference, Raw, and Syndri UMAPs; scatter-only PNGs and separate legend; evaluation summaries |
-| Figure 3 | Before/after MMD², directed cell-type adjacency, marker co-detection, Syndri PR curves, AUPRC/F1, and known/native count removal |
+| Figure 2 | Reference, Raw, and SYNDRI UMAPs; scatter-only PNGs and separate legend; evaluation summaries |
+| Figure 3 | Before/after MMD², directed cell-type adjacency, marker co-detection, SYNDRI PR curves, AUPRC/F1, and known/native count removal |
 | Figure 4 | Pooled Lung5 marker removal and fibroblast tumor–stroma volcano/Z plots |
 | Context perturbation | Fixed-query schematic, burden-stratified responses, 32-gene heatmap, vascular plausibility, and controlled/original-context slopes |
 
@@ -235,10 +235,10 @@ Set `PARAMS=configs/my_run.yaml` in the exported environment to use a custom par
 
 ## Scope, provenance, and citation
 
-This repository includes Syndri and uncorrected baselines. See [REPRODUCIBILITY.md](REPRODUCIBILITY.md#reproducibility-limits-and-provenance) for comparison scope, numerical variability, and provenance records.
+This repository includes SYNDRI and uncorrected baselines. See [REPRODUCIBILITY.md](REPRODUCIBILITY.md#reproducibility-limits-and-provenance) for comparison scope, numerical variability, and provenance records.
 
 Jeff Winchell, Jian Ma, and Spencer Krieger. *SYNDRI: Context-aware removal of transcript spillover in imaging-based spatial transcriptomics.* RECOMB 2027 submission 395.
 
-**FILL IN:** publication DOI/BibTeX, public processed-data/checkpoint archive URLs, and data redistribution terms.
+<!-- **FILL IN:** publication DOI/BibTeX, public processed-data/checkpoint archive URLs, and data redistribution terms. -->
 
 Code licenses are in [LICENSE](LICENSE) and [Heimdall/LICENSE](Heimdall/LICENSE).

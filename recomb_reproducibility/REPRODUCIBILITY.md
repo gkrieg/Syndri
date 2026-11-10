@@ -1,10 +1,10 @@
 # Analysis definitions and reproducibility
 
-This document describes the cohorts, calculations, defaults, and interpretation limits behind the Syndri results. Use the [README](README.md) for installation, data acquisition, parameter-file examples, checkpoints, commands, output locations, and cache management.
+This document describes the cohorts, calculations, defaults, and interpretation limits behind the SYNDRI results. Use the [README](README.md) for installation, data acquisition, parameter-file examples, checkpoints, commands, output locations, and cache management.
 
 ## Inputs and cohorts
 
-**Raw** denotes the uncorrected input counts. Analyses compare Raw and Syndri using processed counts, harmonized cell-type labels, spatial coordinates, and matching scRNA-seq references.
+**Raw** denotes the uncorrected input counts. Analyses compare Raw and SYNDRI using processed counts, harmonized cell-type labels, spatial coordinates, and matching scRNA-seq references.
 
 | Experiment | Included spatial cohort |
 | --- | --- |
@@ -31,7 +31,7 @@ The alternative per-cell rule selects a threshold independently within each cell
 
 ### QC cohorts
 
-UMAPs and fibroblast differential-expression analyses use the intersection of Raw and Syndri QC-passing cells: at least 10 counts and 5 detected genes in each condition. Cross-dataset metric defaults use the unfiltered Raw/Syndri cohort. Results calculated with different cell-selection rules can therefore refer to different populations.
+UMAPs and fibroblast differential-expression analyses use the intersection of Raw and SYNDRI QC-passing cells: at least 10 counts and 5 detected genes in each condition. Cross-dataset metric defaults use the unfiltered Raw/SYNDRI cohort. Results calculated with different cell-selection rules can therefore refer to different populations.
 
 ## Evaluation metrics
 
@@ -71,7 +71,7 @@ In the triangular comparison, each pair with `i < j` uses simulated `A[i,j]` abo
 
 ### Precision–recall and removal summaries
 
-Syndri scores are `admix_probs`. Evaluation includes observed cell–gene entries; an entry is positive when its synthetic added count is greater than zero. The positive-prevalence baseline is the fraction of evaluated entries that are positive. AUPRC is calculated as average precision using all evaluated entries.
+SYNDRI scores are `admix_probs`. Evaluation includes observed cell–gene entries; an entry is positive when its synthetic added count is greater than zero. The positive-prevalence baseline is the fraction of evaluated entries that are positive. AUPRC is calculated as average precision using all evaluated entries.
 
 The binarized curve and best-F1 result use a threshold selected on pooled test labels. They are descriptive oracle summaries, rather than performance estimates for a threshold selected independently on validation data. Curve thinning affects display only, not AUPRC or F1 calculations.
 
@@ -125,11 +125,11 @@ Correction settings, cohort selection, and marker definitions affect the results
 
 ### Comparison scope
 
-The repository evaluates Raw and Syndri directly. Comparator implementations and correction results are excluded. These outputs do not reconstruct rankings that depend on additional methods' performance.
+The repository evaluates Raw and SYNDRI directly. Comparator implementations and correction results are excluded. These outputs do not reconstruct rankings that depend on additional methods' performance.
 
 ### Data representation and records
 
-Inputs retain count matrices, required annotations, simulation truth, and Syndri probabilities. Stored probabilities are restricted to expressed entries because inference predicts observed gene tokens and evaluation uses nonzero input entries. Counts and identifier order are preserved.
+Inputs retain count matrices, required annotations, simulation truth, and SYNDRI probabilities. Stored probabilities are restricted to expressed entries because inference predicts observed gene tokens and evaluation uses nonzero input entries. Counts and identifier order are preserved.
 
 The following records identify the assets, transformations, and runtime used:
 
