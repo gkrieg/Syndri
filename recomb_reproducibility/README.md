@@ -1,8 +1,11 @@
 # Syndri
 
+![Syndri Overview](assets/overview.png)
 **Syndri** identifies transcript spillover in imaging-based spatial transcriptomics using gene expression, cell identity, and neighboring cell types. This repository provides data preparation, model training, inference, evaluation, and figure generation for *SYNDRI: Context-aware removal of transcript spillover in imaging-based spatial transcriptomics*.
 
 Supported experiments are whole mouse brain MERFISH (**BM**), NSCLC CosMx (**NC**), breast cancer Xenium (**BX**), and the CosMx synthetic-admixture benchmark (**SIM**). All commands below run from the repository root.
+
+This README covers installation, configuration, and commands. See [REPRODUCIBILITY.md](REPRODUCIBILITY.md) for analysis cohorts, numerical definitions, defaults, and interpretation limits.
 
 ## Installation
 
@@ -100,16 +103,14 @@ python run.py preprocess --dataset NC --rebuild
 python run.py preprocess --dataset NC --select-representative --rebuild
 ```
 
-Mapping uses 30 Harmony PCs, up to 50 candidates of the same cell type, reuse penalty 9, reuse cap 5,000, and seed 0. Included training matrices preserve the inputs used for the checkpoints; rebuilding can produce different mappings.
-
-For SIM, the reference is partitioned by patient before mapping: p5 is validation, p1 is test, and the remaining patients are training. Treg cells are excluded. Each partition is integrated independently with its associated slices.
+For the simulation experiment, rebuild its training data and generate admixture with:
 
 ```bash
 python run.py preprocess --dataset SIM --rebuild
 python run.py simulate --rebuilt
 ```
 
-Without `--rebuilt`, simulation uses the included clean test matrix. Generated slices retain `original_counts` and `synthetic_admixture_counts`, whose sum is `.X`. Defaults are K=9 and tau uniformly sampled from [0, 0.95].
+Without `--rebuilt`, simulation uses the included clean test matrix. Generated slices retain `original_counts` and `synthetic_admixture_counts`, whose sum is `.X`. See the [mapping and partition definitions](REPRODUCIBILITY.md#pseudo-spatial-mapping-and-partitions) and [simulation settings](REPRODUCIBILITY.md#simulation-benchmark) for the underlying choices.
 
 ## Pretrained models
 
@@ -151,7 +152,7 @@ python run.py infer --dataset NC --retrained --milestone 68
 python run.py infer --dataset SIM --generated-test
 ```
 
-Outputs under `outputs/predictions/` contain input counts in `.X`, probabilities in `admix_probs`, and corrected counts in `syndri_corrected_counts`, plus threshold diagnostics. The figure settings select a cutoff per cell type, targeting removal of 50% of counts with a minimum probability of 0.5. Selected gene counts are set to zero. The per-cell variant is available with `--unit cell`.
+Outputs under `outputs/predictions/` contain input counts in `.X`, probabilities in `admix_probs`, and corrected counts in `syndri_corrected_counts`, plus threshold diagnostics. Use `--unit cell` for per-cell thresholds. The [correction definitions](REPRODUCIBILITY.md#count-correction-and-cell-selection) describe the default rule and its interpretation.
 
 Edit `correction` in the paper parameter file to change the rule. Batches default to 16; reduce `--batch-size` if needed. `--max-cells` writes development outputs under `outputs/.checks/`.
 
@@ -189,9 +190,20 @@ python run.py context --stage analyze
 python run.py context --generated
 ```
 
-The experiment uses BX milestone 50 on B1_1, B1_2, B1_3, B5, B12, B10, B17, and B9. Query counts and cell-type tokens stay fixed while five neighbor-type tokens change. Preparation replays the included query/donor selections. Preparation and inference accept `--slice B1_1`; analysis requires all eight sections. For a fresh run, use `--output outputs/context_new`; add `--resample` consistently to preparation and inference to choose new queries/donors.
+Preparation replays the included query/donor selections. Preparation and inference accept `--slice B1_1`; analysis requires all eight sections. For a fresh run, use `--output outputs/context_new`; add `--resample` consistently to preparation and inference to choose new queries/donors.
 
-[notebooks/ContextResponsiveness.ipynb](notebooks/ContextResponsiveness.ipynb) provides separate cells for each panel. Heatmap annotations count sections agreeing with the median response sign, not statistical significance. Full definitions are in [REPRODUCIBILITY.md](REPRODUCIBILITY.md).
+[notebooks/ContextResponsiveness.ipynb](notebooks/ContextResponsiveness.ipynb) provides separate cells for each panel. See the [context-analysis definitions](REPRODUCIBILITY.md#context-perturbation-analysis) for cohorts, sampling, statistics, and panel interpretation.
+
+## Outputs
+
+| Directory | Contents |
+| --- | --- |
+| `outputs/panels/` | Rendered figures |
+| `outputs/tables/` | Numerical figure inputs, marker lists, PR curves, and DE tables |
+| `outputs/metrics/` | Per-section and per-cell-type evaluation results |
+| `outputs/predictions/` | Newly inferred probabilities, corrected counts, and threshold diagnostics |
+| `outputs/models/` | Newly trained checkpoints |
+| `outputs/preprocessed/` | Dataset audits and rebuilt training matrices |
 
 ## Caching
 
@@ -200,7 +212,7 @@ python run.py figures --panel figure3 --recompute
 python run.py evaluate --dataset NC --recompute
 ```
 
-Recompute affected results after changing data, probabilities, cohorts, or settings. PR curves are thinned only for display; AUPRC/F1 use all evaluated entries. Best-F1 thresholds selected on test labels are descriptive oracle summaries, not independent validation estimates.
+Recompute affected results after changing data, probabilities, cohorts, or settings. For new context predictions, use a fresh output directory and complete preparation, inference, and analysis before plotting with `--generated`.
 
 ## Slurm
 
@@ -223,7 +235,7 @@ Set `PARAMS=configs/my_run.yaml` in the exported environment to use a custom par
 
 ## Scope, provenance, and citation
 
-This repository includes Syndri and uncorrected baselines. Comparator implementations and correction results are excluded. Figure 2 reports underlying Raw/Syndri metrics; the paper's comparative ranking requires the omitted methods. [REPRODUCIBILITY.md](REPRODUCIBILITY.md) records calculation details and differences between manuscript descriptions and figure settings. [provenance/](provenance/) records source identifiers, transformations, and hashes.
+This repository includes Syndri and uncorrected baselines. See [REPRODUCIBILITY.md](REPRODUCIBILITY.md#reproducibility-limits-and-provenance) for comparison scope, numerical variability, and provenance records.
 
 Jeff Winchell, Jian Ma, and Spencer Krieger. *SYNDRI: Context-aware removal of transcript spillover in imaging-based spatial transcriptomics.* RECOMB 2027 submission 395.
 

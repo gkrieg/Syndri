@@ -1,63 +1,139 @@
-# Reproduction scope and provenance
+# Analysis definitions and reproducibility
 
-This repository contains Syndri and the uncorrected baselines needed to interpret its results. Code, configurations, model weights, gene mappings, and processed input matrices are included. Records under `provenance/` identify source filenames, transformations, and hashes. `configs/reproduction.yaml` controls setup and selects experiment parameter files.
+This document describes the cohorts, calculations, defaults, and interpretation limits behind the Syndri results. Use the [README](README.md) for installation, data acquisition, parameter-file examples, checkpoints, commands, output locations, and cache management.
 
-## Included experiments
+## Inputs and cohorts
 
-| Experiment | Archived model | Selected milestone | Input |
-| --- | --- | --- | --- |
-| Whole mouse brain MERFISH | `10x_wholemousebrain_Zhuang-ABCA-4.003` | 130 | Archived pseudo-spatial training data and three spatial slices |
-| NSCLC CosMx | `10x_nsclc-cosmx_Lung9-Rep1` | 68 | Archived pseudo-spatial training data and eight spatial slices |
-| Breast Xenium | `chromium_breast_GSM95019174_augmented_matchedcelltypes_optimized_unexpressedgenes_withquerycelltype` | 50 | Archived pseudo-spatial training data and 19 spatial slices |
-| CosMx simulation | `nsclc_cosmx_train_val_k9_tau0_0p95` | 29 | Donor-partitioned train/validation and clean/admixed test data |
+**Raw** denotes the uncorrected input counts. Analyses compare Raw and Syndri using processed counts, harmonized cell-type labels, spatial coordinates, and matching scRNA-seq references.
 
-The three real-data milestones come from the final Syndri inference launcher in the original project. The simulation milestone is the checkpoint used for the synthetic-admixture benchmark. Additional training checkpoints, sweeps, aging-brain experiments, and unrelated analyses are omitted.
+| Experiment | Included spatial cohort |
+| --- | --- |
+| Whole mouse brain MERFISH (BM) | Three sections; measured, non-imputed counts |
+| NSCLC CosMx (NC) | Eight sections |
+| Breast cancer Xenium (BX) | Nineteen sections |
+| CosMx simulation (SIM) | Four test sections: `Lung12`, `Lung13`, `Lung9_Rep1`, `Lung9_Rep2` |
 
-## Differences that affect exact reproduction
+The [pretrained-model table](README.md#pretrained-models) identifies the checkpoints used for these experiments. Reference analyses for BX use SoupX counts, stored as `.X` in the included reference matrix.
 
-1. **Removal unit.** Section 2.4 describes ranking genes within each cell, with a 50% removal target and minimum probability 0.5. The archived figure notebooks instead select a shared threshold across expressed entries within each cell type. The package defaults to the archived figure rule (`correction.unit: cell_type`) and also implements `cell`. These rules can remove different genes. Whole-gene counts and tied probabilities can overshoot a removal target.
-2. **Comparative rankings.** Figure 2b ranks all methods per slice. The requested comparator-free package cannot reproduce those relative rank values. It exports Raw/Syndri ARI, NMI, silhouette, reference cosine, variance Spearman, and count summaries directly. It never substitutes a new two-method rank for the manuscript's score.
-3. **QC cohorts.** UMAP and fibroblast DE use the intersection of Raw/Syndri QC-passing cells (at least 10 counts and 5 detected genes). The original multi-method notebooks could further restrict cells based on the other methods' QC. Such comparator-dependent cohorts are deliberately not required here. Cross-dataset metric defaults match the original unfiltered Raw/Syndri condition.
-4. **MMD definition.** The Figure 3 implementation compares distributions of normalized, log-transformed single-cell expression vectors within each slice/cell-type stratum. It uses the biased, nonnegative RBF MMD-squared estimate, with a median squared-distance bandwidth shared before and after admixture. The caption's word “pseudobulks” is not the operation in the notebook. Up to 500 query cells per cell type, three seeds, and equal type weighting are retained. Each boxplot point is a cell-type/slice value averaged across seeds.
-5. **Simulation test slices.** The local benchmark contains four test slices (`Lung12`, `Lung13`, `Lung9_Rep1`, `Lung9_Rep2`), whereas the manuscript describes three. All four are retained and explicitly listed in `configs/paper.yaml`. Select the intended three there when their identity is confirmed; use `--recompute` afterward.
-6. **Co-detection inputs.** The archived co-detection code labels the mapped Lung5_Rep1 training/validation matrix “Simulated ST,” but uses its clean scRNA-seq counts before adding admixture. This package preserves that calculation. Every pair is evaluated across all cells, not just cells of the marker's type. Markers are the top three available shared genes per type from the bundled DESeq2 table.
-7. **Adjacency direction.** KNN adjacency is directed. The package writes both full matrices as CSV and individual plots. For each ordered pair `i < j`, the forward triangular view shows simulated `A[i,j]` above and real `A[i,j]` below, mirrored into the opposite display triangle. The reverse view uses `A[j,i]`. The diagonal is the mean of the two datasets. The lower triangle is a mirrored comparison, so its displayed row/column positions should not be interpreted as a new directed statistic. No reverse-direction values are averaged into the forward view.
-8. **PR thresholds.** Syndri scores are `admix_probs`. Positives are observed cell–gene entries with synthetic added counts greater than zero. The prevalence line is the fraction of these evaluated entries that are positive. AUPRC is average precision, computed on all entries. The binarized curve and best F1 use a threshold selected on pooled test labels and are descriptive oracle summaries; they are not independent validation estimates.
-9. **Rebuilding versus replay.** Bundled matrices, annotations, and checkpoints preserve the exact available inputs. Optional remapping implements the stated paper settings, including the 5,000 reuse cap. Some exploratory historical mapping notebooks used different caps or coverage constraints. Fresh Harmony integration, mapping, and training may therefore yield different numerical outputs; the archived inputs and weights support replay without these changes.
-10. **Additional supplied material.** The attached PDF contains the main paper and references. The subsequently supplied Appendix A.2 dataset details and five-panel context-perturbation figure are now incorporated. Other supplementary panels and comparator annotation comparisons remain outside this package.
+### Pseudo-spatial mapping and partitions
 
-## Fixed-query context perturbation experiment
+Mapping uses 30 Harmony PCs, up to 50 candidates of the same cell type, reuse penalty 9, a reuse cap of 5,000, and seed 0. Included training matrices preserve the inputs used for the pretrained checkpoints.
 
-The context analysis is implemented in `syndri_repro/context_design.py`, `context_native.py`, `context_control.py`, `context_within_type.py`, and `context_vascular.py`, with plotting in `context_figure.py`. The included summaries correspond to the stratified-300 experiment dated 2026-10-19 and native-marker analysis dated 2026-10-20. Source identifiers and hashes are recorded in `provenance/context_sources.json`.
+For SIM, the scRNA-seq reference is partitioned by patient before mapping: p5 is validation, p1 is test, and the remaining patients are training. Treg cells are excluded. Each partition is integrated independently with its associated spatial sections. Remapped copies retain their source identities so that copies of the same reference cell do not cross training and validation.
 
-- **Inputs and selection.** BX checkpoint 50; sections B1_1, B1_2, B1_3, B5, B12, B10, B17, B9; seed 42 plus section index. Query eligibility is at least 10 counts, at least 5 detected genes, finite coordinates/labels, and exactly five eligible neighbors of a different exact type. Neighbor sources have more than 10 counts. Up to 300 queries per exact type/section are balanced across original malignant-neighbor bins (0, 1–2, 3–5) and within-type/section marker-burden quantiles. Ties in burden remain together. Frozen query IDs, strata, and donor IDs are included to replay the available experiment; optional resampling is explicit.
-- **Intervention.** Select up to five distinct donor cells from the same exact query type at each exact malignant-token count 0 through 5, without compensating for undersupplied counts. Keep the ordered neighbor-type sequence, including duplicate sequences from different donors. Repeat each query's unchanged expression and exact-type token under original, duplicate unchanged-control, and donor contexts. Only context tokens change. Inference uses the pretrained BX model and the supplied neighbor dictionary; no correction threshold is needed for these probability comparisons.
-- **Markers and AUROC.** The 32 breast-cancer panel genes and authors' ST 4 native-marker mapping are frozen in `configs/context.json` and `assets/context/`. Eligible genes have positive original query counts, fixed for every intervention. At least one expressed panel and one expressed native gene are required. The marker AUROC is the fraction of positive/native probability pairs in which the panel gene outranks the native gene, with half credit for ties. Report changes relative to the same query's original context. Pericytes have no native annotation; no proxy is used.
-- **Panel b.** Average donor responses at the same change in malignant count within each query; take query medians per exact type/section/burden/original-context stratum, requiring five queries. Average supported exact-type medians equally within each family. Retain stratum/x combinations supported in at least three sections; average original-context strata equally within each section, then show the section median and IQR at each x. The three panels condition on low/medium/high query marker burden.
-- **Panel c.** A gene's strict-win fraction is the fraction of expressed native genes with a strictly smaller admixture probability; ties count as zero. Correlate change in malignant count with change in strict-win fraction across selected query/context pairs, separately within each section/family/burden/original-context stratum. Require ten distinct queries, three delta levels, and nonconstant responses. The displayed value is the median Spearman rho across supported section–stratum units. At least three sections are required. Cluster genes by average-linkage Euclidean distance on the four family responses; impute missing entries with a gene's mean only for clustering, never for display. The annotation numerator counts sections whose median stratum rho agrees with the overall median sign; the denominator counts supported sections. Gray cells are unsupported.
-- **Panel d.** For each endothelial query and expressed panel gene, regress its strict-win fraction on change in malignant count using representative donor contexts with at least three distinct levels. The plotted beta is the median across these per-query slopes. The archived implementation also records 2,000 within-section query bootstraps (seed 741). For each reference population, estimate detection prevalence as `(n_expressing + 0.5)/(n_cells + 1)` and plot the log2 endothelial/malignant ratio. Reference expression is SoupX counts, stored as `.X` in the bundled BX reference. The displayed line is an ordinary least-squares trend across genes.
-- **Panel e.** First fit each query's controlled AUROC-change slope against change in malignant-neighbor count (at least three levels). Estimate the original-context AUROC slope against original malignant-neighbor count within each exact type/section/burden; require ten queries, three count levels, and five queries in each retained original-context bin. Weight original-context bins equally and queries within each bin equally. The controlled coefficient is the weighted mean of the same queries' intervention slopes. Average paired-valid exact-type coefficients equally within family/section/burden. Plot individual sections and coordinate-wise section medians/IQRs. The dashed line is equality, not a fitted regression.
+## Count correction and cell selection
 
-Bundled summaries redraw the supplied results without running inference. `context --stage prepare`, `infer`, and `analyze` regenerate inputs, predictions, and summaries explicitly. Recomputed inference may differ slightly with floating-point hardware/software. The source marker definitions, support gates, and aggregation are preserved. The schematic is a new editable illustration of the intervention, not a copy of the original artwork.
+### Correction rule
 
-## Metric definitions
+The default figure settings rank expressed cell–gene entries within each cell type and select a shared probability threshold. The target is removal of 50% of that cell type's counts, with a minimum admixture probability of 0.5. Selected gene counts are set to zero.
 
-- **Cell-type separation:** library-size normalization to 10,000 counts, `log1p`, up to 50 PCA dimensions, a 15-neighbor graph, fixed-resolution Leiden (resolution 1), and ARI/NMI against the supplied labels. Silhouette uses cosine distance in PCA space. Random state is 0 for the metrics and 42 for the independently plotted UMAPs.
-- **Reference similarity:** sum expression within each cell type, normalize each pseudobulk to 10,000 counts, `log1p`, and compute cosine similarity on shared genes. Average over available cell types within each slice.
-- **Variance preservation:** within each cell type, compute gene-wise sample variance of normalized/log-transformed expression. Compare spatial and reference variances with Spearman correlation, requiring at least 50 cells in each dataset and 5% reference detection. Genes with zero reference variance are excluded. Average finite type-level correlations per slice.
-- **Adjacency enrichment:** build a physical KNN graph with K=6 and report `log2((observed + 1e-8)/(expected + 1e-8))`, where observed is the directed pair frequency and expected is the product of the two type abundances.
-- **Fibroblast DE:** pool the three Lung5 replicates, compare tumor-interior versus stromal fibroblasts on shared measured genes after 10,000-count normalization and `log1p`, and use Scanpy's tie-corrected Wilcoxon test with Benjamini–Hochberg adjustment. Volcano plots display log2 fold changes and adjusted P values; the Z plot compares the signed Wilcoxon statistics. Pooled cells are the unit of this descriptive analysis, not donor-level biological replicates.
+The alternative per-cell rule selects a threshold independently within each cell. The `correction.unit`, `target_fraction`, and `min_probability` settings determine these choices. The two removal units can select different genes. Whole-gene removal and tied probabilities can cause the achieved count-removal fraction to exceed the target.
 
-## Asset construction
+### QC cohorts
 
-`scripts/import_local_assets.py` reads one count matrix at a time, copies only explicitly allowed layers, and removes other methods' observation/analysis metadata. Existing Syndri probabilities are stored only at expressed entries, since the model predicts observed gene tokens and the evaluations use nonzero input entries. Counts and identifier order are preserved. For BX reference analyses, the original `SoupX` count layer is used as the reference matrix.
+UMAPs and fibroblast differential-expression analyses use the intersection of Raw and Syndri QC-passing cells: at least 10 counts and 5 detected genes in each condition. Cross-dataset metric defaults use the unfiltered Raw/Syndri cohort. Results calculated with different cell-selection rules can therefore refer to different populations.
 
-Figure 1's independent measured transcript-distance, sampling, and composition tables are included. Per-cell means are recomputed from transcripts that lie within their cell polygon. Distances were measured to the cell boundary and divided by the equivalent circular radius `sqrt(area/pi)`; full instrument image files are not needed to redraw these histograms.
+## Evaluation metrics
 
-Setup validates data and checkpoints against a SHA-256 manifest. It uses included files, copies missing files from a configured local directory or per-file mapping, and downloads remaining files from configured HTTPS sources. Experiment configurations are editable and are not checksum-locked. Frozen processed-asset/checkpoint archive URLs and redistribution terms remain **FILL IN** pending deposition. Original public study sources are recorded in `configs/dataset_sources.json` and the README.
+### Cell-type separation
 
-## Runtime provenance and licenses
+Counts are normalized to 10,000 per cell and transformed with `log1p`. The analysis uses up to 50 PCA dimensions, a 15-neighbor graph, and Leiden clustering at resolution 1. ARI and NMI compare cluster assignments with the dataset's cell-type labels. Silhouette uses cosine distance in PCA space.
 
-The `Heimdall/` directory implements the model, tokenizer, sampler, and trainer runtime. Source and included-file hashes are recorded in `provenance/runtime_sources.json`. Checkpoint parameter names and tokenization are preserved. Data-loader worker count is configurable through `trainer.num_workers` and defaults to zero. Inference, pseudo-spatial mapping, evaluation, and figure utilities are implemented in `syndri_repro/` and use the repository's parameter files.
+The evaluation random state is 0; independently plotted UMAPs use random state 42.
 
-Original code copyrights and licenses are preserved in `LICENSE` and `Heimdall/LICENSE`. No comparator implementation is installed or called. The scope of independent model training and figure computation is explicit so that the package can be reviewed without implying reproduction of omitted comparisons.
+### Reference similarity
+
+Expression is summed within each cell type to form a pseudobulk profile. Spatial and scRNA-seq profiles are normalized to 10,000 counts, transformed with `log1p`, and compared using cosine similarity on shared genes. Section-level reference similarity is the mean over available cell types.
+
+### Variance preservation
+
+Within each cell type, the analysis computes gene-wise sample variance of normalized, log-transformed expression. Spatial and reference variances are compared using Spearman correlation. A comparison requires at least 50 cells in each dataset; genes must have at least 5% detection in the reference, and genes with zero reference variance are excluded. Section-level scores average finite cell-type correlations.
+
+## Simulation benchmark
+
+Synthetic admixture uses K=9 neighbors and tau uniformly sampled from [0, 0.95]. The default test cohort is listed above. Its membership is defined by `simulation.test_slices` in the analysis configuration.
+
+### MMD before and after admixture
+
+The analysis compares distributions of normalized, log-transformed single-cell expression vectors within each section/cell-type stratum. It reports the biased, nonnegative RBF **MMD²** estimate. A bandwidth based on median squared distance is shared between the before- and after-admixture comparisons.
+
+Defaults use up to 500 query cells per cell type, three random seeds, and equal cell-type weighting when aggregating losses. Each MMD boxplot point is a section/cell-type value averaged across seeds. The calculation compares individual-cell distributions rather than pseudobulk profiles.
+
+### Marker co-detection
+
+The reference, simulated, and real spatial matrices use the top three available shared genes per type from the included DESeq2 marker table. Every gene pair is evaluated across all cells in its dataset. The simulated matrix uses the clean mapped scRNA-seq counts for Lung5_Rep1 before synthetic admixture is added.
+
+### Cell-type adjacency
+
+A physical K-nearest-neighbor graph with K=6 defines directed cell-type adjacency. Enrichment is `log2((observed + 1e-8) / (expected + 1e-8))`, where `observed` is the directed pair frequency and `expected` is the product of the two cell-type abundances. Rows represent query types and columns represent neighbor types in the full matrices.
+
+In the triangular comparison, each pair with `i < j` uses simulated `A[i,j]` above the diagonal and real `A[i,j]` mirrored below it. The complementary plot uses `A[j,i]`. The diagonal is the mean of the real and simulated values. The mirrored lower triangle compares the same directed pair; its displayed row/column position does not define a new directed statistic. Both complete matrices are also available for inspecting all directions.
+
+### Precision–recall and removal summaries
+
+Syndri scores are `admix_probs`. Evaluation includes observed cell–gene entries; an entry is positive when its synthetic added count is greater than zero. The positive-prevalence baseline is the fraction of evaluated entries that are positive. AUPRC is calculated as average precision using all evaluated entries.
+
+The binarized curve and best-F1 result use a threshold selected on pooled test labels. They are descriptive oracle summaries, rather than performance estimates for a threshold selected independently on validation data. Curve thinning affects display only, not AUPRC or F1 calculations.
+
+## Localization and fibroblast analyses
+
+### Transcript localization
+
+The localization analysis uses measured transcript-distance, cell-sampling, and composition tables. Per-cell means are recomputed using transcripts inside their assigned cell polygon. Boundary distances are divided by the equivalent circular radius, `sqrt(area/pi)`.
+
+### Fibroblast differential expression
+
+The analysis pools the three Lung5 replicates and compares tumor-interior with stromal fibroblasts on shared measured genes. Counts are normalized to 10,000 per cell and transformed with `log1p`. Scanpy's tie-corrected Wilcoxon test is used with Benjamini–Hochberg adjustment.
+
+Volcano plots show log2 fold changes and adjusted P values. Z plots compare signed Wilcoxon statistics. Pooled cells are the unit of this descriptive analysis; the results are not donor-level biological-replicate tests.
+
+## Context perturbation analysis
+
+### Inputs and selection
+
+The experiment uses the BX model on B1_1, B1_2, B1_3, B5, B12, B10, B17, and B9. Sampling uses seed 42 plus the section index. Eligible queries have at least 10 counts, at least 5 detected genes, finite coordinates and labels, and exactly five eligible neighbors of a different exact cell type. Neighbor sources have more than 10 counts.
+
+Up to 300 queries per exact type/section are balanced across original malignant-neighbor bins (0, 1–2, 3–5) and within-type/section marker-burden quantiles. Burden ties remain together. Query IDs, strata, and donor IDs are included for replay.
+
+### Intervention
+
+For each exact query type, up to five distinct donor cells are selected at each malignant-token count from 0 through 5. Undersupplied counts are not compensated. Ordered neighbor-type sequences are retained, including identical sequences from different donor cells.
+
+Each query's expression and cell-type token remain fixed under its original, duplicate unchanged-control, and donor contexts. Inference uses these precomputed neighbor sequences. Only the neighbor-type tokens change.
+
+### Marker definitions
+
+The 32 breast-cancer panel genes and the authors' ST 4 native-marker mapping are defined in `configs/context.json` and `assets/context/`. Eligible genes have positive original query counts, fixed across interventions. Scoring requires at least one expressed panel gene and one expressed native gene. Pericytes have no native annotation and contribute no native-marker scores.
+
+Marker AUROC measures how often a panel gene's admixture probability exceeds a native gene's probability, giving half credit for ties. Responses are measured relative to the same query's original context. No count-correction threshold is used for these probability comparisons.
+
+### Panel definitions
+
+- **Panel a: intervention schematic.** The editable illustration shows a fixed query cell placed in different cellular contexts.
+- **Panel b: burden-stratified response.** Donor responses at the same change in malignant count are averaged within each query. Query medians are calculated per exact type/section/burden/original-context stratum, requiring five queries. Supported exact-type medians are averaged equally within each family. Stratum/x combinations require support in at least three sections. Original-context strata are averaged equally within each section; curves show section medians and interquartile ranges for low, medium, and high query marker burden.
+- **Panel c: per-gene response heatmap.** A gene's strict-win fraction is the fraction of expressed native genes with a strictly smaller admixture probability; ties count as zero. Within each section/family/burden/original-context stratum, the change in malignant count is correlated with the change in strict-win fraction. This requires ten distinct queries, three delta levels, and a nonconstant response. The displayed value is the median Spearman rho across supported section–stratum units, requiring at least three sections. Genes are clustered using average-linkage Euclidean distance on the four family responses. Missing values are imputed with a gene's mean only for clustering; gray cells remain unsupported in the display. Annotations count sections whose median stratum rho agrees with the overall median sign, divided by supported sections. They are not significance counts.
+- **Panel d: vascular plausibility.** For each endothelial query and expressed panel gene, strict-win fraction is regressed against change in malignant count using representative donor contexts with at least three distinct levels. The displayed beta is the median of the per-query slopes. The analysis also records 2,000 within-section query bootstraps with seed 741. Reference detection prevalence is smoothed as `(n_expressing + 0.5)/(n_cells + 1)`; the x-axis is its log2 endothelial/malignant ratio. Reference expression uses SoupX counts. The displayed line is an ordinary least-squares trend across genes.
+- **Panel e: controlled versus original-context slopes.** Each query's controlled AUROC-change slope is fitted against change in malignant-neighbor count, requiring three levels. The original-context AUROC slope is fitted against original malignant-neighbor count within each exact type/section/burden, requiring ten queries, three count levels, and five queries in each retained original-context bin. Bins receive equal weight, as do queries within each bin. The controlled coefficient is the weighted mean of the same queries' intervention slopes. Paired-valid exact-type coefficients are averaged equally within family/section/burden. Points show individual sections; summaries show coordinate-wise section medians and interquartile ranges. The dashed line marks equality.
+
+## Reproducibility limits and provenance
+
+### Included results and regenerated analyses
+
+The included matrices, annotations, checkpoints, and probabilities preserve the available inputs for reproducing existing outputs. Fresh Harmony integration, mapping, and stochastic training can produce different numerical results. Recomputed probabilities may also vary slightly across floating-point hardware and software environments.
+
+Correction settings, cohort selection, and marker definitions affect the results independently of model weights. Existing corrected-count layers reflect the settings used when they were generated. See [cache management](README.md#caching) when changing inputs or analysis settings.
+
+### Comparison scope
+
+The repository evaluates Raw and Syndri directly. Comparator implementations and correction results are excluded. These outputs do not reconstruct rankings that depend on additional methods' performance.
+
+### Data representation and records
+
+Inputs retain count matrices, required annotations, simulation truth, and Syndri probabilities. Stored probabilities are restricted to expressed entries because inference predicts observed gene tokens and evaluation uses nonzero input entries. Counts and identifier order are preserved.
+
+The following records identify the assets, transformations, and runtime used:
+
+- [assets/manifest.json](assets/manifest.json): asset sizes and checksums.
+- [provenance/asset_sources.json](provenance/asset_sources.json): input identifiers and transformations.
+- [provenance/context_sources.json](provenance/context_sources.json): context-analysis source identifiers and hashes.
+- [provenance/runtime_sources.json](provenance/runtime_sources.json): model-runtime source and included-file hashes.
