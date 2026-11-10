@@ -1,0 +1,116 @@
+[
+  {
+    "file": "Heimdall/order.py",
+    "source": "Heimdall/Heimdall/order.py",
+    "sha256": "c166ac0176d9d664d23ffc9bed3680cc4910a40844ee71903fe4b2601529118d",
+    "bundled_sha256": "c166ac0176d9d664d23ffc9bed3680cc4910a40844ee71903fe4b2601529118d"
+  },
+  {
+    "file": "Heimdall/embedding.py",
+    "source": "Heimdall/Heimdall/embedding.py",
+    "sha256": "5e50b888a4f18d1b1bbfc24b0255ba488b6bae4192f2c2faa35ad28936e4ef13",
+    "bundled_sha256": "5e50b888a4f18d1b1bbfc24b0255ba488b6bae4192f2c2faa35ad28936e4ef13"
+  },
+  {
+    "file": "Heimdall/tailor.py",
+    "source": "Heimdall/Heimdall/tailor.py",
+    "sha256": "fb24c9d2e6c121bd8c1346a226de704b76801e16576dbcd4303529c5ca9e4ac6",
+    "bundled_sha256": "fb24c9d2e6c121bd8c1346a226de704b76801e16576dbcd4303529c5ca9e4ac6"
+  },
+  {
+    "file": "Heimdall/reduce.py",
+    "source": "Heimdall/Heimdall/reduce.py",
+    "sha256": "db224462496d24b1717fcd5e69068aad77ba790bfb2fd94071a14b03c6abf121",
+    "bundled_sha256": "db224462496d24b1717fcd5e69068aad77ba790bfb2fd94071a14b03c6abf121"
+  },
+  {
+    "file": "Heimdall/__about__.py",
+    "source": "Heimdall/Heimdall/__about__.py",
+    "sha256": "55bbe0964be96d57518f5c9cae48cd84868a15c72a797f2671ed3c9847db4843",
+    "bundled_sha256": "55bbe0964be96d57518f5c9cae48cd84868a15c72a797f2671ed3c9847db4843"
+  },
+  {
+    "file": "Heimdall/datasets.py",
+    "source": "Heimdall/Heimdall/datasets.py",
+    "sha256": "6b821f26994a5f170417ee38e8fe044a56e22737abbe91dac9d1b6c66cc0935f",
+    "bundled_sha256": "6b821f26994a5f170417ee38e8fe044a56e22737abbe91dac9d1b6c66cc0935f"
+  },
+  {
+    "file": "Heimdall/fc.py",
+    "source": "Heimdall/Heimdall/fc.py",
+    "sha256": "22f62881c77e7e072ad390a6476fb1348b46e466b8ba5fcb8c133e428c17e84c",
+    "bundled_sha256": "22f62881c77e7e072ad390a6476fb1348b46e466b8ba5fcb8c133e428c17e84c"
+  },
+  {
+    "file": "Heimdall/trainer.py",
+    "source": "Heimdall/Heimdall/trainer.py",
+    "sha256": "e24fe45fa615bcd2a5a1a3b685f9ba46f57106d43d549ad9971007e860ac9d4f",
+    "bundled_sha256": "9e5e68f88990d377271c8f4f92b625c9071ccc6702a0ed53826ef010d41db0ed"
+  },
+  {
+    "file": "Heimdall/admixture_epoch_store.py",
+    "source": "Heimdall/Heimdall/admixture_epoch_store.py",
+    "sha256": "b63f128ad9d20054fe310bbb29408c766c8a53801287aff3be0b3d180069b6a7",
+    "bundled_sha256": "b63f128ad9d20054fe310bbb29408c766c8a53801287aff3be0b3d180069b6a7"
+  },
+  {
+    "file": "Heimdall/utils.py",
+    "source": "Heimdall/Heimdall/utils.py",
+    "sha256": "90e9a7ab201ae28bb457686126e054f99f43415b112ef37158b7bb9c66cda878",
+    "bundled_sha256": "90e9a7ab201ae28bb457686126e054f99f43415b112ef37158b7bb9c66cda878"
+  },
+  {
+    "file": "Heimdall/cell_representations.py",
+    "source": "Heimdall/Heimdall/cell_representations.py",
+    "sha256": "57b36d86b2269bcba374bf39f2e10e884dca771f8ead35c9ab9de412d4d09b8d",
+    "bundled_sha256": "56ea84653e3617544bcbef71b4ff3645b1d80ca86da49041c6b59e22dec0cf18"
+  },
+  {
+    "file": "Heimdall/fe.py",
+    "source": "Heimdall/Heimdall/fe.py",
+    "sha256": "470ff5cf7bb6572586542d1269c39b665d69743c4405ada32eaff0a372b957a1",
+    "bundled_sha256": "470ff5cf7bb6572586542d1269c39b665d69743c4405ada32eaff0a372b957a1"
+  },
+  {
+    "file": "Heimdall/fg.py",
+    "source": "Heimdall/Heimdall/fg.py",
+    "sha256": "2503aa3c4ee04c1bb984a5ad415e7f3d2716452e03f4745fa425a5885943b0f9",
+    "bundled_sha256": "2503aa3c4ee04c1bb984a5ad415e7f3d2716452e03f4745fa425a5885943b0f9"
+  },
+  {
+    "file": "Heimdall/losses.py",
+    "source": "Heimdall/Heimdall/losses.py",
+    "sha256": "c83bbe11f06085632ffad05e6ed5ef9edcafc93a70603dbcbb5d0406daece309",
+    "bundled_sha256": "c83bbe11f06085632ffad05e6ed5ef9edcafc93a70603dbcbb5d0406daece309"
+  },
+  {
+    "file": "Heimdall/admixture_sampling.py",
+    "source": "Heimdall/Heimdall/admixture_sampling.py",
+    "sha256": "d59f0730f46702d10814bc4e13c05badca553269de91ac82f4474dc42b197a91",
+    "bundled_sha256": "d59f0730f46702d10814bc4e13c05badca553269de91ac82f4474dc42b197a91"
+  },
+  {
+    "file": "Heimdall/models/_reducers.py",
+    "source": "Heimdall/Heimdall/models/_reducers.py",
+    "sha256": "66f07beee05ae19ad5c5b80ebd40f7593e73556cedea338a7c2b28ec97f3cad6",
+    "bundled_sha256": "66f07beee05ae19ad5c5b80ebd40f7593e73556cedea338a7c2b28ec97f3cad6"
+  },
+  {
+    "file": "Heimdall/models/__init__.py",
+    "source": "Heimdall/Heimdall/models/__init__.py",
+    "sha256": "4f1751c51c248e5c18093daf3ebc59e9e5c1fd1c8cfb1a2eac9d471d2c69a643",
+    "bundled_sha256": "4f1751c51c248e5c18093daf3ebc59e9e5c1fd1c8cfb1a2eac9d471d2c69a643"
+  },
+  {
+    "file": "Heimdall/models/_models.py",
+    "source": "Heimdall/Heimdall/models/_models.py",
+    "sha256": "3d7a9e59f27bd985aa01dd5ef47b972901f56559369e49d0fb1254651aa5a572",
+    "bundled_sha256": "3d7a9e59f27bd985aa01dd5ef47b972901f56559369e49d0fb1254651aa5a572"
+  },
+  {
+    "file": "Heimdall/models/_head.py",
+    "source": "Heimdall/Heimdall/models/_head.py",
+    "sha256": "1feac51953ecf70de8d9840cdef046d4e43184b5840cdd9f3330c56ec03fb949",
+    "bundled_sha256": "1feac51953ecf70de8d9840cdef046d4e43184b5840cdd9f3330c56ec03fb949"
+  }
+]

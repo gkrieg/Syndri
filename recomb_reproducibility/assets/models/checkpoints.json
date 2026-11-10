@@ -1,0 +1,33 @@
+{
+  "description": "Trained checkpoints used for result generation",
+  "models": {
+    "BM": {
+      "path": "assets/models/BM/model-130.pt",
+      "milestone": 130,
+      "bytes": 13848843,
+      "sha256": "eee9b83895b508c025438f2ce2e41534c959b4b179daa10417b6543f0d737815",
+      "configuration": "configs/models/BM.yaml"
+    },
+    "NC": {
+      "path": "assets/models/NC/model-68.pt",
+      "milestone": 68,
+      "bytes": 13593635,
+      "sha256": "20694f9003000a6affdf4cbd71c1f7fa53545ccb79632d3aeae769dfd3c3407f",
+      "configuration": "configs/models/NC.yaml"
+    },
+    "BX": {
+      "path": "assets/models/BX/model-50.pt",
+      "milestone": 50,
+      "bytes": 10977827,
+      "sha256": "2d9786269163da16818a1f47e477b13e194d369733d8afc862674964a3b7776b",
+      "configuration": "configs/models/BX.yaml"
+    },
+    "SIM": {
+      "path": "assets/models/SIM/model-29.pt",
+      "milestone": 29,
+      "bytes": 13593699,
+      "sha256": "30a3c5503011398d2c68edfc28b49031ae8ae3cdee84dd4baa4fa843f1473b40",
+      "configuration": "configs/models/SIM.yaml"
+    }
+  }
+}

@@ -1,0 +1,380 @@
+{
+  "files": [
+    {
+      "source": "models/BM/model-130.pt",
+      "path": "assets/models/BM/model-130.pt"
+    },
+    {
+      "source": "configs/models/BM.yaml",
+      "path": "configs/models/BM.yaml",
+      "kind": "config",
+      "dataset": "BM"
+    },
+    {
+      "source": "models/NC/model-68.pt",
+      "path": "assets/models/NC/model-68.pt"
+    },
+    {
+      "source": "configs/models/NC.yaml",
+      "path": "configs/models/NC.yaml",
+      "kind": "config",
+      "dataset": "NC"
+    },
+    {
+      "source": "models/BX/model-50.pt",
+      "path": "assets/models/BX/model-50.pt"
+    },
+    {
+      "source": "configs/models/BX.yaml",
+      "path": "configs/models/BX.yaml",
+      "kind": "config",
+      "dataset": "BX"
+    },
+    {
+      "source": "models/SIM/model-29.pt",
+      "path": "assets/models/SIM/model-29.pt"
+    },
+    {
+      "source": "configs/models/SIM.yaml",
+      "path": "configs/models/SIM.yaml",
+      "kind": "config",
+      "dataset": "SIM"
+    },
+    {
+      "source": "metadata/gene_metadata/species_chrom.csv",
+      "path": "assets/metadata/gene_metadata/species_chrom.csv"
+    },
+    {
+      "source": "metadata/gene_mapping/ensembl/human/symbol_to_ensembl.json",
+      "path": "assets/metadata/gene_mapping/ensembl/human/symbol_to_ensembl.json"
+    },
+    {
+      "source": "metadata/gene_mapping/ensembl/human/Homo_sapiens.GRCh38.112.gtf.gz",
+      "path": "assets/metadata/gene_mapping/ensembl/human/Homo_sapiens.GRCh38.112.gtf.gz"
+    },
+    {
+      "source": "metadata/gene_mapping/ensembl/human/ensembl_to_symbol.json",
+      "path": "assets/metadata/gene_mapping/ensembl/human/ensembl_to_symbol.json"
+    },
+    {
+      "source": "metadata/gene_mapping/ensembl/mouse/Mus_musculus.GRCm39.112.gtf.gz",
+      "path": "assets/metadata/gene_mapping/ensembl/mouse/Mus_musculus.GRCm39.112.gtf.gz"
+    },
+    {
+      "source": "metadata/gene_mapping/ensembl/mouse/ensembl_to_symbol.json",
+      "path": "assets/metadata/gene_mapping/ensembl/mouse/ensembl_to_symbol.json"
+    },
+    {
+      "source": "metadata/gene_mapping/ensembl/mouse/symbol_to_ensembl.json",
+      "path": "assets/metadata/gene_mapping/ensembl/mouse/symbol_to_ensembl.json"
+    },
+    {
+      "source": "data/BM/training.h5ad",
+      "path": "assets/data/BM/training.h5ad",
+      "kind": "h5ad"
+    },
+    {
+      "source": "data/BM/reference.h5ad",
+      "path": "assets/data/BM/reference.h5ad",
+      "kind": "h5ad"
+    },
+    {
+      "source": "data/BM/spatial/Zhuang-ABCA-4.001.h5ad",
+      "path": "assets/data/BM/spatial/Zhuang-ABCA-4.001.h5ad",
+      "kind": "h5ad",
+      "probability_layer": "syndri_admix_probs_X"
+    },
+    {
+      "source": "data/BM/spatial/Zhuang-ABCA-4.002.h5ad",
+      "path": "assets/data/BM/spatial/Zhuang-ABCA-4.002.h5ad",
+      "kind": "h5ad",
+      "probability_layer": "syndri_admix_probs_X"
+    },
+    {
+      "source": "data/BM/spatial/Zhuang-ABCA-4.003.h5ad",
+      "path": "assets/data/BM/spatial/Zhuang-ABCA-4.003.h5ad",
+      "kind": "h5ad",
+      "probability_layer": "syndri_admix_probs_X"
+    },
+    {
+      "source": "data/NC/training.h5ad",
+      "path": "assets/data/NC/training.h5ad",
+      "kind": "h5ad"
+    },
+    {
+      "source": "data/NC/reference.h5ad",
+      "path": "assets/data/NC/reference.h5ad",
+      "kind": "h5ad"
+    },
+    {
+      "source": "data/NC/spatial/Lung12.h5ad",
+      "path": "assets/data/NC/spatial/Lung12.h5ad",
+      "kind": "h5ad",
+      "probability_layer": "syndri_admix_probs_X"
+    },
+    {
+      "source": "data/NC/spatial/Lung13.h5ad",
+      "path": "assets/data/NC/spatial/Lung13.h5ad",
+      "kind": "h5ad",
+      "probability_layer": "syndri_admix_probs_X"
+    },
+    {
+      "source": "data/NC/spatial/Lung5_Rep1.h5ad",
+      "path": "assets/data/NC/spatial/Lung5_Rep1.h5ad",
+      "kind": "h5ad",
+      "probability_layer": "syndri_admix_probs_X"
+    },
+    {
+      "source": "data/NC/spatial/Lung5_Rep2.h5ad",
+      "path": "assets/data/NC/spatial/Lung5_Rep2.h5ad",
+      "kind": "h5ad",
+      "probability_layer": "syndri_admix_probs_X"
+    },
+    {
+      "source": "data/NC/spatial/Lung5_Rep3.h5ad",
+      "path": "assets/data/NC/spatial/Lung5_Rep3.h5ad",
+      "kind": "h5ad",
+      "probability_layer": "syndri_admix_probs_X"
+    },
+    {
+      "source": "data/NC/spatial/Lung6.h5ad",
+      "path": "assets/data/NC/spatial/Lung6.h5ad",
+      "kind": "h5ad",
+      "probability_layer": "syndri_admix_probs_X"
+    },
+    {
+      "source": "data/NC/spatial/Lung9_Rep1.h5ad",
+      "path": "assets/data/NC/spatial/Lung9_Rep1.h5ad",
+      "kind": "h5ad",
+      "probability_layer": "syndri_admix_probs_X"
+    },
+    {
+      "source": "data/NC/spatial/Lung9_Rep2.h5ad",
+      "path": "assets/data/NC/spatial/Lung9_Rep2.h5ad",
+      "kind": "h5ad",
+      "probability_layer": "syndri_admix_probs_X"
+    },
+    {
+      "source": "data/BX/training.h5ad",
+      "path": "assets/data/BX/training.h5ad",
+      "kind": "h5ad"
+    },
+    {
+      "source": "data/BX/reference.h5ad",
+      "path": "assets/data/BX/reference.h5ad",
+      "kind": "h5ad",
+      "count_layer": "SoupX"
+    },
+    {
+      "source": "data/BX/spatial/GSM9509156_breast_breast_B17_B17.h5ad",
+      "path": "assets/data/BX/spatial/GSM9509156_breast_breast_B17_B17.h5ad",
+      "kind": "h5ad",
+      "probability_layer": "syndri_admix_probs_X"
+    },
+    {
+      "source": "data/BX/spatial/GSM9509157_breast_breast_B16_B16.h5ad",
+      "path": "assets/data/BX/spatial/GSM9509157_breast_breast_B16_B16.h5ad",
+      "kind": "h5ad",
+      "probability_layer": "syndri_admix_probs_X"
+    },
+    {
+      "source": "data/BX/spatial/GSM9509158_breast_breast_B15_B15.h5ad",
+      "path": "assets/data/BX/spatial/GSM9509158_breast_breast_B15_B15.h5ad",
+      "kind": "h5ad",
+      "probability_layer": "syndri_admix_probs_X"
+    },
+    {
+      "source": "data/BX/spatial/GSM9509159_breast_breast_B14_B14.h5ad",
+      "path": "assets/data/BX/spatial/GSM9509159_breast_breast_B14_B14.h5ad",
+      "kind": "h5ad",
+      "probability_layer": "syndri_admix_probs_X"
+    },
+    {
+      "source": "data/BX/spatial/GSM9509160_breast_breast_B2_B2.h5ad",
+      "path": "assets/data/BX/spatial/GSM9509160_breast_breast_B2_B2.h5ad",
+      "kind": "h5ad",
+      "probability_layer": "syndri_admix_probs_X"
+    },
+    {
+      "source": "data/BX/spatial/GSM9509161_breast_breast_B13_B13.h5ad",
+      "path": "assets/data/BX/spatial/GSM9509161_breast_breast_B13_B13.h5ad",
+      "kind": "h5ad",
+      "probability_layer": "syndri_admix_probs_X"
+    },
+    {
+      "source": "data/BX/spatial/GSM9509162_breast_breast_B12_B12.h5ad",
+      "path": "assets/data/BX/spatial/GSM9509162_breast_breast_B12_B12.h5ad",
+      "kind": "h5ad",
+      "probability_layer": "syndri_admix_probs_X"
+    },
+    {
+      "source": "data/BX/spatial/GSM9509163_breast_breast_B11_B11.h5ad",
+      "path": "assets/data/BX/spatial/GSM9509163_breast_breast_B11_B11.h5ad",
+      "kind": "h5ad",
+      "probability_layer": "syndri_admix_probs_X"
+    },
+    {
+      "source": "data/BX/spatial/GSM9509164_breast_breast_B10_B10.h5ad",
+      "path": "assets/data/BX/spatial/GSM9509164_breast_breast_B10_B10.h5ad",
+      "kind": "h5ad",
+      "probability_layer": "syndri_admix_probs_X"
+    },
+    {
+      "source": "data/BX/spatial/GSM9509165_breast_breast_B4_B4.h5ad",
+      "path": "assets/data/BX/spatial/GSM9509165_breast_breast_B4_B4.h5ad",
+      "kind": "h5ad",
+      "probability_layer": "syndri_admix_probs_X"
+    },
+    {
+      "source": "data/BX/spatial/GSM9509166_breast_breast_B9_B9.h5ad",
+      "path": "assets/data/BX/spatial/GSM9509166_breast_breast_B9_B9.h5ad",
+      "kind": "h5ad",
+      "probability_layer": "syndri_admix_probs_X"
+    },
+    {
+      "source": "data/BX/spatial/GSM9509167_breast_breast_B8_B8.h5ad",
+      "path": "assets/data/BX/spatial/GSM9509167_breast_breast_B8_B8.h5ad",
+      "kind": "h5ad",
+      "probability_layer": "syndri_admix_probs_X"
+    },
+    {
+      "source": "data/BX/spatial/GSM9509168_breast_breast_B7_B7.h5ad",
+      "path": "assets/data/BX/spatial/GSM9509168_breast_breast_B7_B7.h5ad",
+      "kind": "h5ad",
+      "probability_layer": "syndri_admix_probs_X"
+    },
+    {
+      "source": "data/BX/spatial/GSM9509169_breast_breast_B6_B6.h5ad",
+      "path": "assets/data/BX/spatial/GSM9509169_breast_breast_B6_B6.h5ad",
+      "kind": "h5ad",
+      "probability_layer": "syndri_admix_probs_X"
+    },
+    {
+      "source": "data/BX/spatial/GSM9509170_breast_breast_B3_B3.h5ad",
+      "path": "assets/data/BX/spatial/GSM9509170_breast_breast_B3_B3.h5ad",
+      "kind": "h5ad",
+      "probability_layer": "syndri_admix_probs_X"
+    },
+    {
+      "source": "data/BX/spatial/GSM9509171_breast_breast_B5_B5.h5ad",
+      "path": "assets/data/BX/spatial/GSM9509171_breast_breast_B5_B5.h5ad",
+      "kind": "h5ad",
+      "probability_layer": "syndri_admix_probs_X"
+    },
+    {
+      "source": "data/BX/spatial/GSM9509172_breast_breast_B1_B1_1.h5ad",
+      "path": "assets/data/BX/spatial/GSM9509172_breast_breast_B1_B1_1.h5ad",
+      "kind": "h5ad",
+      "probability_layer": "syndri_admix_probs_X"
+    },
+    {
+      "source": "data/BX/spatial/GSM9509173_breast_breast_B1_B1_2.h5ad",
+      "path": "assets/data/BX/spatial/GSM9509173_breast_breast_B1_B1_2.h5ad",
+      "kind": "h5ad",
+      "probability_layer": "syndri_admix_probs_X"
+    },
+    {
+      "source": "data/BX/spatial/GSM9509174_breast_breast_B1_B1_3.h5ad",
+      "path": "assets/data/BX/spatial/GSM9509174_breast_breast_B1_B1_3.h5ad",
+      "kind": "h5ad",
+      "probability_layer": "syndri_admix_probs_X"
+    },
+    {
+      "source": "data/SIM/training.h5ad",
+      "path": "assets/data/SIM/training.h5ad",
+      "kind": "h5ad"
+    },
+    {
+      "source": "data/SIM/test.h5ad",
+      "path": "assets/data/SIM/test.h5ad",
+      "kind": "h5ad"
+    },
+    {
+      "source": "data/SIM/reference.h5ad",
+      "path": "assets/data/SIM/reference.h5ad",
+      "kind": "h5ad"
+    },
+    {
+      "source": "data/SIM/test_slices/Lung12.h5ad",
+      "path": "assets/data/SIM/test_slices/Lung12.h5ad",
+      "kind": "h5ad",
+      "layers": [
+        "original_counts",
+        "synthetic_admixture_counts"
+      ],
+      "probability_layer": "admix_probs",
+      "probability_source": "predictions/data/SIM/test_slices/Lung12.h5ad"
+    },
+    {
+      "source": "data/SIM/test_slices/Lung13.h5ad",
+      "path": "assets/data/SIM/test_slices/Lung13.h5ad",
+      "kind": "h5ad",
+      "layers": [
+        "original_counts",
+        "synthetic_admixture_counts"
+      ],
+      "probability_layer": "admix_probs",
+      "probability_source": "predictions/data/SIM/test_slices/Lung13.h5ad"
+    },
+    {
+      "source": "data/SIM/test_slices/Lung9_Rep1.h5ad",
+      "path": "assets/data/SIM/test_slices/Lung9_Rep1.h5ad",
+      "kind": "h5ad",
+      "layers": [
+        "original_counts",
+        "synthetic_admixture_counts"
+      ],
+      "probability_layer": "admix_probs",
+      "probability_source": "predictions/data/SIM/test_slices/Lung9_Rep1.h5ad"
+    },
+    {
+      "source": "data/SIM/test_slices/Lung9_Rep2.h5ad",
+      "path": "assets/data/SIM/test_slices/Lung9_Rep2.h5ad",
+      "kind": "h5ad",
+      "layers": [
+        "original_counts",
+        "synthetic_admixture_counts"
+      ],
+      "probability_layer": "admix_probs",
+      "probability_source": "predictions/data/SIM/test_slices/Lung9_Rep2.h5ad"
+    },
+    {
+      "source": "markers/cosmx_deseq2.csv",
+      "path": "assets/markers/cosmx_deseq2.csv"
+    },
+    {
+      "source": "localization/cell_qc.csv",
+      "path": "assets/localization/cell_qc.csv"
+    },
+    {
+      "source": "localization/transcript_boundary_distances.parquet",
+      "path": "assets/localization/transcript_boundary_distances.parquet"
+    },
+    {
+      "source": "localization/cell_distance_summaries.csv",
+      "path": "assets/localization/cell_distance_summaries.csv"
+    },
+    {
+      "source": "localization/cell_transcript_composition.csv",
+      "path": "assets/localization/cell_transcript_composition.csv"
+    },
+    {
+      "source": "localization/sampled_tcells.csv",
+      "path": "assets/localization/sampled_tcells.csv"
+    },
+    {
+      "source": "markers/xenium_annotations.xlsx",
+      "path": "assets/markers/xenium_annotations.xlsx"
+    },
+    {
+      "source": "metadata/gene_mapping/ensembl/human/gene_attr_table.tsv.gz",
+      "path": "assets/metadata/gene_mapping/ensembl/human/gene_attr_table.tsv.gz"
+    },
+    {
+      "source": "metadata/gene_mapping/ensembl/mouse/gene_attr_table.tsv.gz",
+      "path": "assets/metadata/gene_mapping/ensembl/mouse/gene_attr_table.tsv.gz"
+    }
+  ],
+  "description": "Optional import specification. Supply inputs relative to source_root. Released assets are configured with configs/reproduction.yaml.",
+  "source_root": "inputs"
+}
