@@ -30,6 +30,7 @@ sample=$(basename "$input" .h5ad)
 output="$OUTPUT_ROOT/$sample"
 mkdir -p "$output"
 source /home/jwinchel/Syndri/scripts/slurm/syndri_reference_cosine_args.sh
+OMIT_ADDITIONAL_COUNTS=${OMIT_ADDITIONAL_COUNTS:-0}
 METRIC_MODE_ARGS=()
 config_output=tcell_metrics_config.json
 if [[ "${SPLIT_ONLY:-0}" == 1 ]]; then
@@ -40,6 +41,10 @@ elif [[ "${SYNDRI_COSINE_ONLY:-0}" == 1 ]]; then
   config_output=tcell_metrics_syndri_cosine_rerun_config.json
 fi
 echo "Neighborhood radius: $NEIGHBORHOOD_RADIUS ${COORD_UNITS:-coordinate units}"
+ADDITIONAL_COUNTS_ARGS=(--additional-counts-layer split_purified_counts_X)
+if [[ "$OMIT_ADDITIONAL_COUNTS" == 1 ]]; then
+  ADDITIONAL_COUNTS_ARGS=(--additional-counts-layer "")
+fi
 
 # A fresh coordinate key makes the evaluator use the selected obs columns.
 # Each input is a single slice, so use its filename as the neighborhood group
@@ -64,7 +69,7 @@ echo "Neighborhood radius: $NEIGHBORHOOD_RADIUS ${COORD_UNITS:-coordinate units}
   --exclude-labels "" \
   --filter-tcell-invalid-cells \
   --admix-probs-layer syndri_admix_probs_X \
-  --additional-counts-layer split_purified_counts_X \
+  "${ADDITIONAL_COUNTS_ARGS[@]}" \
   --purified-condition-label SPLIT \
   --uncorrected-condition-label raw_X \
   --target-removed-fractions "${TARGET_REMOVED_FRACTIONS:-0.01,0.02,0.05,0.1,0.2,0.3,0.4,0.5}" \

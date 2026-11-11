@@ -6,7 +6,6 @@
 #SBATCH -t 0-47:00:00
 #SBATCH --cpus-per-task=8
 #SBATCH --gres=gpu:1
-#SBATCH
 module load cuda-12.1
 # activate conda environnment
 # cd to correct directory

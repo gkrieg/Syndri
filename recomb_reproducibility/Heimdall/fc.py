@@ -1,0 +1,377 @@
+from pathlib import Path
+from typing import Optional
+
+import anndata as ad
+import numpy as np
+import pandas as pd
+from numpy.typing import NDArray
+from omegaconf import OmegaConf
+from omegaconf.dictconfig import DictConfig
+
+from Heimdall.fe import Fe
+from Heimdall.fg import Fg
+from Heimdall.utils import instantiate_from_config
+
+
+class Fc:
+    """Abstraction for cell embedding.
+
+    Args:
+        fg: `Fg` used for this `Fc` implementation.
+        fe: `Fe` used for this `Fc` implementation.
+        adata: input AnnData-formatted dataset, with gene names in the `.var` dataframe.
+        max_input_length: maximum number of identity/expression tokens to consider for each cell.
+            Extra tokens are limited.
+
+    """
+
+    def __init__(
+        self,
+        fg: Fg | None,
+        fe: Fe | None,
+        adata: ad.AnnData,
+        tailor_config: DictConfig,
+        order_config: DictConfig,
+        reduce_config: DictConfig,
+        embedding_parameters: DictConfig,
+        max_input_length: Optional[int] = None,
+        float_dtype: str = "float32",
+        rng: int | np.random.Generator = 0,
+    ):
+        self.fg = fg
+        self.fe = fe
+        self._adata = adata
+        self.max_input_length = max_input_length
+        self.float_dtype = float_dtype
+        self.embedding_parameters = OmegaConf.to_container(embedding_parameters, resolve=True)
+        self.rng = np.random.default_rng(rng)
+
+        self.tailor = instantiate_from_config(tailor_config, fc=self)
+        self.order = instantiate_from_config(order_config, fc=self)
+        self.reduce = instantiate_from_config(reduce_config, fc=self)
+
+    def __getitem__(self, cell_index: int) -> tuple[NDArray, NDArray, NDArray]:
+        """Retrieve `identity_inputs`, `expression_inputs` and `padding_mask`.
+
+        Returns:
+            A tuple of gene identity embedding indices and gene expression embedding indices for all cells.
+
+        """
+
+        if cell_index == -1:  # Dummy `cell_index`
+            identity_inputs = pd.array(np.full(self.max_input_length, self.fg.pad_value), dtype="Int64")
+            expression_inputs = np.full(self.max_input_length, self.fe.pad_value)
+        else:
+            identity_indices, expression_inputs = self.fe[cell_index]
+
+            gene_list = self.adata.var_names[identity_indices]  # convert to ENSEMBL Gene Names
+            identity_inputs = self.fg[gene_list]  # convert the genes into fg
+
+        if len(identity_inputs) != len(expression_inputs):
+            raise ValueError(
+                "Gene identity and expression inputs do not have the same shape; `Fg` and `Fe` are incompatible.",
+            )
+
+        # first, drop any `NaN` values here
+        # Assuming gene_tokenization is a pandas IntegerArray and expression_tokenization is a numpy array
+        # TODO: what does `NaN` represent here?
+        valid_mask = ~np.isnan(expression_inputs)
+        
+
+        identity_inputs = identity_inputs[valid_mask].to_numpy()
+        expression_inputs = expression_inputs[valid_mask]
+
+        gene_order = self.order(identity_inputs, expression_inputs)
+
+        # Padding and truncating
+        identity_inputs, expression_inputs = self.tailor(
+            identity_inputs,
+            expression_inputs,
+            gene_order,
+        )
+
+        padding_mask = expression_inputs == self.fe.pad_value
+        assert (~padding_mask).sum() > 0
+
+        return identity_inputs, expression_inputs, padding_mask
+
+    @property
+    def adata(self):
+        return self._adata
+
+    @adata.setter
+    def adata(self, val):
+        self._adata = val
+        self.fg.adata = val
+        self.fe.adata = val
+
+
+class ChromosomeAwareFc(Fc):
+    def __init__(
+        self,
+        *fc_args,
+        gene_metadata_filepath: str | Path,
+        ensembl_dir: str | Path,
+        species: str,
+        **fc_kwargs,
+    ):
+        """
+        Args:
+            gene_metadata_filepath: path to gene metadata .csv
+            ensembl_dir: path to directory in which Ensembl mapping file is stored
+            species: species from which single-cell dataset is derived
+        """
+
+        super().__init__(*fc_args, **fc_kwargs)
+
+        self.gene_metadata = pd.read_csv(gene_metadata_filepath)
+        self.ensembl_dir = ensembl_dir
+        self.species = species
+
+        self.gene_metadata["spec_chrom"] = pd.Categorical(
+            self.gene_metadata["species"] + "_" + self.gene_metadata["chromosome"],
+        )
+
+        # https://github.com/snap-stanford/UCE/blob/8227a65cdd021b9186ef86671d2aef5c895c8e4b/data_proc/data_utils.py#L155
+        # TODO: load chromosome one-hot encoding and start positions for all genes
+
+        # symbol_to_ensembl_mapping = symbol_to_ensembl_from_ensembl(
+        #     data_dir=self.ensembl_dir,
+        #     genes=spec_chrom.index.tolist(),
+        #     species=self.species,
+        # )
+        # spec_chrom.index = spec_chrom.index.map(symbol_to_ensembl_mapping.mapping_reduced)
+        self.extract_gene_positions()
+        self.chrom_token_offset = 1
+
+    def extract_gene_positions(self):
+        spec_chrom = self.gene_metadata[self.gene_metadata["species"] == self.species].set_index("gene_symbol")
+        try:
+            # NOTE: below is different from UCE...
+            gene_names = [k.upper() for k in self.adata.var["gene_symbol"]]
+            # gene_chrom = spec_chrom.loc[gene_names]
+            gene_chrom = spec_chrom.reindex(gene_names, copy=True)
+        except KeyError as e:
+            raise ValueError(
+                "Input AnnData cannot contain gene names that are unmapped in the chromosome metadata.",
+            ) from e
+
+        # TODO: for pretraining, we should keep extraneous codes (i.e. no `remove_unused_categories()`)
+        dataset_chroms = gene_chrom["spec_chrom"].cat.remove_unused_categories().cat.codes
+        print("Max Code:", max(dataset_chroms))
+        dataset_pos = gene_chrom["start"].values
+
+        self.unique_chromosomes = np.unique(dataset_chroms)
+
+        self.chroms = dataset_chroms
+        self.starts = dataset_pos
+
+    @Fc.adata.setter
+    def adata(self, val):
+        Fc.adata.fset(self, val)
+        self.extract_gene_positions()
+
+class AdmixtureFc(Fc):
+    QUERY_CELL_TYPE_TOKEN_MODES = {"none", "metadata", "predicted_cls"}
+
+    def __init__(
+        self,
+        *fc_args,
+        gene_metadata_filepath: str | Path,
+        ensembl_dir: str | Path,
+        species: str,
+        query_cell_type_token_mode: str = "none",
+        query_cell_type_col: str = "cell_type",
+        include_query_cell_type_token: bool = True,
+        include_neighbor_cell_type_tokens: bool = True,
+        num_neighbor_cell_type_tokens: int | None = None,
+        include_separator_tokens: bool = False,
+        **fc_kwargs,
+        ):
+
+        self.gene_metadata = pd.read_csv(gene_metadata_filepath)
+        self.ensembl_dir = ensembl_dir
+        self.species = species
+        self.query_cell_type_token_mode = query_cell_type_token_mode
+        self.query_cell_type_col = query_cell_type_col
+        self.include_query_cell_type_token = include_query_cell_type_token
+        self.include_neighbor_cell_type_tokens = include_neighbor_cell_type_tokens
+        if num_neighbor_cell_type_tokens is not None:
+            if isinstance(num_neighbor_cell_type_tokens, bool) or not isinstance(num_neighbor_cell_type_tokens, int) or num_neighbor_cell_type_tokens < 0:
+                raise ValueError("num_neighbor_cell_type_tokens must be a nonnegative integer or None")
+        self.num_neighbor_cell_type_tokens = num_neighbor_cell_type_tokens
+        self.include_separator_tokens = include_separator_tokens
+        self.admixture_token_offset = 1
+        self._cell_type_extract_debug_count = 0
+
+        # AdmixtureTailor and metadata prefix construction use negative IDs
+        # from this lookup. Generated pseudo-spatial AnnData files may not
+        # already contain it, so create the same stable mapping used by the
+        # inference preparation scripts before Fc initializes its tailor.
+        if len(fc_args) < 3:
+            raise ValueError("AdmixtureFc requires an AnnData object as its third positional argument.")
+        adata = fc_args[2]
+        if not adata.uns.get("cell_type_dict"):
+            if query_cell_type_col not in adata.obs:
+                raise KeyError(f"{query_cell_type_col!r} not found in adata.obs")
+            cell_types = sorted(adata.obs[query_cell_type_col].astype(str).unique())
+            adata.uns["cell_type_dict"] = {
+                cell_type: -(idx + 1) for idx, cell_type in enumerate(cell_types)
+            }
+        
+        super().__init__(*fc_args, **fc_kwargs)
+
+        if self.include_separator_tokens:
+            # Append three learned embeddings after the configured cell-type
+            # vocabulary. Their IDs depend on config, not observed cell types,
+            # so they are stable when inference sees a subset of training types.
+            args = self.embedding_parameters["args"]
+            cell_type_capacity = int(args["num_embeddings"])
+            if any(not -cell_type_capacity <= token < 0 for token in self.adata.uns["cell_type_dict"].values()):
+                raise ValueError("Cell-type tokens must fit the configured metadata embedding vocabulary.")
+            args["num_embeddings"] = cell_type_capacity + 3
+
+    @property
+    def separator_tokens(self) -> dict[str, int]:
+        if not getattr(self, "include_separator_tokens", False):
+            return {}
+        capacity = int(self.embedding_parameters["args"]["num_embeddings"]) - 3
+        return {name: -(capacity + i + self.admixture_token_offset)
+                for i, name in enumerate(("NEIGHBORS", "QUERY_TYPE", "GENES"))}
+
+
+    @property
+    def num_prefix_tokens(self) -> int:
+        self._validate_query_cell_type_token_mode()
+        neighbor_celltype_dict = self.adata.uns.get("neighbor_celltype_dict", {})
+        num_query_cell_type_tokens = int(
+            self.include_query_cell_type_token and self.query_cell_type_token_mode == "metadata"
+        )
+        num_query_cell_type_tokens += 3 * int(getattr(self, "include_separator_tokens", False))
+        if self.include_neighbor_cell_type_tokens and neighbor_celltype_dict:
+            available = max(len(cell_types) for cell_types in neighbor_celltype_dict.values())
+            if self.num_neighbor_cell_type_tokens is not None and available < self.num_neighbor_cell_type_tokens:
+                raise ValueError(
+                    f"Requested {self.num_neighbor_cell_type_tokens} neighbor cell-type tokens, "
+                    f"but at most {available} neighbors are available."
+                )
+            neighbor_tokens = available if self.num_neighbor_cell_type_tokens is None else self.num_neighbor_cell_type_tokens
+            return neighbor_tokens + num_query_cell_type_tokens
+        if not self.include_neighbor_cell_type_tokens:
+            return num_query_cell_type_tokens
+        return len(getattr(self, "surr_cell_tokens", [])[:self.num_neighbor_cell_type_tokens]) + num_query_cell_type_tokens
+
+    def _validate_query_cell_type_token_mode(self):
+        if self.query_cell_type_token_mode not in self.QUERY_CELL_TYPE_TOKEN_MODES:
+            valid = ", ".join(sorted(self.QUERY_CELL_TYPE_TOKEN_MODES))
+            raise ValueError(
+                f"query_cell_type_token_mode must be one of: {valid}. "
+                f"Got {self.query_cell_type_token_mode!r}.",
+            )
+        if self.include_query_cell_type_token and self.query_cell_type_token_mode == "predicted_cls":
+            raise NotImplementedError(
+                "query_cell_type_token_mode='predicted_cls' requires a two-pass model that first predicts "
+                "query cell type from the CLS embedding, then re-encodes with that predicted cell-type token. "
+                "Use 'none' or 'metadata' with the current transformer path.",
+            )
+
+    def get_metadata_prefix_tokens(self, cell_id: str):
+        self._validate_query_cell_type_token_mode()
+
+        surr_cell_types = self.adata.uns['neighbor_celltype_dict'][cell_id]
+        surr_cell_tokens = [self.adata.uns['cell_type_dict'][t] for t in surr_cell_types]
+        metadata_prefix_tokens = []
+        if self.include_neighbor_cell_type_tokens:
+            metadata_prefix_tokens = list(surr_cell_tokens[:self.num_neighbor_cell_type_tokens])
+
+        separators = self.separator_tokens
+        if separators:
+            metadata_prefix_tokens = [separators["NEIGHBORS"], *metadata_prefix_tokens, separators["QUERY_TYPE"]]
+
+        if self.include_query_cell_type_token and self.query_cell_type_token_mode == "metadata":
+            if self.query_cell_type_col not in self.adata.obs:
+                raise KeyError(f"{self.query_cell_type_col!r} not found in adata.obs")
+            query_cell_type = self.adata.obs.loc[cell_id, self.query_cell_type_col]
+            cell_type_dict = self.adata.uns['cell_type_dict']
+            query_cell_type_token = cell_type_dict.get(query_cell_type, cell_type_dict.get(str(query_cell_type)))
+            if query_cell_type_token is None:
+                raise KeyError(f"{query_cell_type!r} not found in adata.uns['cell_type_dict']")
+            metadata_prefix_tokens.append(query_cell_type_token)
+
+        if separators:
+            metadata_prefix_tokens.append(separators["GENES"])
+
+        return surr_cell_types, surr_cell_tokens, metadata_prefix_tokens
+
+
+    def extract_surr_cell_types(self, cell_id: str):
+        # get surrounding cell types from anndata
+        # surr_cell_ids = self.adata.uns['neighbor_dict'][cell_id]
+        # surr_cell_types = [self.adata.obs.loc[cid,'cell_type'] for cid in surr_cell_ids]
+        surr_cell_types, surr_cell_tokens, metadata_prefix_tokens = self.get_metadata_prefix_tokens(cell_id)
+        if self._cell_type_extract_debug_count < 5:
+            print(f"> training cell_type tokenization: cell_id={cell_id}")
+            print(f"  neighbor_cell_types={surr_cell_types}")
+            print(f"  neighbor_tokens={surr_cell_tokens}")
+            print(f"  query_cell_type_token_mode={self.query_cell_type_token_mode}")
+            print(f"  include_query_cell_type_token={self.include_query_cell_type_token}")
+            print(f"  include_neighbor_cell_type_tokens={self.include_neighbor_cell_type_tokens}")
+            print(f"  num_neighbor_cell_type_tokens={self.num_neighbor_cell_type_tokens}")
+            print(f"  metadata_prefix_tokens={metadata_prefix_tokens}")
+            print(f"  token_pairs={list(zip(surr_cell_types, surr_cell_tokens))}")
+            print(f"  metadata_indices={[-tok - self.admixture_token_offset for tok in metadata_prefix_tokens]}")
+            self._cell_type_extract_debug_count += 1
+
+        # update fc field
+        self.surr_cell_tokens = surr_cell_tokens
+        self.metadata_prefix_tokens = metadata_prefix_tokens
+
+
+    def __getitem__(self, cell_index: int) -> tuple[NDArray, NDArray, NDArray,NDArray]:
+
+        # TEST TO MAKE SURE THE BATCHES TAILOR CELLS IN SEQUENCE NOT IN PARALLEL
+        # updates fc field to be used in tailoring
+        self.extract_surr_cell_types(self.adata.obs_names[cell_index])
+        
+
+        # get padded, limited gene identities and expression
+        identity_inputs, expression_inputs, padding_mask = super().__getitem__(cell_index)
+        
+        
+        # retrieve embeddings corresponding to surrounding cell type tokens 
+        return identity_inputs, expression_inputs, padding_mask
+
+
+    
+class DummyFc(Fc):
+    def __init__(
+        self,
+        fg: Fg | None,
+        fe: Fe | None,
+        adata: ad.AnnData,
+        tailor_config: DictConfig,
+        order_config: DictConfig,
+        reduce_config: DictConfig,
+        embedding_parameters: DictConfig,
+        max_input_length: Optional[int] = None,
+        float_dtype: str = "float32",
+        rng: int | np.random.Generator = 0,
+    ):
+        self.fg = fg
+        self.fe = fe
+        self.adata = adata
+        self.max_input_length = max_input_length
+
+    """Dummy `Fc` that does not tailor the size of the input."""
+
+    def __getitem__(self, cell_index: int) -> tuple[NDArray, NDArray, NDArray]:
+        """Dummy `__getitem__` for model that does not need an `Fc`.
+
+        Returns:
+            A tuple of gene identity embedding indices and gene expression embedding indices for all cells.
+
+        """
+        identity_indices, expression_inputs = self.fe[cell_index]
+        padding_mask = np.zeros(self.max_input_length)
+        
+        return identity_indices, expression_inputs, padding_mask

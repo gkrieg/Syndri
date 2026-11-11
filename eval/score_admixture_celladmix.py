@@ -84,7 +84,8 @@ def run(args):
             elif setting == "SPLIT":
                 matrix = spatial.layers[args.split_layer]
             else:
-                threshold, achieved = threshold_for_removed_fraction(spatial.X, probabilities, target)
+                threshold, achieved = threshold_for_removed_fraction(
+                    spatial.X, probabilities, target, args.clean_prob_threshold)
                 matrix = zero_counts_at_probability(spatial.X, probabilities, threshold)
             values = matrix.data if sparse.issparse(matrix) else np.asarray(matrix)
             if not np.isfinite(values).all() or (values < 0).any():

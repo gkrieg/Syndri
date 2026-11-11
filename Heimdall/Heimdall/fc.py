@@ -184,6 +184,8 @@ class AdmixtureFc(Fc):
         query_cell_type_col: str = "cell_type",
         include_query_cell_type_token: bool = True,
         include_neighbor_cell_type_tokens: bool = True,
+        num_neighbor_cell_type_tokens: int | None = None,
+        include_separator_tokens: bool = False,
         **fc_kwargs,
         ):
 
@@ -194,10 +196,48 @@ class AdmixtureFc(Fc):
         self.query_cell_type_col = query_cell_type_col
         self.include_query_cell_type_token = include_query_cell_type_token
         self.include_neighbor_cell_type_tokens = include_neighbor_cell_type_tokens
+        if num_neighbor_cell_type_tokens is not None:
+            if isinstance(num_neighbor_cell_type_tokens, bool) or not isinstance(num_neighbor_cell_type_tokens, int) or num_neighbor_cell_type_tokens < 0:
+                raise ValueError("num_neighbor_cell_type_tokens must be a nonnegative integer or None")
+        self.num_neighbor_cell_type_tokens = num_neighbor_cell_type_tokens
+        self.include_separator_tokens = include_separator_tokens
         self.admixture_token_offset = 1
         self._cell_type_extract_debug_count = 0
+
+        # AdmixtureTailor and metadata prefix construction use negative IDs
+        # from this lookup. Generated pseudo-spatial AnnData files may not
+        # already contain it, so create the same stable mapping used by the
+        # inference preparation scripts before Fc initializes its tailor.
+        if len(fc_args) < 3:
+            raise ValueError("AdmixtureFc requires an AnnData object as its third positional argument.")
+        adata = fc_args[2]
+        if not adata.uns.get("cell_type_dict"):
+            if query_cell_type_col not in adata.obs:
+                raise KeyError(f"{query_cell_type_col!r} not found in adata.obs")
+            cell_types = sorted(adata.obs[query_cell_type_col].astype(str).unique())
+            adata.uns["cell_type_dict"] = {
+                cell_type: -(idx + 1) for idx, cell_type in enumerate(cell_types)
+            }
         
         super().__init__(*fc_args, **fc_kwargs)
+
+        if self.include_separator_tokens:
+            # Append three learned embeddings after the configured cell-type
+            # vocabulary. Their IDs depend on config, not observed cell types,
+            # so they are stable when inference sees a subset of training types.
+            args = self.embedding_parameters["args"]
+            cell_type_capacity = int(args["num_embeddings"])
+            if any(not -cell_type_capacity <= token < 0 for token in self.adata.uns["cell_type_dict"].values()):
+                raise ValueError("Cell-type tokens must fit the configured metadata embedding vocabulary.")
+            args["num_embeddings"] = cell_type_capacity + 3
+
+    @property
+    def separator_tokens(self) -> dict[str, int]:
+        if not getattr(self, "include_separator_tokens", False):
+            return {}
+        capacity = int(self.embedding_parameters["args"]["num_embeddings"]) - 3
+        return {name: -(capacity + i + self.admixture_token_offset)
+                for i, name in enumerate(("NEIGHBORS", "QUERY_TYPE", "GENES"))}
 
 
     @property
@@ -207,11 +247,19 @@ class AdmixtureFc(Fc):
         num_query_cell_type_tokens = int(
             self.include_query_cell_type_token and self.query_cell_type_token_mode == "metadata"
         )
+        num_query_cell_type_tokens += 3 * int(getattr(self, "include_separator_tokens", False))
         if self.include_neighbor_cell_type_tokens and neighbor_celltype_dict:
-            return max(len(cell_types) for cell_types in neighbor_celltype_dict.values()) + num_query_cell_type_tokens
+            available = max(len(cell_types) for cell_types in neighbor_celltype_dict.values())
+            if self.num_neighbor_cell_type_tokens is not None and available < self.num_neighbor_cell_type_tokens:
+                raise ValueError(
+                    f"Requested {self.num_neighbor_cell_type_tokens} neighbor cell-type tokens, "
+                    f"but at most {available} neighbors are available."
+                )
+            neighbor_tokens = available if self.num_neighbor_cell_type_tokens is None else self.num_neighbor_cell_type_tokens
+            return neighbor_tokens + num_query_cell_type_tokens
         if not self.include_neighbor_cell_type_tokens:
             return num_query_cell_type_tokens
-        return len(getattr(self, "metadata_prefix_tokens", getattr(self, "surr_cell_tokens", [])))
+        return len(getattr(self, "surr_cell_tokens", [])[:self.num_neighbor_cell_type_tokens]) + num_query_cell_type_tokens
 
     def _validate_query_cell_type_token_mode(self):
         if self.query_cell_type_token_mode not in self.QUERY_CELL_TYPE_TOKEN_MODES:
@@ -232,7 +280,13 @@ class AdmixtureFc(Fc):
 
         surr_cell_types = self.adata.uns['neighbor_celltype_dict'][cell_id]
         surr_cell_tokens = [self.adata.uns['cell_type_dict'][t] for t in surr_cell_types]
-        metadata_prefix_tokens = list(surr_cell_tokens) if self.include_neighbor_cell_type_tokens else []
+        metadata_prefix_tokens = []
+        if self.include_neighbor_cell_type_tokens:
+            metadata_prefix_tokens = list(surr_cell_tokens[:self.num_neighbor_cell_type_tokens])
+
+        separators = self.separator_tokens
+        if separators:
+            metadata_prefix_tokens = [separators["NEIGHBORS"], *metadata_prefix_tokens, separators["QUERY_TYPE"]]
 
         if self.include_query_cell_type_token and self.query_cell_type_token_mode == "metadata":
             if self.query_cell_type_col not in self.adata.obs:
@@ -243,6 +297,9 @@ class AdmixtureFc(Fc):
             if query_cell_type_token is None:
                 raise KeyError(f"{query_cell_type!r} not found in adata.uns['cell_type_dict']")
             metadata_prefix_tokens.append(query_cell_type_token)
+
+        if separators:
+            metadata_prefix_tokens.append(separators["GENES"])
 
         return surr_cell_types, surr_cell_tokens, metadata_prefix_tokens
 
@@ -259,6 +316,7 @@ class AdmixtureFc(Fc):
             print(f"  query_cell_type_token_mode={self.query_cell_type_token_mode}")
             print(f"  include_query_cell_type_token={self.include_query_cell_type_token}")
             print(f"  include_neighbor_cell_type_tokens={self.include_neighbor_cell_type_tokens}")
+            print(f"  num_neighbor_cell_type_tokens={self.num_neighbor_cell_type_tokens}")
             print(f"  metadata_prefix_tokens={metadata_prefix_tokens}")
             print(f"  token_pairs={list(zip(surr_cell_types, surr_cell_tokens))}")
             print(f"  metadata_indices={[-tok - self.admixture_token_offset for tok in metadata_prefix_tokens]}")

@@ -1,0 +1,409 @@
+"""Checkpoint-compatible inference helpers bundled from the original Syndri runtime."""
+from __future__ import annotations
+import argparse, shlex
+from pathlib import Path
+import anndata as ad
+import numpy as np
+import pandas as pd
+import torch
+from omegaconf import OmegaConf
+from scipy.sparse import coo_matrix, csr_matrix, issparse
+from torch.utils.data import DataLoader, Dataset
+from tqdm import tqdm
+from Heimdall.cell_representations import CellRepresentation
+from Heimdall.models import HeimdallModel
+from Heimdall.trainer import HeimdallTrainer
+from Heimdall.utils import count_parameters, get_dtype
+ad.settings.allow_write_nullable_strings = True
+def genes_from_txt(gene_list_path: Path) -> list[str]:
+    genes = [line.strip() for line in gene_list_path.read_text().splitlines() if line.strip()]
+    if not genes:
+        raise ValueError(f"Gene list is empty: {gene_list_path}")
+    return genes
+
+def build_cell_type_dict(adata: ad.AnnData, cell_type_col: str) -> dict[str, int]:
+    cell_types = sorted(adata.obs[cell_type_col].astype(str).unique())
+    return {cell_type: -(idx + 1) for idx, cell_type in enumerate(cell_types)}
+
+def prepare_spatial_adata(args: argparse.Namespace) -> Path:
+    st_data = ad.read_h5ad(args.st_data)
+    ref_data = ad.read_h5ad(args.reference_data)
+    if args.expression_layer is not None:
+        if args.expression_layer not in st_data.layers:
+            raise KeyError(f"{args.expression_layer!r} not found in spatial adata.layers")
+        st_data.X = st_data.layers[args.expression_layer].copy()
+        print(f"> Using spatial AnnData layer {args.expression_layer!r} as model input expression.")
+    if args.gene_list is None:
+        genes = st_data.var_names.astype(str).tolist()
+        print(f"> Using all {len(genes):,} spatial AnnData genes.")
+    else:
+        genes = genes_from_txt(args.gene_list)
+        print(f"> Loaded {len(genes):,} genes from {args.gene_list}.")
+
+    if args.cell_type_col not in st_data.obs:
+        raise KeyError(f"{args.cell_type_col!r} not found in spatial adata.obs")
+
+    valid_cell_type = st_data.obs[args.cell_type_col].notna()
+    valid_cell_type &= st_data.obs[args.cell_type_col].astype(str).str.lower().ne("nan")
+    dropped = int((~valid_cell_type).sum())
+    st_data = st_data[valid_cell_type].copy()
+    print(f"> Dropped {dropped:,} cells with missing/'nan' {args.cell_type_col!r}.")
+
+    missing_genes = [gene for gene in genes if gene not in st_data.var_names]
+    if missing_genes:
+        preview = missing_genes[:20]
+        raise ValueError(f"{len(missing_genes)} gene-list genes are missing from spatial AnnData. First 20: {preview}")
+    st_data = st_data[:, genes].copy()
+    print(f"> Prepared spatial AnnData with {len(genes):,} genes.")
+
+    if "cell_type_dict" in ref_data.uns:
+        st_data.uns["cell_type_dict"] = dict(ref_data.uns["cell_type_dict"])
+        print("> Copied cell_type_dict from reference AnnData.")
+    elif "cell_type_dict" in st_data.uns:
+        st_data.uns["cell_type_dict"] = dict(st_data.uns["cell_type_dict"])
+        print("> Using existing cell_type_dict from spatial AnnData.")
+    else:
+        st_data.uns["cell_type_dict"] = build_cell_type_dict(st_data, args.cell_type_col)
+        print("> Built cell_type_dict from spatial AnnData cell types.")
+
+
+    cell_type_dict = dict(st_data.uns["cell_type_dict"])
+    cell_type_tokens = list(cell_type_dict.values())
+    observed_cell_types = set(st_data.obs[args.cell_type_col].astype(str))
+    dict_cell_types = set(cell_type_dict)
+    missing_cell_types = sorted(observed_cell_types - dict_cell_types)
+    unused_cell_types = sorted(dict_cell_types - observed_cell_types)
+    metadata_indices = sorted(-token - 1 for token in cell_type_tokens)
+    print("> cell_type_dict sanity:")
+    print(f"  n_cell_types={len(cell_type_dict)}")
+    print(f"  first_10={list(cell_type_dict.items())[:10]}")
+    if cell_type_tokens:
+        print(f"  token_range=({min(cell_type_tokens)}, {max(cell_type_tokens)})")
+    print(f"  all_negative={all(v < 0 for v in cell_type_tokens)}")
+    print(f"  unique_tokens={len(set(cell_type_tokens)) == len(cell_type_tokens)}")
+    print(f"  contiguous_negative_tokens={sorted(cell_type_tokens) == list(range(-len(cell_type_tokens), 0))}")
+    print(f"  metadata_indices_first_10={metadata_indices[:10]}")
+    print(f"  missing_observed_cell_types={missing_cell_types[:10]}")
+    print(f"  unused_dict_cell_types={unused_cell_types[:10]}")
+    if args.preserve_split_column:
+        if args.split_col not in st_data.obs:
+            raise KeyError(f"{args.split_col!r} not found in input adata.obs")
+        split_count = int((st_data.obs[args.split_col] == args.split_value).sum())
+        if split_count == 0:
+            raise ValueError(f"No cells found with {args.split_col!r} == {args.split_value!r}.")
+        print(f"> Preserved {args.split_col!r}; {split_count:,} cells match split value {args.split_value!r}.")
+    else:
+        st_data.obs[args.split_col] = args.split_value
+        print(f"> Set all cells to {args.split_col}={args.split_value!r}.")
+
+    args.output_dir.mkdir(parents=True, exist_ok=True)
+    prepared_path = args.output_dir / args.prepared_name
+    st_data.write_h5ad(prepared_path)
+    print(f"> Wrote prepared AnnData: {prepared_path}")
+    return prepared_path
+
+def _parse_override_value(value: str):
+    if value.lower() == "true":
+        return True
+    if value.lower() == "false":
+        return False
+    if value.lower() in {"null", "none"}:
+        return None
+    if value.startswith("[") and value.endswith("]"):
+        return [_parse_override_value(item.strip()) for item in value[1:-1].split(",") if item.strip()]
+    try:
+        return int(value)
+    except ValueError:
+        pass
+    try:
+        return float(value)
+    except ValueError:
+        return value
+
+def _apply_dotlist_overrides(config, overrides: list[str]) -> None:
+    for override in overrides:
+        if "=" not in override:
+            raise ValueError(f"Override must be in key=value form, got {override!r}")
+        key, value = override.split("=", 1)
+        key = key.lstrip("+")
+        OmegaConf.update(config, key, _parse_override_value(value), merge=True, force_add=True)
+
+class PrecomputedAdmixtureInferenceDataset(Dataset):
+    def __init__(self, batches: dict[str, torch.Tensor]):
+        self.batches = batches
+        self.length = next(iter(batches.values())).shape[0]
+
+    def __len__(self) -> int:
+        return self.length
+
+    def __getitem__(self, idx: int) -> dict[str, torch.Tensor]:
+        return {key: value[idx] for key, value in self.batches.items()}
+
+def _neighbor_tokens(
+    adata: ad.AnnData,
+    cell_id: str,
+    cell_type_dict: dict,
+    max_neighbors: int,
+    token_offset: int,
+    debug: bool = False,
+) -> list[int]:
+    neighbor_types = adata.uns["neighbor_celltype_dict"].get(cell_id, [])
+    tokens = [cell_type_dict[cell_type] for cell_type in neighbor_types[:max_neighbors]]
+    if debug:
+        print(f"> inference cell_type tokenization: cell_id={cell_id}")
+        print(f"  neighbor_cell_types={neighbor_types[:max_neighbors]}")
+        print(f"  neighbor_tokens={tokens}")
+        print(f"  token_pairs={list(zip(neighbor_types[:max_neighbors], tokens))}")
+        print(f"  metadata_indices={[-token - token_offset for token in tokens]}")
+    return tokens
+
+def build_fast_inference_loader(cr: CellRepresentation, batch_size: int, split: str = "test") -> DataLoader:
+    """Materialize inference tensors once, avoiding slow AnnData work per batch."""
+
+    indices = np.asarray(cr.splits[split], dtype=np.int64)
+    adata = cr.adata
+    expression = adata.X.tocsr() if issparse(adata.X) else csr_matrix(adata.X)
+
+    seq_len = int(cr.fc.max_input_length)
+    gene_len = int(cr.dataset_task_cfg.context_length)
+    prefix_len = seq_len - gene_len
+    if prefix_len < 0:
+        raise ValueError(f"Expected max_input_length >= context_length, got seq_len={seq_len} and gene_len={gene_len}.")
+    expected_prefix_len = getattr(cr.fc, "num_prefix_tokens", prefix_len)
+    if prefix_len != expected_prefix_len:
+        raise ValueError(
+            f"Configured prefix length {prefix_len} differs from tokenizer prefix length "
+            f"{expected_prefix_len}; check context_length, max_input_length, and separator/token flags."
+        )
+
+    n = len(indices)
+    identity_inputs = np.full((n, seq_len), cr.fg.pad_value, dtype=np.int64)
+    expression_inputs = np.full((n, seq_len), cr.fe.pad_value, dtype=np.float32)
+    gene_order = np.full((n, gene_len), cr.fe.pad_value, dtype=np.int64)
+    labels = np.full((n, gene_len), np.nan, dtype=np.float32)
+
+    identity_token_order = adata.var["identity_embedding_index"].to_numpy(dtype=np.int64)
+    max_token = int(identity_token_order.max())
+    token_to_col = np.full(max_token + 1, cr.fe.pad_value, dtype=np.int64)
+    token_to_col[identity_token_order] = np.arange(len(identity_token_order), dtype=np.int64)
+    cell_type_dict = dict(adata.uns["cell_type_dict"])
+
+    print(f"> Precomputing fast inference tensors for {n:,} {split!r} cells...")
+    for out_i, cell_idx in enumerate(tqdm(indices, desc="precompute inference tensors")):
+        cell_id = str(adata.obs_names[cell_idx])
+        if hasattr(cr.fc, "get_metadata_prefix_tokens"):
+            _, _, prefix_tokens = cr.fc.get_metadata_prefix_tokens(cell_id)
+        else:
+            prefix_tokens = _neighbor_tokens(
+                adata,
+                cell_id,
+                cell_type_dict,
+                prefix_len,
+                cr.fc.admixture_token_offset,
+                debug=out_i < 5,
+            )
+        if len(prefix_tokens) > prefix_len:
+            raise ValueError(
+                f"Metadata prefix for cell {cell_id!r} has {len(prefix_tokens)} tokens, "
+                f"but only {prefix_len} prefix positions are available.",
+            )
+        n_prefix = len(prefix_tokens)
+        if n_prefix:
+            identity_inputs[out_i, :n_prefix] = prefix_tokens
+            expression_inputs[out_i, :n_prefix] = prefix_tokens
+
+        if out_i < 5:
+            print("> inference prefix materialized:")
+            print(f"  row={out_i}, cell_id={cell_id}")
+            print(f"  prefix_len={prefix_len}, n_prefix={n_prefix}")
+            print(f"  expected_tokens={prefix_tokens}")
+            print(f"  identity_prefix={identity_inputs[out_i, :prefix_len].tolist()}")
+            print(f"  expression_prefix={expression_inputs[out_i, :prefix_len].tolist()}")
+            print(f"  gene_tokens_start_at={prefix_len}")
+
+        row_start = expression.indptr[cell_idx]
+        row_stop = expression.indptr[cell_idx + 1]
+        cols = expression.indices[row_start:row_stop]
+        vals = expression.data[row_start:row_stop].astype(np.float32, copy=False)
+
+        valid_expr = ~np.isnan(vals)
+        cols = cols[valid_expr][:gene_len]
+        vals = vals[valid_expr][:gene_len]
+        tokens = identity_token_order[cols]
+
+        gene_stop = prefix_len + len(tokens)
+        identity_inputs[out_i, prefix_len:gene_stop] = tokens
+        expression_inputs[out_i, prefix_len:gene_stop] = vals
+
+        valid_tokens = (tokens >= 0) & (tokens < len(token_to_col))
+        row_gene_order = gene_order[out_i, : len(tokens)]
+        row_gene_order[valid_tokens] = token_to_col[tokens[valid_tokens]]
+
+    expression_padding = expression_inputs == cr.fe.pad_value
+    tensor_data = {
+        "identity_inputs": torch.from_numpy(identity_inputs),
+        "expression_inputs": torch.from_numpy(expression_inputs),
+        "expression_padding": torch.from_numpy(expression_padding),
+        "labels": torch.from_numpy(labels),
+        "gene_order": torch.from_numpy(gene_order),
+    }
+    dataset = PrecomputedAdmixtureInferenceDataset(tensor_data)
+    return DataLoader(dataset, batch_size=batch_size, shuffle=False, num_workers=0)
+
+def _prediction_var_names(model_adata: ad.AnnData) -> pd.Index:
+    return pd.Index(model_adata.var_names.astype(str), name=model_adata.var_names.name)
+
+def _expand_matrix_to_input_genes(
+    matrix,
+    model_adata: ad.AnnData,
+    input_var_names: pd.Index,
+    layer_name: str,
+) -> csr_matrix:
+    matrix = matrix.tocsr() if issparse(matrix) else csr_matrix(matrix)
+    prediction_var_names = _prediction_var_names(model_adata)
+    input_index = pd.Index(input_var_names.astype(str))
+    output_cols = input_index.get_indexer(prediction_var_names)
+    valid = output_cols >= 0
+
+    if not valid.all():
+        missing = prediction_var_names[~valid].tolist()
+        preview = missing[:20]
+        raise ValueError(
+            f"{len(missing)} {layer_name!r} prediction genes are missing from the original input AnnData. "
+            f"First 20: {preview}"
+        )
+
+    matrix = matrix[:, valid]
+    matrix = matrix.tocoo()
+    expanded = coo_matrix(
+        (matrix.data, (matrix.row, output_cols[valid][matrix.col])),
+        shape=(matrix.shape[0], len(input_index)),
+        dtype=matrix.dtype,
+    ).tocsr()
+    print(
+        f"> Expanded {layer_name!r} from {matrix.shape[1]:,} model genes "
+        f"to {len(input_index):,} input genes; unmodeled genes are zero."
+    )
+    return expanded
+
+def build_output_adata_with_input_genes(args: argparse.Namespace, model_adata: ad.AnnData) -> ad.AnnData:
+    input_adata = ad.read_h5ad(args.st_data)
+    output_obs_names = pd.Index(model_adata.obs_names.astype(str))
+    missing_obs = output_obs_names.difference(pd.Index(input_adata.obs_names.astype(str)))
+    if len(missing_obs):
+        preview = missing_obs[:20].tolist()
+        raise ValueError(f"{len(missing_obs)} prediction cells are missing from input AnnData. First 20: {preview}")
+
+    output_adata = input_adata[output_obs_names, :].copy()
+    for column in model_adata.obs.columns:
+        output_adata.obs[column] = model_adata.obs[column].reindex(output_adata.obs_names).values
+    output_adata.uns.update(model_adata.uns)
+    return output_adata
+
+def dry_run_tokenization(trainer: HeimdallTrainer, dataloader: DataLoader) -> None:
+    trainer.model.eval()
+    device = trainer.accelerator.device
+
+    def move_to_device(value):
+        if isinstance(value, torch.Tensor):
+            return value.to(device)
+        if isinstance(value, tuple):
+            return tuple(move_to_device(v) for v in value)
+        if isinstance(value, list):
+            return [move_to_device(v) for v in value]
+        return value
+
+    try:
+        batch = next(iter(dataloader))
+    except StopIteration as exc:
+        raise ValueError("Dry-run tokenization found an empty inference dataloader.") from exc
+
+    print("> Dry-run tokenization batch:")
+    for key, value in batch.items():
+        if isinstance(value, torch.Tensor):
+            print(f"  {key}: shape={tuple(value.shape)}, dtype={value.dtype}")
+
+    with torch.no_grad():
+        outputs = trainer.model(
+            inputs=(
+                move_to_device(batch["identity_inputs"]),
+                move_to_device(batch["expression_inputs"]),
+            ),
+            attention_mask=move_to_device(batch.get("expression_padding")),
+        )
+    print(f"> Dry-run forward pass logits shape: {tuple(outputs.logits.shape)}")
+    print("> Dry-run tokenization complete; skipping prediction output write.")
+
+def run_inference(args: argparse.Namespace, prepared_path: Path) -> Path | None:
+    if args.apply_admixture and args.fast_inference:
+        print("> Disabling fast inference because apply_admixture=true requires the standard dataset path.")
+        args.fast_inference = False
+
+    config = compose_config(args, prepared_path)
+    cr = CellRepresentation(config)
+
+    float_dtype = get_dtype(config.float_dtype)
+    model = HeimdallModel(data=cr, model_config=config.model, task_config=config.tasks.args).to(float_dtype)
+    print(f"> Model parameters: {count_parameters(model):,}")
+
+    trainer = HeimdallTrainer(cfg=config, model=model, data=cr, run_wandb=False)
+    trainer.initialize_checkpointing(args.checkpoint_dir)
+    trainer.load_checkpoint(specific_milestone=args.milestone)
+
+    prediction_indices = np.asarray(cr.splits["test"], dtype=np.int64)
+    if len(prediction_indices) == 0:
+        raise ValueError(f"No cells found for inference split {args.split_col!r} == {args.split_value!r}.")
+
+    prediction_loader = trainer.dataloader_test
+    if args.fast_inference:
+        prediction_loader = build_fast_inference_loader(cr, config.tasks.args.batchsize, split="test")
+        prediction_loader = trainer.accelerator.prepare(prediction_loader)
+
+    if args.dry_run_tokenization:
+        dry_run_tokenization(trainer, prediction_loader)
+        return None
+
+    probs = np.concatenate(trainer.get_predictions(prediction_loader), axis=0).astype(np.float32)
+    expected_shape = (len(prediction_indices), trainer.data.adata.X.shape[1])
+    if probs.shape != expected_shape:
+        raise ValueError(f"Prediction shape {probs.shape} does not match selected split shape {expected_shape}")
+
+    model_output_adata = trainer.data.adata[prediction_indices].copy()
+    output_adata = build_output_adata_with_input_genes(args, model_output_adata)
+    output_adata.layers[args.prob_layer] = _expand_matrix_to_input_genes(
+        probs,
+        model_output_adata,
+        output_adata.var_names,
+        args.prob_layer,
+    )
+    if args.apply_admixture:
+        admixture_matrix = trainer.data.fe.current_admixture_matrix
+        if admixture_matrix is None:
+            raise RuntimeError(
+                "apply_admixture=True, but no current admixture matrix was materialized for inference."
+            )
+        output_adata.layers[args.admixture_layer] = _expand_matrix_to_input_genes(
+            admixture_matrix[prediction_indices],
+            model_output_adata,
+            output_adata.var_names,
+            args.admixture_layer,
+        )
+        print(f"> Added exact sampled admixture counts to layer {args.admixture_layer!r}.")
+
+    output_path = args.output_dir / args.output_name
+    output_adata.write_h5ad(output_path)
+    print(f"> Wrote predictions to {output_path} in layer {args.prob_layer!r}.")
+    return output_path
+def compose_config(args, prepared_path):
+    config = args.config
+    config.dataset.preprocess_args.data_path = str(prepared_path)
+    config.dataset.preprocess_args.apply_admixture = False
+    config.dataset.preprocess_args.use_precomputed_neighbor = getattr(args, 'use_precomputed_neighbor', False)
+    config.dataset.preprocess_args.admixture_args.coord_cols = args.coord_cols.split(',')
+    config.dataset.preprocess_args.admixture_args.cell_type_col = args.cell_type_col
+    config.dataset.preprocess_args.admixture_args.tissue_col = args.tissue_col
+    config.tasks.args.splits.col = args.split_col
+    config.tasks.args.splits.keys_.test = args.split_value
+    config.tasks.args.batchsize = args.batch_size
+    config.fc.args.query_cell_type_col = args.cell_type_col
+    return config

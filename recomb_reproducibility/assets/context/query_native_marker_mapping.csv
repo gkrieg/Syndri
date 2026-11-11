@@ -1,0 +1,15 @@
+query_cell_type,selection_column,selection_value,n_authors_native_markers,native_genes,status
+"CD4-positive, alpha-beta memory T cell",Annotation,T cells,35,CCL5; CCR7; CD274; CD3E; CD3G; CD4; CD69; CD8A; CTLA4; CXCR4; CYTIP; DUSP2; FOXP3; GPR183; GZMA; GZMK; HAVCR2; IL2RA; IL7R; KLRB1; KLRC1; LAG3; LTB; PDCD1; PRDM1; RHOH; RORC; RTKN2; SELL; SMAP2; TCF7; TENT5C; TIGIT; TRAC; TUBA4A,mapped
+cytotoxic T cell,Annotation,T cells,35,CCL5; CCR7; CD274; CD3E; CD3G; CD4; CD69; CD8A; CTLA4; CXCR4; CYTIP; DUSP2; FOXP3; GPR183; GZMA; GZMK; HAVCR2; IL2RA; IL7R; KLRB1; KLRC1; LAG3; LTB; PDCD1; PRDM1; RHOH; RORC; RTKN2; SELL; SMAP2; TCF7; TENT5C; TIGIT; TRAC; TUBA4A,mapped
+natural T-regulatory cell,Annotation,T cells,35,CCL5; CCR7; CD274; CD3E; CD3G; CD4; CD69; CD8A; CTLA4; CXCR4; CYTIP; DUSP2; FOXP3; GPR183; GZMA; GZMK; HAVCR2; IL2RA; IL7R; KLRB1; KLRC1; LAG3; LTB; PDCD1; PRDM1; RHOH; RORC; RTKN2; SELL; SMAP2; TCF7; TENT5C; TIGIT; TRAC; TUBA4A,mapped
+natural killer cell,Annotation_DB,NK cell,8,CD247; FCER1G; GNLY; KLRD1; KLRF1; NCAM1; NKG7; PRF1,mapped
+plasma cell,Annotation_DB,plasma cell,1,TNFRSF17,mapped
+classical monocyte,Annotation_DB,monocyte,3,CD14; FCGR3A; S100A8,mapped
+macrophage,Annotation_DB,macrophage,26,AIF1; APOC1; BASP1; C1QA; C1QC; CD163; CD68; CD80; CD86; CX3CR1; CXCL16; CXCL5; FAM49A; FGL2; GJB2; IGSF6; LPXN; LY86; LYZ; MAP3K8; MNDA; MRC1; PLD4; PPARG; SEC24A; SERPINB9,mapped
+mast cell,Annotation_DB,mast cell,3,CPA3; CTSG; TPSAB1,mapped
+plasmacytoid dendritic cell,Annotation_DB,dendritic cell,9,ADGRE5; CD83; CLEC9A; FCER1A; IL2RG; IL3RA; ITGAX; LILRA4; SPIB,mapped
+capillary endothelial cell,Annotation_DB,endothelial cell,11,AKR1C3; ANGPT2; AQP1; CD93; ESM1; PECAM1; SOX17; STC1; TIFA; VWF; WARS,mapped
+fibroblast of breast,Annotation_DB,fibroblast,14,CCDC80; DPT; FBLN1; IGF1; LUM; MMP1; MMP12; MMP2; PDGFRA; PIM1; POSTN; SFRP4; TAC1; TCEAL7,mapped
+fibroblast of lung,Annotation_DB,fibroblast,14,CCDC80; DPT; FBLN1; IGF1; LUM; MMP1; MMP12; MMP2; PDGFRA; PIM1; POSTN; SFRP4; TAC1; TCEAL7,mapped
+smooth muscle cell,Annotation_DB,smooth muscle cell,14,ACTA2; AKR1C1; AVPR1A; CCL8; CRISPLD2; CTH; FOXC2; FSTL3; LARS; MYH11; PDGFRB; PDK4; SSTR2; THAP2,mapped
+pericyte,,,0,,excluded: no pericyte annotation in ST 4; no proxy used

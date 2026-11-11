@@ -1,0 +1,15 @@
+query_cell_type,query_family
+"CD4-positive, alpha-beta memory T cell",Lymphoid
+cytotoxic T cell,Lymphoid
+natural T-regulatory cell,Lymphoid
+natural killer cell,Lymphoid
+plasma cell,Lymphoid
+macrophage,Myeloid
+classical monocyte,Myeloid
+plasmacytoid dendritic cell,Myeloid
+mast cell,Myeloid
+fibroblast of breast,Stromal
+fibroblast of lung,Stromal
+pericyte,Stromal
+smooth muscle cell,Stromal
+capillary endothelial cell,Vascular

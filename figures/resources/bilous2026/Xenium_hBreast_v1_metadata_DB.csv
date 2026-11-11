@@ -1,0 +1,281 @@
+Genes,Ensembl_ID,Num_Probesets,Codewords,Annotation,Annotation_DB
+ABCC11,ENSG00000121270,7,1,Breast cancer,malignant cell
+ACTA2,ENSG00000107796,8,1,Smooth muscle cells,smooth muscle cell
+ACTG2,ENSG00000163017,8,1,Breast myoepithelial cells,epithelial cell
+ADAM9,ENSG00000168615,8,1,Breast glandular cells,epithelial cell
+ADGRE5,ENSG00000123146,8,1,Dendritic cells,dendritic cell
+ADH1B,ENSG00000196616,8,1,Adipocytes,adipocyte
+ADIPOQ,ENSG00000181092,7,1,Adipocytes,adipocyte
+AGR3,ENSG00000173467,8,1,Breast glandular cells,epithelial cell
+AIF1,ENSG00000204472,7,1,Macrophages,macrophage
+AKR1C1,ENSG00000187134,8,1,Smooth muscle cells,smooth muscle cell
+AKR1C3,ENSG00000196139,8,1,Endothelial cells,endothelial cell
+ALDH1A3,ENSG00000184254,8,1,Breast glandular cells,epithelial cell
+ANGPT2,ENSG00000091879,8,1,Endothelial cells,endothelial cell
+ANKRD28,ENSG00000206560,8,1,B cells,B cell
+ANKRD29,ENSG00000154065,8,1,Adipocytes,adipocyte
+ANKRD30A,ENSG00000148513,7,1,Epithelial cells,epithelial cell
+APOBEC3A,ENSG00000128383,8,1,B cells,B cell
+APOBEC3B,ENSG00000179750,8,1,Breast cancer,malignant cell
+APOC1,ENSG00000130208,2,1,Macrophages,macrophage
+AQP1,ENSG00000240583,8,1,Endothelial cells,endothelial cell
+AQP3,ENSG00000165272,8,1,Breast glandular cells,epithelial cell
+AR,ENSG00000169083,8,1,Breast cancer,malignant cell
+AVPR1A,ENSG00000166148,8,1,Smooth muscle cells,smooth muscle cell
+BACE2,ENSG00000182240,8,1,Breast glandular cells,epithelial cell
+BANK1,ENSG00000153064,8,1,B cells,B cell
+BASP1,ENSG00000176788,8,1,Macrophages,macrophage
+C15orf48,ENSG00000166920,6,1,Breast glandular cells,epithelial cell
+C1QA,ENSG00000173372,4,1,Macrophages,macrophage
+C1QC,ENSG00000159189,2,1,Macrophages,macrophage
+C2orf42,ENSG00000115998,8,1,B cells,B cell
+C5orf46,ENSG00000178776,6,1,Breast glandular cells,epithelial cell
+C6orf132,ENSG00000188112,8,1,Breast myoepithelial cells,epithelial cell
+CAV1,ENSG00000105974,8,1,Breast cancer,malignant cell
+CAVIN2,ENSG00000168497,8,1,Adipocytes,adipocyte
+CCDC6,ENSG00000108091,8,1,Breast glandular cells,epithelial cell
+CCDC80,ENSG00000091986,8,1,Fibroblasts,fibroblast
+CCL5,ENSG00000271503,5,1,T cells,cytotoxic T cell
+CCL8,ENSG00000108700,6,1,Smooth muscle cells,smooth muscle cell
+CCND1,ENSG00000110092,8,1,Breast cancer,malignant cell
+CCPG1,ENSG00000260916,8,1,B cells,B cell
+CCR7,ENSG00000126353,8,1,T cells,T cell
+CD14,ENSG00000170458,8,1,Monocytes,monocyte
+CD163,ENSG00000177575,8,1,Macrophages,macrophage
+CD19,ENSG00000177455,8,1,B cells,B cell
+CD247,ENSG00000198821,8,1,NK cells,NK cell
+CD27,ENSG00000139193,5,1,B cells,B cell
+CD274,ENSG00000120217,8,1,T cells,immune response
+CD3E,ENSG00000198851,13,1,T cells,canonical T cell marker
+CD3G,ENSG00000160654,9,1,T cells,canonical T cell marker
+CD4,ENSG00000010610,16,1,T cells,regulatory T cell
+CD68,ENSG00000129226,6,1,Macrophages,macrophage
+CD69,ENSG00000110848,8,1,T cells,canonical T cell marker
+CD79A,ENSG00000105369,3,1,B cells,B cell
+CD79B,ENSG00000007312,5,1,B cells,B cell
+CD80,ENSG00000121594,8,1,Macrophages,macrophage
+CD83,ENSG00000112149,8,1,Dendritic cells,dendritic cell
+CD86,ENSG00000114013,8,1,Macrophages,macrophage
+CD8A,ENSG00000153563,12,1,T cells,cytotoxic T cell
+CD9,ENSG00000010278,5,1,Breast glandular cells,epithelial cell
+CD93,ENSG00000125810,8,1,Endothelial cells,endothelial cell
+CDC42EP1,ENSG00000128283,2,1,Breast glandular cells,epithelial cell
+CDH1,ENSG00000039068,8,1,Breast cancer,malignant cell
+CEACAM6,ENSG00000086548,8,1,Breast cancer,malignant cell
+CEACAM8,ENSG00000124469,7,1,Neutrophils,neutrophil
+CENPF,ENSG00000117724,8,1,Breast cancer,malignant cell
+CLEC14A,ENSG00000176435,8,1,Adipocytes,adipocyte
+CLEC9A,ENSG00000197992,8,1,Dendritic cells,dendritic cell
+CLECL1,ENSG00000184293,7,1,B cells,B cell
+CLIC6,ENSG00000159212,8,1,Breast glandular cells,epithelial cell
+CPA3,ENSG00000163751,8,1,Mast cells,mast cell
+CRISPLD2,ENSG00000103196,7,1,Smooth muscle cells,smooth muscle cell
+CTH,ENSG00000116761,8,1,Smooth muscle cells,smooth muscle cell
+CTLA4,ENSG00000163599,8,1,T cells,exhausted T cell
+CTSG,ENSG00000100448,5,1,Mast cells,mast cell
+CTTN,ENSG00000085733,8,1,Breast glandular cells,epithelial cell
+CX3CR1,ENSG00000168329,8,1,Macrophages,macrophage
+CXCL12,ENSG00000107562,8,1,Breast cancer,malignant cell
+CXCL16,ENSG00000161921,7,1,Macrophages,macrophage
+CXCL5,ENSG00000163735,8,1,Macrophages,macrophage
+CXCR4,ENSG00000121966,8,1,T cells,canonical T cell marker
+CYTIP,ENSG00000115165,8,1,T cells,T cell
+DAPK3,ENSG00000167657,2,1,Breast glandular cells,epithelial cell
+DMKN,ENSG00000161249,4,1,Breast glandular cells,epithelial cell
+DNAAF1,ENSG00000154099,8,1,B cells,B cell
+DNTTIP1,ENSG00000101457,7,1,Breast glandular cells,epithelial cell
+DPT,ENSG00000143196,8,1,Fibroblasts,fibroblast
+DSC2,ENSG00000134755,8,1,Breast glandular cells,epithelial cell
+DSP,ENSG00000096696,8,1,Breast myoepithelial cells,epithelial cell
+DST,ENSG00000151914,8,1,Breast myoepithelial cells,epithelial cell
+DUSP2,ENSG00000158050,6,1,T cells,T cell
+DUSP5,ENSG00000138166,7,1,B cells,B cell
+EGFL7,ENSG00000172889,3,1,Adipocytes,adipocyte
+EGFR,ENSG00000146648,8,1,Breast cancer,malignant cell
+EIF4EBP1,ENSG00000187840,4,1,Breast glandular cells,epithelial cell
+ENAH,ENSG00000154380,8,1,Breast glandular cells,epithelial cell
+EPCAM,ENSG00000119888,8,1,Epithelial cells,epithelial cell
+ERBB2,ENSG00000141736,8,1,Breast cancer,malignant cell
+ERN1,ENSG00000178607,8,1,B cells,B cell
+ESM1,ENSG00000164283,8,1,Endothelial cells,endothelial cell
+ESR1,ENSG00000091831,8,1,Breast cancer,malignant cell
+FAM107B,ENSG00000065809,8,1,B cells,B cell
+FAM49A,ENSG00000197872,7,1,Macrophages,macrophage
+FASN,ENSG00000169710,8,1,Breast glandular cells,proliferation
+FBLN1,ENSG00000077942,8,1,Fibroblasts,fibroblast
+FCER1A,ENSG00000179639,8,1,Dendritic cells,dendritic cell
+FCER1G,ENSG00000158869,7,1,NK cells,NK cell
+FCGR3A,ENSG00000203747,8,1,Monocytes,monocyte
+FGL2,ENSG00000127951,8,1,Macrophages,macrophage
+FLNB,ENSG00000136068,8,1,Breast glandular cells,epithelial cell
+FOXA1,ENSG00000129514,8,1,Breast cancer,malignant cell
+FOXC2,ENSG00000176692,6,1,Smooth muscle cells,smooth muscle cell
+FOXP3,ENSG00000049768,7,1,T cells,regulatory T cell
+FSTL3,ENSG00000070404,8,1,Smooth muscle cells,smooth muscle cell
+GATA3,ENSG00000107485,8,1,Breast cancer,malignant cell
+GJB2,ENSG00000165474,8,1,Macrophages,macrophage
+GLIPR1,ENSG00000139278,8,1,Breast myoepithelial cells,epithelial cell
+GNLY,ENSG00000115523,5,1,NK cells,NK cell
+GPR183,ENSG00000169508,7,1,T cells,T cell
+GZMA,ENSG00000145649,8,1,T cells,cytotoxic T cell
+GZMK,ENSG00000113088,8,1,T cells,cytotoxic T cell
+HAVCR2,ENSG00000135077,8,1,T cells,exhausted T cell
+HMGA1,ENSG00000137309,7,1,Breast glandular cells,epithelial cell
+HOOK2,ENSG00000095066,7,1,Breast glandular cells,epithelial cell
+HOXD8,ENSG00000175879,8,1,Adipocytes,adipocyte
+HOXD9,ENSG00000128709,7,1,Adipocytes,adipocyte
+HPX,ENSG00000110169,8,1,Breast glandular cells,epithelial cell
+IGF1,ENSG00000017427,8,1,Fibroblasts,fibroblast
+IGSF6,ENSG00000140749,8,1,Macrophages,macrophage
+IL2RA,ENSG00000134460,8,1,T cells,regulatory T cell
+IL2RG,ENSG00000147168,8,1,Dendritic cells,dendritic cell
+IL3RA,ENSG00000185291,8,1,Dendritic cells,dendritic cell
+IL7R,ENSG00000168685,8,1,T cells,canonical T cell marker
+ITGAM,ENSG00000169896,7,1,Myeloid cells,myeloid cell
+ITGAX,ENSG00000140678,8,1,Dendritic cells,dendritic cell
+ITM2C,ENSG00000135916,6,1,B cells,B cell
+JUP,ENSG00000173801,8,1,Breast glandular cells,epithelial cell
+KARS,ENSG00000065427,8,1,Breast myoepithelial cells,epithelial cell
+KDR,ENSG00000128052,8,1,Adipocytes,adipocyte
+KIT,ENSG00000157404,8,1,Breast cancer,malignant cell
+KLF5,ENSG00000102554,8,1,Breast myoepithelial cells,proliferation
+KLRB1,ENSG00000111796,8,1,T cells,T cell
+KLRC1,ENSG00000134545,7,1,T cells,immune response
+KLRD1,ENSG00000134539,8,1,NK cells,NK cell
+KLRF1,ENSG00000150045,8,1,NK cells,NK cell
+KRT14,ENSG00000186847,6,1,Epithelial cells,epithelial cell
+KRT23,ENSG00000108244,8,1,Breast glandular cells,epithelial cell
+KRT5,ENSG00000186081,8,1,Breast myoepithelial cells,epithelial cell
+KRT6B,ENSG00000185479,8,1,Breast myoepithelial cells,epithelial cell
+KRT7,ENSG00000135480,5,1,Breast cancer,malignant cell
+KRT8,ENSG00000170421,8,1,Epithelial cells,epithelial cell
+LAG3,ENSG00000089692,5,1,T cells,exhausted T cell
+LARS,ENSG00000133706,8,1,Smooth muscle cells,smooth muscle cell
+LDHB,ENSG00000111716,8,1,Breast cancer,malignant cell
+LGALSL,ENSG00000119862,8,1,B cells,B cell
+LILRA4,ENSG00000239961,7,1,Dendritic cells,dendritic cell
+LPL,ENSG00000175445,8,1,Adipocytes,adipocyte
+LPXN,ENSG00000110031,8,1,Macrophages,macrophage
+LRRC15,ENSG00000172061,8,1,Breast cancer,malignant cell
+LTB,ENSG00000227507,2,1,T cells,T cell
+LUM,ENSG00000139329,4,1,Fibroblasts,fibroblast
+LY86,ENSG00000112799,8,1,Macrophages,macrophage
+LYPD3,ENSG00000124466,5,1,Breast glandular cells,epithelial cell
+LYZ,ENSG00000090382,8,1,Macrophages,macrophage
+MAP3K8,ENSG00000107968,8,1,Macrophages,macrophage
+MDM2,ENSG00000135679,8,1,Breast cancer,malignant cell
+MKI67,ENSG00000148773,7,1,Breast cancer,proliferation
+MLPH,ENSG00000115648,8,1,Breast glandular cells,epithelial cell
+MMP1,ENSG00000196611,8,1,Fibroblasts,fibroblast
+MMP12,ENSG00000262406,8,1,Fibroblasts,fibroblast
+MMP2,ENSG00000087245,8,1,Fibroblasts,fibroblast
+MMRN2,ENSG00000173269,8,1,Adipocytes,adipocyte
+MNDA,ENSG00000163563,8,1,Macrophages,macrophage
+MRC1,ENSG00000260314,8,1,Macrophages,macrophage
+MS4A1,ENSG00000156738,8,1,B cells,B cell
+MUC6,ENSG00000184956,8,1,Epithelial cells,epithelial cell
+MYBPC1,ENSG00000196091,8,1,Epithelial cells,epithelial cell
+MYH11,ENSG00000133392,8,1,Smooth muscle cells,smooth muscle cell
+MYLK,ENSG00000065534,8,1,Breast myoepithelial cells,epithelial cell
+MYO5B,ENSG00000167306,8,1,Breast glandular cells,epithelial cell
+MZB1,ENSG00000170476,6,1,B cells,B cell
+NARS,ENSG00000134440,8,1,Breast myoepithelial cells,epithelial cell
+NCAM1,ENSG00000149294,8,1,NK cells,NK cell
+NDUFA4L2,ENSG00000185633,3,1,Adipocytes,adipocyte
+NKG7,ENSG00000105374,2,1,NK cells,NK cell
+NOSTRIN,ENSG00000163072,8,1,Adipocytes,adipocyte
+OCIAD2,ENSG00000145247,8,1,Breast glandular cells,epithelial cell
+OPRPN,ENSG00000171199,8,1,Breast glandular cells,epithelial cell
+OXTR,ENSG00000180914,8,1,Breast myoepithelial cells,epithelial cell
+PCLAF,ENSG00000166803,8,1,Breast cancer,malignant cell
+PDCD1,ENSG00000188389,2,1,T cells,exhausted T cell
+PDCD1LG2,ENSG00000197646,8,1,Adipocytes,adipocyte
+PDE4A,ENSG00000065989,7,1,Adipocytes,adipocyte
+PDGFRA,ENSG00000134853,8,1,Fibroblasts,fibroblast
+PDGFRB,ENSG00000113721,8,1,Smooth muscle cells,smooth muscle cell
+PDK4,ENSG00000004799,8,1,Smooth muscle cells,smooth muscle cell
+PECAM1,ENSG00000261371,8,1,Endothelial cells,endothelial cell
+PELI1,ENSG00000197329,8,1,B cells,B cell
+PGR,ENSG00000082175,8,1,Breast cancer,malignant cell
+PIGR,ENSG00000162896,8,1,Breast glandular cells,epithelial cell
+PIM1,ENSG00000137193,8,1,Fibroblasts,fibroblast
+PLD4,ENSG00000166428,8,1,Macrophages,macrophage
+POSTN,ENSG00000133110,4,1,Fibroblasts,fibroblast
+PPARG,ENSG00000132170,8,1,Macrophages,macrophage
+PRDM1,ENSG00000057657,8,1,T cells,T cell
+PRF1,ENSG00000180644,7,1,NK cells,NK cell
+PTGDS,ENSG00000107317,5,1,Breast cancer,malignant cell
+PTN,ENSG00000105894,8,1,Breast myoepithelial cells,epithelial cell
+PTPRC,ENSG00000081237,8,1,Immune cells,immune cell
+PTRHD1,ENSG00000184924,8,1,Breast glandular cells,epithelial cell
+QARS,ENSG00000172053,8,1,Breast glandular cells,epithelial cell
+RAB30,ENSG00000137502,8,1,B cells,B cell
+RAMP2,ENSG00000131477,4,1,Adipocytes,adipocyte
+RAPGEF3,ENSG00000079337,8,1,Adipocytes,adipocyte
+RHOH,ENSG00000168421,8,1,T cells,T cell
+RORC,ENSG00000143365,8,1,T cells,T cell
+RTKN2,ENSG00000182010,8,1,T cells,T cell
+RUNX1,ENSG00000159216,8,1,Breast cancer,malignant cell
+S100A14,ENSG00000189334,8,1,Breast glandular cells,epithelial cell
+S100A4,ENSG00000196154,4,1,Breast cancer,malignant cell
+S100A8,ENSG00000143546,4,1,Monocytes,monocyte
+SCD,ENSG00000099194,8,1,Breast cancer,malignant cell
+SCGB2A1,ENSG00000124939,6,1,Breast glandular cells,epithelial cell
+SDC4,ENSG00000124145,8,1,Breast glandular cells,epithelial cell
+SEC11C,ENSG00000166562,8,1,B cells,B cell
+SEC24A,ENSG00000113615,8,1,Macrophages,macrophage
+SELL,ENSG00000188404,8,1,T cells,canonical T cell marker
+SERHL2,ENSG00000183569,7,1,Breast glandular cells,epithelial cell
+SERPINA3,ENSG00000196136,7,1,Breast glandular cells,epithelial cell
+SERPINB9,ENSG00000170542,8,1,Macrophages,macrophage
+SFRP1,ENSG00000104332,8,1,Breast cancer,malignant cell
+SFRP4,ENSG00000106483,8,1,Fibroblasts,fibroblast
+SH3YL1,ENSG00000035115,8,1,Breast glandular cells,epithelial cell
+SLAMF1,ENSG00000117090,8,1,B cells,B cell
+SLAMF7,ENSG00000026751,8,1,B cells,B cell
+SLC25A37,ENSG00000147454,8,1,Breast glandular cells,epithelial cell
+SLC5A6,ENSG00000138074,8,1,Breast glandular cells,epithelial cell
+SMAP2,ENSG00000084070,8,1,T cells,T cell
+SMS,ENSG00000102172,8,1,Breast glandular cells,epithelial cell
+SNAI1,ENSG00000124216,6,1,Breast cancer,malignant cell
+SOX17,ENSG00000164736,8,1,Endothelial cells,endothelial cell
+SOX18,ENSG00000203883,3,1,Adipocytes,adipocyte
+SPIB,ENSG00000269404,8,1,Dendritic cells,dendritic cell
+SQLE,ENSG00000104549,8,1,Breast glandular cells,epithelial cell
+SRPK1,ENSG00000096063,8,1,Breast glandular cells,epithelial cell
+SSTR2,ENSG00000180616,7,1,Smooth muscle cells,smooth muscle cell
+STC1,ENSG00000159167,8,1,Endothelial cells,endothelial cell
+SVIL,ENSG00000197321,8,1,Breast glandular cells,epithelial cell
+TAC1,ENSG00000006128,8,1,Fibroblasts,fibroblast
+TACSTD2,ENSG00000184292,8,1,Breast cancer,malignant cell
+TCEAL7,ENSG00000182916,6,1,Fibroblasts,fibroblast
+TCF4,ENSG00000196628,8,1,Breast cancer,malignant cell
+TCF7,ENSG00000081059,8,1,T cells,canonical T cell marker
+TCIM,ENSG00000176907,8,1,Breast glandular cells,epithelial cell
+TCL1A,ENSG00000100721,7,1,B cells,B cell
+TENT5C,ENSG00000183508,8,1,T cells,T cell
+TFAP2A,ENSG00000137203,8,1,Adipocytes,adipocyte
+THAP2,ENSG00000173451,8,1,Smooth muscle cells,smooth muscle cell
+TIFA,ENSG00000145365,8,1,Endothelial cells,endothelial cell
+TIGIT,ENSG00000181847,8,1,T cells,regulatory T cell
+TIMP4,ENSG00000157150,8,1,Adipocytes,adipocyte
+TMEM147,ENSG00000105677,7,1,Breast glandular cells,epithelial cell
+TNFRSF17,ENSG00000048462,8,1,Plasma cells,plasma cell
+TOMM7,ENSG00000196683,7,1,Breast glandular cells,epithelial cell
+TOP2A,ENSG00000131747,8,1,Breast cancer,malignant cell
+TPD52,ENSG00000076554,8,1,Breast glandular cells,epithelial cell
+TPSAB1,ENSG00000172236,2,1,Mast cells,mast cell
+TRAC,ENSG00000277734,8,1,T cells,canonical T cell marker
+TRAF4,ENSG00000076604,8,1,Breast myoepithelial cells,epithelial cell
+TRAPPC3,ENSG00000054116,8,1,Breast glandular cells,epithelial cell
+TRIB1,ENSG00000173334,8,1,B cells,B cell
+TUBA4A,ENSG00000127824,8,1,T cells,T cell
+TUBB2B,ENSG00000137285,8,1,Breast myoepithelial cells,epithelial cell
+UCP1,ENSG00000109424,8,1,Adipocytes,adipocyte
+USP53,ENSG00000145390,8,1,Breast glandular cells,epithelial cell
+VOPP1,ENSG00000154978,7,1,B cells,B cell
+VWF,ENSG00000110799,8,1,Endothelial cells,endothelial cell
+WARS,ENSG00000140105,8,1,Endothelial cells,endothelial cell
+ZEB1,ENSG00000148516,8,1,Breast cancer,malignant cell
+ZEB2,ENSG00000169554,8,1,Breast cancer,malignant cell
+ZNF562,ENSG00000171466,8,1,Breast glandular cells,epithelial cell

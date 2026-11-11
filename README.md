@@ -1,5 +1,7 @@
 # Syndri
 
+### *For RECOMB Submission see [recomb branch](https://github.com/gkrieg/Syndri/tree/recomb)*
+
 New structure for data on cluster:
 ```
 /work/magroup/skrieger/Syndri/

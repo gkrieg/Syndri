@@ -1,0 +1,172 @@
+project_name: admixture_prediction
+run_name: syndri_recomb_SIM
+work_dir: outputs/models/SIM
+float_dtype: float32
+seed: 54
+data_path: assets/metadata
+ensembl_dir: ${data_path}
+cache_preprocessed_dataset_dir: null
+entity: Heimdall
+model:
+  type: Heimdall.models.Transformer
+  name: transformer_syndri_medium
+  args:
+    d_model: 128
+    pos_enc: BERT
+    num_encoder_layers: 4
+    nhead: 8
+    hidden_act: gelu
+    hidden_dropout_prob: 0.1
+    attention_probs_dropout_prob: 0.1
+    use_flash_attn: false
+    pooling: cls_pooling
+dataset:
+  dataset_name: nsclc_cosmx_spillover_train_val
+  preprocess_args:
+    data_path: assets/data/SIM/training.h5ad
+    top_n_genes: false
+    normalize: false
+    log_1p: false
+    scale_data: false
+    truncate_counts_max_value: null
+    admixture: true
+    admix_layer: admixed
+    binary_layer: is_transcript_added
+    species: human
+    admixture_args:
+      k_neighbors: 9
+      frac: 0.05
+      n_repeats: 1
+      min_sampled_transcript_threshold: 10
+      min_source_transcript_count: 400
+      use_same_cell_type_neighbors: false
+      only_sample_unexpressed_genes: true
+      mask_out_random_genes: false
+      mask_out_frac: 0.0
+      tau_range:
+      - 0.0
+      - 0.95
+      coord_cols:
+      - CenterX_global_px
+      - CenterY_global_px
+      tissue_col: spatial_slice
+      cell_type_col: cell_type
+    apply_admixture: true
+    fix_admixture: false
+    use_precomputed_neighbor: false
+tasks:
+  args:
+    task_type: admixture_binary
+    context_length: 1526
+    label_obsm_name: is_transcript_added_0
+    splits:
+      type: predefined
+      keys_:
+        train: train
+        val: val
+        test: val
+      col: split
+    metrics:
+    - F1Score
+    - Precision
+    - Recall
+    - Accuracy
+    - ConfusionMatrix
+    silhouette_delta:
+      enabled: false
+      split: train
+      label_col_name: cell_type
+      prediction_threshold: 0.5
+      n_pcs: 50
+      normalize_total: 10000
+      log1p: true
+      metric: cosine
+      max_cells: 5000
+      random_state: 0
+    external_eval:
+      enabled: false
+    track_metric: F1Score
+    admixture_pred_head_type: Heimdall.models.AdmixtureGeneTokenPredHead
+    shuffle: true
+    batchsize: 32
+    epochs: 1000
+    dataset_config:
+      type: Heimdall.datasets.AdmixtureInstanceDataset
+    head_config:
+      type: ${tasks.args.admixture_pred_head_type}
+      args:
+        num_prefix_tokens: null
+scheduler:
+  name: cosine
+  lr_schedule_type: cosine
+  warmup_ratio: 0.1
+  num_epochs: 20
+trainer:
+  accelerator: cuda
+  precision: 32-true
+  random_seed: ${seed}
+  per_device_batch_size: 64
+  accumulate_grad_batches: 5
+  grad_norm_clip: 1.0
+  log_every: 1
+  fastdev: false
+optimizer:
+  name: AdamW
+  args:
+    lr: 0.002
+    weight_decay: 0.1
+    betas:
+    - 0.9
+    - 0.95
+    foreach: false
+fc:
+  type: Heimdall.fc.AdmixtureFc
+  args:
+    max_input_length: 1536
+    species: ${dataset.preprocess_args.species}
+    ensembl_dir: ${data_path}
+    gene_metadata_filepath: ${data_path}/gene_metadata/species_chrom.csv
+    query_cell_type_token_mode: metadata
+    query_cell_type_col: cell_type
+    include_query_cell_type_token: true
+    include_neighbor_cell_type_tokens: true
+    num_neighbor_cell_type_tokens: null
+    include_separator_tokens: false
+    embedding_parameters:
+      type: Heimdall.embedding.GaussianInitEmbedding
+      args:
+        num_embeddings: 100
+        embedding_dim: ${fg.args.d_embedding}
+    tailor_config:
+      type: Heimdall.tailor.AdmixtureTailor
+      args:
+        sample_size: null
+    order_config:
+      type: Heimdall.order.ExpressionOrder
+    reduce_config:
+      type: Heimdall.reduce.AdmixtureSumReduce
+fe:
+  type: Heimdall.fe.IdentityFe
+  name: Heimdall.fe.IdentityFe
+  args:
+    embedding_parameters:
+      type: Heimdall.embedding.FlexibleTypeLinear
+      args:
+        in_features: 1
+        out_features: ${fe.args.d_embedding}
+    d_embedding: ${model.args.d_model}
+    drop_zeros: true
+fg:
+  type: Heimdall.fg.IdentityFg
+  args:
+    embedding_parameters:
+      type: Heimdall.embedding.FlexibleTypeEmbedding
+      args:
+        num_embeddings: vocab_size
+        embedding_dim: ${fg.args.d_embedding}
+    d_embedding: ${model.args.d_model}
+    frozen: false
+loss:
+  name: MaskedBCEWithLogitsLoss
+  args:
+    pos_weight: 4.0

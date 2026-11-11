@@ -336,8 +336,14 @@ def build_fast_inference_loader(cr: CellRepresentation, batch_size: int, split: 
     seq_len = int(cr.fc.max_input_length)
     gene_len = int(cr.dataset_task_cfg.context_length)
     prefix_len = seq_len - gene_len
-    if prefix_len <= 0:
-        raise ValueError(f"Expected max_input_length > context_length, got seq_len={seq_len} and gene_len={gene_len}.")
+    if prefix_len < 0:
+        raise ValueError(f"Expected max_input_length >= context_length, got seq_len={seq_len} and gene_len={gene_len}.")
+    expected_prefix_len = getattr(cr.fc, "num_prefix_tokens", prefix_len)
+    if prefix_len != expected_prefix_len:
+        raise ValueError(
+            f"Configured prefix length {prefix_len} differs from tokenizer prefix length "
+            f"{expected_prefix_len}; check context_length, max_input_length, and separator/token flags."
+        )
 
     n = len(indices)
     identity_inputs = np.full((n, seq_len), cr.fg.pad_value, dtype=np.int64)

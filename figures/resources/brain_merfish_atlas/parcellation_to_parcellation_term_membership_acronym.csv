@@ -1,0 +1,689 @@
+parcellation_index,organ,category,division,structure,substructure
+0,unassigned,unassigned,unassigned,unassigned,unassigned
+1,brain,grey,HY,TMv,TMv
+2,brain,grey,Isocortex,SSp-m,SSp-m6b
+5,brain,fiber tracts,lfbs,cst,int
+6,brain,grey,P,PSV,PSV
+8,brain,grey,Isocortex,SSp-tr,SSp-tr6a
+9,brain,grey,MB,SCm,SCig
+11,brain,grey,MB,IF,IF
+13,brain,grey,TH,PT,PT
+15,brain,grey,MB,SCm,SCiw
+17,brain,grey,HPF,IG,IG
+18,brain,grey,HPF,ENTl,ENTl2
+21,brain,grey,STR,AAA,AAA
+23,brain,grey,MB,SCm,SCdg
+24,brain,grey,TH,IGL,IGL
+25,brain,grey,HPF,ENTl,ENTl6a
+27,brain,grey,HY,PVa,PVa
+29,brain,grey,Isocortex,VISp,VISp6a
+31,brain,grey,MB,III,III
+32,brain,grey,Isocortex,GU,GU1
+34,brain,grey,HY,PVH,PVH
+36,brain,grey,Isocortex,VISpm,VISpm2/3
+37,brain,grey,MB,SCm,SCdw
+45,brain,grey,MB,PAG,PRC
+47,brain,grey,HPF,ENTl,ENTl3
+49,brain,fiber tracts,mfbs,mfsbshy,mfb
+51,brain,grey,STR,ACB,ACB
+53,brain,grey,MB,MT,MT
+54,brain,grey,TH,IMD,IMD
+57,brain,fiber tracts,cm,IIIn,mlf
+58,brain,grey,HY,PVHd,PVHd
+59,brain,grey,TH,AD,AD
+61,brain,grey,MB,LT,LT
+62,brain,grey,MB,PAG,INC
+63,brain,grey,Isocortex,FRP,FRP1
+67,brain,grey,HY,ADP,ADP
+69,brain,grey,Isocortex,VISl,VISl6a
+70,brain,grey,MB,DT,DT
+73,brain,fiber tracts,cbf,cbp,mcp
+76,brain,VS,VL,VL-unassigned,VL-unassigned
+78,brain,grey,MY,IO,IO
+79,brain,grey,Isocortex,PL,PL6a
+83,brain,grey,HY,AHN,AHN
+86,brain,grey,CB,IP,IP
+88,brain,fiber tracts,cm,Vn,moV
+91,brain,grey,MY,DCO,DCO
+92,brain,grey,Isocortex,TEa,TEa1
+93,brain,VS,VL,SEZ,SEZ
+95,brain,grey,MB,IPN,IPN-unassigned
+96,brain,grey,MY,VCO,VCO
+97,brain,fiber tracts,eps,epsc,nst
+100,brain,grey,P,SOC,SOCm
+101,brain,grey,MY,ISN,ISN
+103,brain,VS,VL,chpl,chpl
+108,brain,grey,Isocortex,SSp-ll,SSp-ll2/3
+109,brain,grey,P,SOC,SOCl
+110,brain,grey,MB,IV,IV
+112,brain,fiber tracts,cm,IIn,och
+113,brain,grey,HY,PVi,PVi
+115,brain,grey,Isocortex,AIp,AIp1
+116,brain,grey,Isocortex,VISl,VISl6b
+117,brain,grey,P,SOC,POR
+118,brain,grey,P,PB,KF
+120,brain,fiber tracts,cm,IIn,opt
+121,brain,grey,HY,PVp,PVp
+123,brain,grey,MB,MRN,MRN
+124,brain,VS,V3,V3-unassigned,V3-unassigned
+126,brain,grey,CTXsp,LA,LA
+127,brain,grey,Isocortex,PL,PL6b
+128,brain,grey,HY,PVpo,PVpo
+131,brain,grey,MY,IRN,IRN
+134,brain,grey,HPF,ENTl,ENTl5
+135,brain,VS,AQ,AQ,AQ
+138,brain,grey,MY,AMB,AMBv
+140,brain,VS,V4,V4-unassigned,V4-unassigned
+141,brain,grey,P,PRNr,PRNr
+142,brain,grey,P,LC,LC
+143,brain,grey,Isocortex,GU,GU4
+144,brain,grey,TH,PVT,PVT
+148,brain,VS,V4,V4r,V4r
+150,brain,grey,TH,LD,LD
+151,brain,grey,Isocortex,AUDd,AUDd6a
+153,brain,fiber tracts,cm,IIIn,pc
+154,brain,grey,OLF,AON,AON
+157,brain,grey,P,LDT,LDT
+158,brain,grey,Isocortex,AIp,AIp2/3
+159,brain,VS,c,c,c
+164,brain,grey,MY,PRP,PRP
+166,brain,grey,Isocortex,PL,PL1
+167,brain,grey,HY,RCH,RCH
+170,brain,grey,MY,NR,NR
+171,brain,grey,TH,LGv,LGv
+173,brain,grey,Isocortex,GU,GU2/3
+174,brain,grey,TH,RE,RE
+179,brain,grey,TH,LH,LH
+180,brain,grey,Isocortex,GU,GU5
+181,brain,grey,OLF,AOB,AOBgl
+182,brain,grey,TH,RH,RH
+183,brain,fiber tracts,lfbs,cst,py
+187,brain,grey,HY,LHA,LHA
+189,brain,grey,OLF,AOB,AOBgr
+190,brain,grey,MB,RL,RL
+191,brain,fiber tracts,lfbs,cst,pyd
+194,brain,grey,Isocortex,SSp-bfd,SSp-bfd2/3
+195,brain,grey,MY,MV,MV
+196,brain,grey,MY,LIN,LIN
+197,brain,grey,OLF,AOB,AOBmi
+199,brain,grey,MY,RM,RM
+200,brain,grey,MY,AP,AP
+202,brain,grey,MY,LAV,LAV
+203,brain,grey,HY,LM,LM
+204,brain,grey,Isocortex,ACAd,ACAd2/3
+207,brain,grey,MB,RN,RN
+208,brain,grey,MB,APN,APN
+210,brain,grey,MY,SUV,SUV
+211,brain,grey,TH,LP,LP
+213,brain,grey,OLF,MOB,MOBgr
+215,brain,grey,MY,RO,RO
+216,brain,grey,HY,ARH,ARH
+218,brain,grey,MY,SPIV,SPIV
+219,brain,grey,HY,LPO,LPO
+221,brain,grey,OLF,MOB,MOBipl
+222,brain,fiber tracts,cm,Vn,sV
+223,brain,grey,MY,RPA,RPA
+224,brain,grey,MB,AT,AT
+226,brain,grey,Isocortex,VISal,VISal5
+227,brain,grey,Isocortex,TEa,TEa4
+229,brain,grey,OLF,MOB,MOBmi
+230,brain,fiber tracts,cm,Xn,ts
+231,brain,grey,P,RPO,RPO
+236,brain,grey,Isocortex,AUDd,AUDd6b
+237,brain,grey,OLF,MOB,MOBopl
+239,brain,grey,MB,RR,RR
+242,brain,grey,Isocortex,AUDpo,AUDpo6a
+243,brain,grey,STR,LSc,LSc
+244,brain,grey,Isocortex,AUDp,AUDp2/3
+245,brain,grey,Isocortex,AUDd,AUDd5
+248,brain,grey,TH,AV,AV
+250,brain,grey,Isocortex,VISpm,VISpm6a
+251,brain,grey,STR,LSr,LSr
+253,brain,grey,OLF,NLOT,NLOT1
+255,brain,grey,TH,RT,RT
+256,brain,grey,HY,AVP,AVP
+258,brain,grey,STR,LSv,LSv
+260,brain,grey,OLF,NLOT,NLOT2
+261,brain,grey,Isocortex,VISpl,VISpl2/3
+263,brain,grey,MB,SAG,SAG
+264,brain,grey,HY,AVPV,AVPV
+265,brain,grey,Isocortex,RSPd,RSPd6a
+270,brain,grey,Isocortex,RSPagl,RSPagl6b
+271,brain,grey,P,B,B
+272,brain,grey,Isocortex,VISam,VISam1
+276,brain,grey,HY,SCH,SCH
+277,brain,grey,PAL,BAC,BAC
+278,brain,grey,Isocortex,ORBvl,ORBvl2/3
+279,brain,grey,Isocortex,TEa,TEa5
+282,brain,grey,STR,BA,BA
+286,brain,grey,Isocortex,ACAv,ACAv2/3
+288,brain,grey,PAL,MA,MA
+291,brain,fiber tracts,mfbs,mfbc,st
+293,brain,grey,CTXsp,BLA,BLAa
+294,brain,grey,Isocortex,PL,PL2/3
+295,brain,grey,Isocortex,VISp,VISp6b
+297,brain,grey,MY,MARN,MARN
+300,brain,grey,STR,SF,SF
+301,brain,grey,CTXsp,BLA,BLAp
+303,brain,grey,MB,MB-unassigned,MB-unassigned
+304,brain,grey,Isocortex,AIp,AIp6a
+308,brain,grey,P,SG,SG
+310,brain,grey,Isocortex,MOp,MOp1
+311,brain,grey,TH,SubG,SubG
+315,brain,grey,TH,SGN,SGN
+316,brain,fiber tracts,cbf,cbp,scp
+317,brain,grey,CTXsp,BMA,BMAa
+318,brain,grey,Isocortex,AId,AId2/3
+320,brain,grey,Isocortex,RSPd,RSPd6b
+322,brain,grey,HY,ASO,ASO
+323,brain,grey,STR,SH,SH
+324,brain,grey,CTXsp,BMA,BMAp
+325,brain,grey,Isocortex,PERI,PERI6a
+326,brain,fiber tracts,cm,IIn,csc
+328,brain,grey,HY,SFO,SFO
+332,brain,grey,PAL,SI,SI
+334,brain,grey,Isocortex,AIp,AIp5
+337,brain,grey,HY,SBPV,SBPV
+339,brain,fiber tracts,mfbs,mfsbshy,sup
+340,brain,grey,P,SLC,SLC
+341,brain,grey,PAL,BST,BST
+344,brain,grey,MY,MY-unassigned,MY-unassigned
+345,brain,grey,Isocortex,AIp,AIp6b
+346,brain,grey,HY,PST,PST
+348,brain,grey,P,SLD,SLD
+352,brain,grey,TH,MD,MD
+353,brain,grey,Isocortex,PL,PL5
+354,brain,grey,HY,PSTN,PSTN
+356,brain,grey,TH,SMT,SMT
+358,brain,grey,Isocortex,PERI,PERI6b
+362,brain,grey,MY,ICB,ICB
+364,brain,grey,MB,SNc,SNc
+367,brain,grey,Isocortex,VISpl,VISpl6a
+370,brain,fiber tracts,cm,drt,cuf
+371,brain,grey,MB,SNr,SNr
+372,brain,grey,HPF,CA1,CA1-unassigned
+380,brain,grey,HY,SO,SO
+381,brain,grey,HPF,CA1,CA1slm
+383,brain,grey,Isocortex,VISpl,VISpl6b
+387,brain,fiber tracts,eps,rust,vtd
+389,brain,grey,HPF,CA1,CA1so
+391,brain,grey,Isocortex,VISam,VISam4
+393,brain,grey,STR,MEA,MEA
+397,brain,grey,HPF,CA1,CA1sp
+402,brain,grey,Isocortex,ORBl,ORBl2/3
+403,brain,fiber tracts,cm,VIIIn,vVIIIn
+404,brain,grey,TH,SPFm,SPFm
+405,brain,grey,HPF,CA1,CA1sr
+411,brain,grey,Isocortex,VISl,VISl1
+412,brain,grey,TH,SPFp,SPFp
+417,brain,grey,Isocortex,ECT,ECT2/3
+418,brain,fiber tracts,mfbs,mfbc,mct
+419,brain,grey,MY,SPVC,SPVC
+420,brain,grey,Isocortex,RSPv,RSPv2/3
+421,brain,grey,HPF,CA2,CA2slm
+423,brain,grey,Isocortex,VISam,VISam5
+424,brain,grey,Isocortex,RSPd,RSPd2/3
+426,brain,fiber tracts,mfbs,mfbc,fx
+427,brain,grey,MY,SPVI,SPVI
+428,brain,grey,HPF,CA2,CA2so
+430,brain,grey,Isocortex,ORBl,ORBl6a
+431,brain,grey,Isocortex,VISam,VISam6b
+432,brain,grey,Isocortex,RSPd,RSPd1
+433,brain,fiber tracts,mfbs,mfbc,dhc
+435,brain,grey,MY,SPVO,SPVO
+436,brain,grey,HPF,CA2,CA2sp
+438,brain,grey,Isocortex,ORBl,ORBl1
+439,brain,fiber tracts,mfbs,mfbc,vhc
+440,brain,grey,Isocortex,SSp-ul,SSp-ul1
+441,brain,grey,CTXsp,BLA,BLAv
+442,brain,grey,HY,MEPO,MEPO
+444,brain,grey,HPF,CA2,CA2sr
+446,brain,grey,Isocortex,AUDpo,AUDpo6b
+451,brain,grey,Isocortex,SSp-tr,SSp-tr6b
+453,brain,grey,HPF,CA3,CA3-unassigned
+456,brain,fiber tracts,mfbs,mfbc,alv
+459,brain,grey,Isocortex,VISpm,VISpm6b
+460,brain,grey,HY,STN,STN
+461,brain,grey,HPF,CA3,CA3slm
+467,brain,grey,STR,STR-unassigned,STR-unassigned
+468,brain,grey,Isocortex,SSp-ll,SSp-ll6a
+469,brain,grey,HPF,CA3,CA3slu
+472,brain,fiber tracts,cm,VIIIn,bic
+473,brain,grey,TH,MH,MH
+474,brain,grey,Isocortex,ORBm,ORBm1
+476,brain,grey,HPF,CA3,CA3so
+478,brain,grey,Isocortex,ORBl,ORBl6b
+485,brain,grey,HPF,CA3,CA3sp
+491,brain,grey,Isocortex,VISpm,VISpm4
+492,brain,grey,HPF,SUB,SUB
+494,brain,grey,HPF,CA3,CA3sr
+496,brain,fiber tracts,cm,VIIIn,das
+497,brain,grey,OLF,MOB,MOB-unassigned
+500,brain,grey,Isocortex,SSp-ll,SSp-ll6b
+502,brain,grey,CB,CB-unassigned,CB-unassigned
+505,brain,grey,HY,MPN,MPN
+510,brain,grey,Isocortex,AUDv,AUDv6a
+513,brain,grey,HY,MPO,MPO
+515,brain,grey,HY,SUM,SUM
+516,brain,grey,HPF,ENTm,ENTm1
+517,brain,grey,Isocortex,AUDd,AUDd1
+520,brain,fiber tracts,mfbs,mfbc,df
+521,brain,grey,MB,MPT,MPT
+524,brain,grey,P,SUT,SUT
+528,brain,fiber tracts,cm,In,lotd
+530,brain,grey,Isocortex,PERI,PERI1
+532,brain,grey,Isocortex,RSPv,RSPv1
+533,brain,grey,HPF,ENTm,ENTm2
+534,brain,grey,STR,CEA,CEAc
+535,brain,grey,Isocortex,RSPd,RSPd4
+539,brain,grey,TH,TH-unassigned,TH-unassigned
+541,brain,grey,STR,CEA,CEAl
+543,brain,fiber tracts,cbf,cbp,icp
+546,brain,grey,Isocortex,ILA,ILA2/3
+548,brain,grey,Isocortex,SSp-n,SSp-n1
+549,brain,grey,STR,CEA,CEAm
+554,brain,grey,PAL,MS,MS
+555,brain,grey,Isocortex,VISpm,VISpm5
+556,brain,grey,OLF,TR,TR
+563,brain,grey,Isocortex,VISl,VISl4
+564,brain,grey,P,TRN,TRN
+565,brain,grey,TH,CL,CL
+566,brain,grey,MY,ACVII,ACVII
+567,brain,grey,Isocortex,SSp-ul,SSp-ul4
+569,brain,fiber tracts,lfbs,cc,fa
+570,brain,grey,MB,NB,NB
+571,brain,grey,PAL,TRS,TRS
+572,brain,grey,Isocortex,ORBm,ORBm2/3
+573,brain,grey,CTXsp,CLA,CLA
+577,brain,grey,MB,PAG,ND
+578,brain,grey,Isocortex,ACAv,ACAv1
+580,brain,grey,Isocortex,RSPv,RSPv6a
+581,brain,grey,MB,CLI,CLI
+583,brain,grey,Isocortex,VISp,VISp1
+585,brain,fiber tracts,mfbs,mfsbshy,fr
+586,brain,grey,PAL,NDB,NDB
+587,brain,grey,OLF,TT,TTd
+588,brain,grey,Isocortex,AUDv,AUDv6b
+589,brain,grey,TH,CM,CM
+590,brain,grey,Isocortex,AUDd,AUDd2/3
+591,brain,grey,Isocortex,VISal,VISal6a
+593,brain,fiber tracts,mfbs,mfbc,fi
+594,brain,grey,P,NI,NI
+595,brain,grey,OLF,TT,TTv
+598,brain,grey,Isocortex,ORBvl,ORBvl6a
+599,brain,grey,TH,SPA,SPA
+600,brain,grey,Isocortex,RSPd,RSPd5
+601,brain,fiber tracts,mfbs,mfsbshy,hbc
+602,brain,grey,P,NLL,NLL
+603,brain,grey,Isocortex,VISl,VISl5
+604,brain,grey,HY,TU,TU
+606,brain,grey,MB,CUN,CUN
+610,brain,grey,Isocortex,ORBm,ORBm5
+611,brain,grey,P,V,V
+612,brain,grey,Isocortex,RSPv,RSPv6b
+615,brain,grey,Isocortex,SSp-ul,SSp-ul5
+618,brain,grey,MB,NOT,NOT
+619,brain,grey,TH,VAL,VAL
+620,brain,grey,Isocortex,ORBl,ORBl5
+622,brain,grey,HPF,DG,DG-sg
+623,brain,fiber tracts,cm,VIIIn,cic
+624,brain,grey,MB,NPC,NPC
+628,brain,grey,Isocortex,GU,GU6a
+629,brain,grey,OLF,COAa,COAa
+632,brain,grey,MY,NTB,NTB
+633,brain,grey,Isocortex,AUDpo,AUDpo2/3
+638,brain,grey,Isocortex,MOp,MOp5
+639,brain,grey,Isocortex,VISal,VISal6b
+641,brain,grey,MY,NTS,NTS
+643,brain,grey,MY,VI,VI
+644,brain,grey,Isocortex,SSp-n,SSp-n4
+645,brain,grey,OLF,COAp,COApl
+646,brain,grey,Isocortex,MOs,MOs1
+647,brain,grey,Isocortex,SSp-m,SSp-m2/3
+648,brain,fiber tracts,cm,VIIIn,ll
+651,brain,grey,MY,VII,VII
+652,brain,grey,Isocortex,GU,GU6b
+653,brain,grey,OLF,COAp,COApm
+654,brain,grey,HPF,ENTm,ENTm3
+655,brain,fiber tracts,cm,In,lot
+657,brain,grey,Isocortex,FRP,FRP2/3
+660,brain,grey,Isocortex,SSp-tr,SSp-tr2/3
+661,brain,grey,Isocortex,RSPagl,RSPagl1
+662,brain,grey,STR,CP,CP
+663,brain,fiber tracts,mfbs,mfsbshy,mp
+665,brain,grey,Isocortex,AIv,AIv6a
+668,brain,grey,Isocortex,AUDd,AUDd4
+669,brain,grey,P,CS,CS
+670,brain,grey,Isocortex,ORBvl,ORBvl6b
+671,brain,fiber tracts,mfbs,mfsbshy,mtg
+675,brain,grey,TH,VM,VM
+677,brain,grey,Isocortex,RSPv,RSPv5
+679,brain,grey,HY,VLPO,VLPO
+680,brain,fiber tracts,mfbs,mfsbshy,mtt
+682,brain,grey,Isocortex,PERI,PERI5
+683,brain,grey,HY,VMH,VMH
+684,brain,grey,Isocortex,AIv,AIv2/3
+686,brain,grey,Isocortex,AUDpo,AUDpo1
+687,brain,fiber tracts,cm,drt,ml
+688,brain,grey,OLF,OLF-unassigned,OLF-unassigned
+689,brain,grey,Isocortex,AIv,AIv6b
+692,brain,grey,Isocortex,SSp-n,SSp-n5
+693,brain,grey,CTXsp,CTXsp-unassigned,CTXsp-unassigned
+694,brain,grey,Isocortex,AIv,AIv1
+696,brain,grey,MB,OP,OP
+697,brain,grey,Isocortex,ILA,ILA1
+701,brain,grey,MY,CU,CU
+708,brain,grey,TH,VPL,VPL
+711,brain,grey,Isocortex,VISp,VISp4
+715,brain,grey,TH,VPLpc,VPLpc
+717,brain,grey,HPF,ENTm,ENTm5
+718,brain,fiber tracts,cbf,arb,arb
+719,brain,grey,Isocortex,TEa,TEa6a
+722,brain,grey,HY,MM,MMme
+723,brain,grey,TH,VPM,VPM
+725,brain,grey,Isocortex,AUDp,AUDp1
+731,brain,grey,TH,VPMpc,VPMpc
+733,brain,grey,HPF,ENTm,ENTm6
+734,brain,fiber tracts,cbf,cbc,cbc
+739,brain,grey,MB,VTA,VTA
+740,brain,grey,Isocortex,VISpl,VISpl1
+743,brain,fiber tracts,mfbs,mfsbshy,pm
+744,brain,grey,STR,OT,OT
+745,brain,grey,Isocortex,AUDv,AUDv2/3
+747,brain,grey,MB,VTN,VTN
+749,brain,grey,Isocortex,AUDpo,AUDpo4
+753,brain,grey,HY,OV,OV
+755,brain,grey,MY,x,x
+757,brain,grey,Isocortex,MOs,MOs5
+761,brain,grey,P,P-unassigned,P-unassigned
+762,brain,grey,Isocortex,ACAv,ACAv5
+763,brain,grey,MY,XII,XII
+764,brain,grey,Isocortex,RSPagl,RSPagl5
+768,brain,grey,Isocortex,VISp,VISp5
+770,brain,grey,CTXsp,PA,PA
+771,brain,grey,MY,y,y
+773,brain,grey,Isocortex,AId,AId6a
+774,brain,fiber tracts,lfbs,cst,cst-unassigned
+776,brain,grey,Isocortex,TEa,TEa6b
+778,brain,grey,OLF,PAA,PAA
+781,brain,grey,Isocortex,AUDpo,AUDpo5
+784,brain,fiber tracts,cm,Vn,sV
+785,brain,grey,MB,PAG,PAG-unassigned
+787,brain,grey,HY,ZI,ZI-unassigned
+788,brain,fiber tracts,cm,VIIn,VIIn-unassigned
+790,brain,grey,Isocortex,AIv,AIv5
+792,brain,fiber tracts,mfbs,mfsbshy,sm
+793,brain,grey,PAL,PAL-unassigned,PAL-unassigned
+794,brain,grey,HY,ZI,FF
+795,brain,grey,Isocortex,VISpm,VISpm1
+796,brain,grey,Isocortex,SSs,SSs2/3
+800,brain,grey,Isocortex,ACAv,ACAv6a
+801,brain,grey,MB,IC,ICc
+802,brain,fiber tracts,cbf,cbp,scp
+804,brain,grey,OLF,DP,DP
+806,brain,grey,Isocortex,AUDp,AUDp4
+809,brain,grey,Isocortex,ACAv,ACAv6b
+810,brain,grey,MB,IC,ICd
+811,brain,grey,Isocortex,VISp,VISp2/3
+817,brain,grey,Isocortex,ILA,ILA5
+818,brain,grey,MB,IC,ICe
+820,brain,grey,HY,DMH,DMH
+821,brain,grey,Isocortex,AId,AId6b
+822,brain,fiber tracts,cm,IIIn,IIIn-unassigned
+824,brain,grey,MB,SCs,SCzo
+826,brain,grey,Isocortex,ECT,ECT1
+828,brain,grey,Isocortex,SSp-n,SSp-n2/3
+829,brain,grey,MY,DMX,DMX
+831,brain,fiber tracts,cm,VIIIn,tb
+832,brain,grey,MB,SCs,SCsg
+833,brain,grey,HPF,PAR,PAR
+834,brain,grey,Isocortex,MOp,MOp6a
+836,brain,grey,CB,DN,DN
+837,brain,grey,Isocortex,AUDp,AUDp5
+838,brain,fiber tracts,cm,IIn,IIn-unassigned
+839,brain,grey,Isocortex,VISC,VISC6b
+840,brain,fiber tracts,cbf,cbp,scp
+841,brain,grey,MB,SCs,SCop
+842,brain,grey,MY,PARN,PARN
+844,brain,grey,Isocortex,SSp-ul,SSp-ul2/3
+847,brain,grey,Isocortex,VISC,VISC6a
+849,brain,grey,MY,PAS,PAS
+852,brain,grey,Isocortex,SSs,SSs6a
+853,brain,fiber tracts,eps,rust,rust-unassigned
+856,brain,fiber tracts,cbf,cbp,scp
+857,brain,grey,P,PB,PB-unassigned
+859,brain,grey,Isocortex,VISpl,VISpl4
+862,brain,grey,MB,DR,DR
+863,brain,grey,Isocortex,SSs,SSs1
+864,brain,grey,MB,PBG,PBG
+868,brain,grey,Isocortex,SSp-m,SSp-m1
+870,brain,grey,P,DTN,DTN
+872,brain,grey,Isocortex,MOp,MOp6b
+874,brain,fiber tracts,mfbs,mfbc,amc
+878,brain,grey,Isocortex,PERI,PERI2/3
+879,brain,grey,Isocortex,SSp-n,SSp-n6a
+883,brain,grey,Isocortex,SSs,SSs6b
+887,brain,grey,Isocortex,VISC,VISC1
+888,brain,grey,P,PCG,PCG
+890,brain,fiber tracts,cm,In,aco
+892,brain,grey,Isocortex,VISpl,VISpl5
+893,brain,grey,MY,ECU,ECU
+895,brain,grey,Isocortex,VISal,VISal2/3
+896,brain,grey,Isocortex,RSPagl,RSPagl6a
+897,brain,grey,TH,PCN,PCN
+898,brain,fiber tracts,mfbs,mfbc,act
+900,brain,grey,Isocortex,ORBm,ORBm6a
+901,brain,fiber tracts,cm,IVn,IVn
+902,brain,grey,CB,LING,LING
+904,brain,grey,HY,PD,PD
+906,brain,fiber tracts,cm,IIn,bsc
+909,brain,grey,Isocortex,ACAd,ACAd6a
+914,brain,fiber tracts,lfbs,cst,cpd
+917,brain,grey,Isocortex,ACAd,ACAd6b
+919,brain,grey,Isocortex,SSp-n,SSp-n6b
+920,brain,grey,TH,PF,PF
+921,brain,grey,P,PG,PG
+925,brain,grey,Isocortex,ACAd,ACAd1
+926,brain,grey,CB,DEC,DEC
+929,brain,grey,MY,AMB,AMBd
+930,brain,fiber tracts,mfbs,mfbc,cing
+933,brain,grey,Isocortex,MOp,MOp2/3
+934,brain,grey,CB,FOTU,FOTU
+935,brain,grey,Isocortex,SSp-ul,SSp-ul6a
+936,brain,grey,HY,PH,PH
+939,brain,fiber tracts,cm,von,von
+940,brain,grey,Isocortex,SSp-m,SSp-m4
+941,brain,grey,CB,PYR,PYR
+942,brain,grey,CTXsp,EPd,EPd
+944,brain,grey,Isocortex,AUDp,AUDp6a
+945,brain,grey,MY,LRN,LRNm
+946,brain,fiber tracts,lfbs,cc,fa
+947,brain,grey,CB,UVU,UVU
+949,brain,grey,Isocortex,AUDv,AUDv1
+951,brain,grey,OLF,PIR,PIR
+952,brain,grey,Isocortex,MOs,MOs2/3
+953,brain,grey,MY,LRN,LRNp
+954,brain,fiber tracts,lfbs,cc,ee
+955,brain,grey,Isocortex,RSPagl,RSPagl2/3
+956,brain,grey,CTXsp,EPv,EPv
+958,brain,grey,CB,NOD,NOD
+959,brain,grey,Isocortex,ORBvl,ORBvl1
+960,brain,grey,MY,PGRNd,PGRNd
+961,brain,fiber tracts,lfbs,cc,fp
+963,brain,grey,Isocortex,VISl,VISl2/3
+964,brain,grey,Isocortex,SSp-m,SSp-m5
+965,brain,grey,MB,EW,EW
+966,brain,grey,CB,CENT,CENT2
+967,brain,grey,Isocortex,ECT,ECT6a
+968,brain,grey,MY,PGRNl,PGRNl
+970,brain,grey,HY,PMd,PMd
+971,brain,grey,Isocortex,SSp-bfd,SSp-bfd1
+972,brain,grey,HPF,FC,FC
+974,brain,grey,CB,CENT,CENT3
+976,brain,fiber tracts,lfbs,cc,ccs
+978,brain,grey,Isocortex,ECT,ECT5
+979,brain,grey,CB,FN,FN
+980,brain,grey,Isocortex,AUDv,AUDv4
+986,brain,grey,Isocortex,AId,AId1
+987,brain,brain-unassigned,brain-unassigned,brain-unassigned,brain-unassigned
+988,brain,grey,STR,FS,FS
+994,brain,grey,HY,PMv,PMv
+995,brain,grey,Isocortex,AUDp,AUDp6b
+996,brain,grey,Isocortex,SSp-tr,SSp-tr1
+997,brain,grey,CB,SIM,SIM
+999,brain,fiber tracts,fiber tracts-unassigned,fiber tracts-unassigned,fiber tracts-unassigned
+1000,brain,grey,Isocortex,VISC,VISC4
+1004,brain,grey,Isocortex,ACAd,ACAd5
+1005,brain,fiber tracts,cm,In,onl
+1009,brain,grey,TH,PO,PO
+1010,brain,grey,Isocortex,MOs,MOs6a
+1011,brain,grey,PAL,GPe,GPe
+1012,brain,grey,Isocortex,AUDv,AUDv5
+1014,brain,grey,CB,PRM,PRM
+1015,brain,grey,Isocortex,SSp-ul,SSp-ul6b
+1018,brain,grey,TH,POL,POL
+1019,brain,grey,Isocortex,SSp-ll,SSp-ll1
+1020,brain,grey,PAL,GPi,GPi
+1022,brain,grey,CB,COPY,COPY
+1024,brain,grey,Isocortex,SSs,SSs4
+1026,brain,grey,HPF,POST,POST
+1027,brain,grey,Isocortex,SSp-bfd,SSp-bfd6a
+1028,brain,grey,MY,GR,GR
+1030,brain,grey,CB,PFL,PFL
+1032,brain,fiber tracts,eps,tsp,tspc
+1033,brain,grey,TH,PP,PP
+1034,brain,grey,Isocortex,ECT,ECT6b
+1035,brain,grey,Isocortex,VISam,VISam6a
+1036,brain,grey,Isocortex,SSp-bfd,SSp-bfd4
+1037,brain,grey,MY,GRN,GRN
+1038,brain,grey,CB,FL,FL
+1040,brain,fiber tracts,eps,tsp,tspd
+1041,brain,grey,MB,PPN,PPN
+1043,brain,grey,Isocortex,ILA,ILA6a
+1045,brain,grey,CB,AN,ANcr1
+1047,brain,grey,Isocortex,VISC,VISC5
+1049,brain,fiber tracts,eps,tsp,dtd
+1050,brain,grey,MB,PPT,PPT
+1051,brain,grey,Isocortex,SSp-bfd,SSp-bfd6b
+1053,brain,grey,CB,AN,ANcr2
+1055,brain,grey,Isocortex,VISam,VISam2/3
+1058,brain,grey,MY,PPY,PPY
+1059,brain,grey,Isocortex,SSp-bfd,SSp-bfd5
+1061,brain,grey,TH,MG,MGd
+1063,brain,grey,Isocortex,VISal,VISal1
+1066,brain,grey,TH,PR,PR
+1068,brain,grey,TH,MG,MGv
+1070,brain,grey,Isocortex,ILA,ILA6b
+1073,brain,grey,HPF,PRE,PRE
+1074,brain,grey,Isocortex,MOs,MOs6b
+1075,brain,grey,Isocortex,SSp-tr,SSp-tr4
+1077,brain,grey,TH,MG,MGm
+1078,brain,grey,HPF,HPF-unassigned,HPF-unassigned
+1079,brain,grey,Isocortex,SSs,SSs5
+1080,brain,grey,CB,CUL,"CUL4, 5"
+1081,brain,fiber tracts,lfbs,lfbst,em
+1082,brain,grey,P,PRNc,PRNc
+1083,brain,grey,Isocortex,SSp-ll,SSp-ll4
+1085,brain,grey,TH,AM,AMd
+1086,brain,grey,HY,HY-unassigned,HY-unassigned
+1087,brain,grey,MY,MDRN,MDRNd
+1090,brain,grey,Isocortex,AId,AId5
+1091,brain,grey,Isocortex,SSp-m,SSp-m6a
+1093,brain,grey,TH,AM,AMv
+1094,brain,grey,STR,IA,IA
+1095,brain,grey,Isocortex,VISC,VISC2/3
+1096,brain,grey,MY,MDRN,MDRNv
+1097,brain,fiber tracts,lfbs,cc,ccg
+1098,brain,grey,HY,PS,PS
+1100,brain,grey,Isocortex,SSp-tr,SSp-tr5
+1102,brain,grey,TH,IAD,IAD
+1103,brain,grey,Isocortex,VISal,VISal4
+1104,brain,fiber tracts,cm,VIIn,gVIIn
+1108,brain,grey,TH,IAM,IAM
+1109,brain,grey,HPF,ENTl,ENTl1
+1110,brain,fiber tracts,cbf,cbp,icp
+1112,brain,grey,Isocortex,ORBvl,ORBvl5
+1113,brain,grey,HY,TMd,TMd
+1114,brain,grey,Isocortex,TEa,TEa2/3
+1115,brain,grey,Isocortex,SSp-ll,SSp-ll5
+1120,brain,grey,OLF,NLOT,NLOT3
+1127,brain,grey,HY,ME,ME
+1159,brain,grey,HPF,DG,DG-mo
+1160,brain,grey,HPF,DG,DG-po
+1201,brain,grey,Isocortex,SSp-un,SSp-un1
+1202,brain,grey,Isocortex,SSp-un,SSp-un2/3
+1203,brain,grey,Isocortex,SSp-un,SSp-un4
+1204,brain,grey,Isocortex,SSp-un,SSp-un5
+1205,brain,grey,Isocortex,SSp-un,SSp-un6a
+1206,brain,grey,Isocortex,SSp-un,SSp-un6b
+1209,brain,grey,Isocortex,VISa,VISa1
+1210,brain,grey,Isocortex,VISa,VISa2/3
+1211,brain,grey,Isocortex,VISa,VISa4
+1212,brain,grey,Isocortex,VISa,VISa5
+1213,brain,grey,Isocortex,VISa,VISa6a
+1214,brain,grey,Isocortex,VISa,VISa6b
+1216,brain,grey,Isocortex,VISli,VISli1
+1217,brain,grey,Isocortex,VISli,VISli2/3
+1218,brain,grey,Isocortex,VISli,VISli4
+1219,brain,grey,Isocortex,VISli,VISli5
+1220,brain,grey,Isocortex,VISli,VISli6a
+1221,brain,grey,Isocortex,VISli,VISli6b
+1222,brain,grey,Isocortex,VISrl,VISrl1
+1223,brain,grey,Isocortex,VISrl,VISrl2/3
+1224,brain,grey,Isocortex,VISrl,VISrl4
+1225,brain,grey,Isocortex,VISrl,VISrl5
+1226,brain,grey,Isocortex,VISrl,VISrl6a
+1227,brain,grey,Isocortex,VISrl,VISrl6b
+1229,brain,grey,Isocortex,VISpor,VISpor1
+1230,brain,grey,Isocortex,VISpor,VISpor2/3
+1231,brain,grey,Isocortex,VISpor,VISpor4
+1232,brain,grey,Isocortex,VISpor,VISpor5
+1233,brain,grey,Isocortex,VISpor,VISpor6a
+1234,brain,grey,Isocortex,VISpor,VISpor6b
+1270,brain,grey,HPF,ProS,ProS
+1279,brain,grey,HPF,APr,APr
+1280,brain,fiber tracts,scwm,scwm-unassigned,scwm-unassigned
+1281,brain,fiber tracts,lfbs,cc,ccb
+1282,brain,fiber tracts,lfbs,lfbst,or
+1283,brain,fiber tracts,lfbs,lfbst,ar
+1284,brain,fiber tracts,mfbs,mfbc,st
+1285,brain,grey,TH,LGd,LGd-sh
+1286,brain,grey,TH,LGd,LGd-co
+1287,brain,grey,TH,LGd,LGd-ip
+1288,brain,grey,Isocortex,FRP,FRP5
+1289,brain,grey,Isocortex,FRP,FRP6a
+1290,brain,grey,Isocortex,FRP,FRP6b
+1291,brain,grey,Isocortex,ORBm,ORBm6b
+1293,brain,grey,MB,RPF,RPF
+1295,brain,grey,MB,MA3,MA3
+1296,brain,grey,P,P5,P5
+1297,brain,grey,P,Acs5,Acs5
+1298,brain,grey,P,PC5,PC5
+1299,brain,grey,P,I5,I5
+1300,brain,grey,TH,Eth,Eth
+1302,brain,grey,TH,Xi,Xi
+1303,brain,grey,TH,PIL,PIL
+1304,brain,grey,TH,PoT,PoT
+1305,brain,grey,TH,IntG,IntG
+1306,brain,grey,HY,VMPO,VMPO
+1307,brain,grey,HY,PeF,PeF
+1308,brain,grey,HPF,HATA,HATA
+1309,brain,grey,MY,Pa5,Pa5
+1310,brain,grey,CB,VeCB,VeCB
+1311,brain,grey,MB,SCO,SCO
+1312,brain,grey,P,PDTg,PDTg
+1313,brain,grey,HY,MM,MMl
+1314,brain,grey,HY,MM,MMm
+1315,brain,grey,HY,MM,MMp
+1316,brain,grey,HY,MM,MMd
+1317,brain,grey,MB,Pa4,Pa4
+1318,brain,grey,MB,PN,PN
+1319,brain,grey,MB,IPN,IPR
+1320,brain,grey,MB,IPN,IPC
+1321,brain,grey,MB,IPN,IPA
+1322,brain,grey,MB,IPN,IPL
+1323,brain,grey,MB,IPN,IPI
+1324,brain,grey,MB,IPN,IPDM
+1325,brain,grey,MB,IPN,IPDL
+1326,brain,grey,MB,IPN,IPRL
+1327,brain,grey,MB,PAG,Su3
