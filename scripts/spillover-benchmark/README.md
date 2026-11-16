@@ -62,3 +62,91 @@ probability layer plus `syndri_corrected_counts`, which zeros genes predicted
 as admixture at probability >=0.5. Change `SYNDRI_BATCH_SIZE` or
 `SYNDRI_PROBABILITY_THRESHOLD` in `run_syndri_test.sbatch` to tune inference or
 that hard threshold before submission.
+
+## Held-out test transcript coordinates
+
+`simulate_test_transcripts.py` adds transcript locations to the existing test
+slice matrices. It reads native and injected counts without changing the
+admixture sampler. Supply the original spatial AnnData and the corresponding
+CosMx flat-file directory with `CellLabels/`, FOV positions, and `tx_file.csv`.
+For a single-FOV, 100-cell pilot, run from the repository root:
+
+```bash
+python scripts/spillover-benchmark/simulate_test_transcripts.py \
+  --admixed-slice data/test_admixture/slices/Lung12.h5ad \
+  --spatial-adata data/spatial/st_integrated_slice-Lung12.h5ad \
+  --raw-dir data/raw/Lung12/Lung12-Flat_files_and_images \
+  --output-dir outputs/SyndriSIM_transcripts_pilot \
+  --fov 1 --max-cells 100 --seed 20261113 --decay-um 2
+```
+
+Replace the three input paths with the available local files. The complete
+saved slice supplies donor counts and the original neighbor pool, including
+donors in other FOVs; only the selected recipients get transcript rows.
+
+The decay length defaults to 2 micrometers. Legacy coordinates remain in
+pixels (0.18 micrometers per pixel); z values follow the original slice's
+empirical discrete-plane distribution. Native positions are uniform inside
+recipient masks; donated positions are biased toward the donor region.
+Gene-specific source proportions determine donor allocations. Because the
+current sampler adds whole pooled genes, each contributing donor supplies
+exactly its original count for that gene.
+
+Each output directory contains:
+
+- `<slice>_tx_file.csv`: original CosMx columns followed by ground truth,
+  including source/assigned cell IDs, FOVs, and admixture status. Unsimulated
+  instrument fields such as `CellComp` are empty.
+- `donor_allocations.parquet`: counts and gene-specific proportions for each
+  source–recipient–gene allocation.
+- `simulated_counts.h5ad`: selected recipient counts and clean/added layers.
+- `source_and_assigned_cells.csv`: segmentation keys and centroids.
+- `simulation.json`: random seed, units, transforms, and z distribution.
+- `validation.json`: results of all seven required integrity checks.
+
+Geometry and the original slice's z profile are cached under the output root.
+Existing transcript CSVs are never overwritten. The implementation is shared
+with the standalone package in
+`recomb_reproducibility/syndri_repro/transcript_locations.py`.
+
+## Test-set expression diagnostics
+
+`diagnose_test_admixture.py` measures all cells in the four saved test slices,
+their matched real CosMx cells, the clean mapped cells, and the unique scRNA-seq
+reference. It reads existing counts without generating admixture or coordinates.
+
+```bash
+python scripts/spillover-benchmark/diagnose_test_admixture.py \
+  --test-dir data/test_admixture/slices \
+  --spatial-dir data/spatial \
+  --reference data/test_admixture/train_val_sc_reference_unique.h5ad \
+  --markers data/markers/candidate_cell_type_markers_deseq2.csv \
+  --output-dir outputs/SyndriSIM_test_diagnostics
+```
+
+The spatial directory should contain `st_integrated_slice-<slice>.h5ad` files.
+Replace the input paths with their local locations. The default marker panel
+uses three positive, significant DESeq2 markers per type, ranked by adjusted p
+value and descending fold change. Change `--markers-per-cell-type` or
+`--marker-padj` to adjust it. A non-native marker is a detected marker of
+another type that is not also selected as a marker of the query's own type.
+
+For all significant markers unique to their cell type, use the full
+`all_cell_type_vs_rest_deseq2.csv` table with
+`--markers-per-cell-type all --unique-markers-only`. Uniqueness means positive
+fold change and adjusted p <= `--marker-padj` for exactly one cell type across
+the supplied table. This is evaluated before ranking or limiting the number of
+markers. `marker_counts_by_cell_type.csv` records the resulting panel sizes.
+
+The four primary measurements are detected genes, detected non-native marker
+genes, achieved added/(native+added) fraction, and genes available in the native
+neighbor pool but unexpressed in the clean query. The latter two depend on known
+synthetic ground truth: real-data and reference values are missing rather than
+invented. Eligibility is measured before adding admixture using the original
+neighbor builder and the saved slice-specific settings.
+
+Results include cached per-cell Parquet data, pooled and cell-type summaries,
+cell-type-balanced means, the selected marker panel, validation records, and
+PNG/PDF/SVG plots. The script's output README describes each column and plot.
+Repeat the command to reuse a matching cache, add `--recompute` to rebuild it,
+or add `--replot-only` to redraw from the saved per-cell measurements.

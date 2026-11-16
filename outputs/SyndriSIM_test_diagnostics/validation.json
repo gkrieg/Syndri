@@ -1,0 +1,62 @@
+[
+  {
+    "slice": "Lung12",
+    "n_cells": 71286,
+    "matrix_reconstruction_exact": true,
+    "original_neighbor_pools_verified": true,
+    "real_cells_and_types_matched": true,
+    "saved_achieved_fraction_verified": true,
+    "k_neighbors": 9,
+    "tau_range": [
+      0.0,
+      0.95
+    ],
+    "min_source_counts": 400,
+    "only_sample_unexpressed_genes": true
+  },
+  {
+    "slice": "Lung13",
+    "n_cells": 78992,
+    "matrix_reconstruction_exact": true,
+    "original_neighbor_pools_verified": true,
+    "real_cells_and_types_matched": true,
+    "saved_achieved_fraction_verified": true,
+    "k_neighbors": 9,
+    "tau_range": [
+      0.0,
+      0.95
+    ],
+    "min_source_counts": 400,
+    "only_sample_unexpressed_genes": true
+  },
+  {
+    "slice": "Lung9_Rep1",
+    "n_cells": 86337,
+    "matrix_reconstruction_exact": true,
+    "original_neighbor_pools_verified": true,
+    "real_cells_and_types_matched": true,
+    "saved_achieved_fraction_verified": true,
+    "k_neighbors": 9,
+    "tau_range": [
+      0.0,
+      0.95
+    ],
+    "min_source_counts": 400,
+    "only_sample_unexpressed_genes": true
+  },
+  {
+    "slice": "Lung9_Rep2",
+    "n_cells": 137788,
+    "matrix_reconstruction_exact": true,
+    "original_neighbor_pools_verified": true,
+    "real_cells_and_types_matched": true,
+    "saved_achieved_fraction_verified": true,
+    "k_neighbors": 9,
+    "tau_range": [
+      0.0,
+      0.95
+    ],
+    "min_source_counts": 400,
+    "only_sample_unexpressed_genes": true
+  }
+]

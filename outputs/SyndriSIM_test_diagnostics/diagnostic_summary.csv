@@ -1,0 +1,797 @@
+dataset,level,metric,n_cells,n_finite,mean,std,p05,q25,median,q75,p95,slice,cell_type
+scRNA-seq reference,dataset,detected_genes,31587,31587,72.70035141039035,47.75715310777557,24.0,43.0,59.0,83.0,182.0,,
+scRNA-seq reference,dataset,non_native_marker_genes,31587,31587,2.698420236173109,2.1203810216268577,0.0,1.0,2.0,4.0,7.0,,
+scRNA-seq reference,dataset,achieved_admixture_fraction,31587,0,,,,,,,,,
+scRNA-seq reference,dataset,eligible_genes_per_query,31587,0,,,,,,,,,
+Mapped scRNA-seq (clean),dataset,detected_genes,374403,374403,103.27923654457896,65.02694881543964,27.0,45.0,87.0,153.0,224.0,,
+Mapped scRNA-seq (clean),dataset,non_native_marker_genes,374403,374403,2.366207001546462,2.1409242185047566,0.0,1.0,2.0,3.0,7.0,,
+Mapped scRNA-seq (clean),dataset,achieved_admixture_fraction,374403,0,,,,,,,,,
+Mapped scRNA-seq (clean),dataset,eligible_genes_per_query,374403,374403,373.9888435723004,75.2208535293132,242.0,323.0,378.0,430.0,489.0,,
+Simulated ST,dataset,detected_genes,374403,374403,162.056497944728,129.26198274500265,32.0,59.0,124.0,223.0,464.0,,
+Simulated ST,dataset,non_native_marker_genes,374403,374403,5.017032448992129,5.165141686312017,0.0,1.0,3.0,7.0,17.0,,
+Simulated ST,dataset,achieved_admixture_fraction,374403,374403,0.5244681940701837,0.2759035520740283,0.0,0.30901771596372907,0.5555555555555556,0.7596153846153846,0.914985478905257,,
+Simulated ST,dataset,eligible_genes_per_query,374403,374403,373.9888435723004,75.2208535293132,242.0,323.0,378.0,430.0,489.0,,
+Real CosMx,dataset,detected_genes,374403,374403,121.81662540097167,78.30269152480085,27.0,60.0,105.0,167.0,274.0,,
+Real CosMx,dataset,non_native_marker_genes,374403,374403,4.442867712064273,3.17915068206688,0.0,2.0,4.0,6.0,10.0,,
+Real CosMx,dataset,achieved_admixture_fraction,374403,0,,,,,,,,,
+Real CosMx,dataset,eligible_genes_per_query,374403,0,,,,,,,,,
+scRNA-seq reference,slice,detected_genes,31587,31587,72.70035141039035,47.75715310777557,24.0,43.0,59.0,83.0,182.0,Reference,
+scRNA-seq reference,slice,non_native_marker_genes,31587,31587,2.698420236173109,2.1203810216268577,0.0,1.0,2.0,4.0,7.0,Reference,
+scRNA-seq reference,slice,achieved_admixture_fraction,31587,0,,,,,,,,Reference,
+scRNA-seq reference,slice,eligible_genes_per_query,31587,0,,,,,,,,Reference,
+Mapped scRNA-seq (clean),slice,detected_genes,71286,71286,91.745125270039,60.6735420156339,25.0,40.0,72.0,141.0,202.0,Lung12,
+Mapped scRNA-seq (clean),slice,non_native_marker_genes,71286,71286,2.2856661897146706,1.9557878656412713,0.0,1.0,2.0,3.0,6.0,Lung12,
+Mapped scRNA-seq (clean),slice,achieved_admixture_fraction,71286,0,,,,,,,,Lung12,
+Mapped scRNA-seq (clean),slice,eligible_genes_per_query,71286,71286,371.5060320399517,72.4741209680352,241.0,325.0,378.0,424.0,481.0,Lung12,
+Simulated ST,slice,detected_genes,71286,71286,154.5314227197486,131.98138301048692,31.0,53.0,109.0,209.0,474.0,Lung12,
+Simulated ST,slice,non_native_marker_genes,71286,71286,5.120023567039811,5.330787734074193,0.0,2.0,3.0,7.0,18.0,Lung12,
+Simulated ST,slice,achieved_admixture_fraction,71286,71286,0.5240782834080137,0.2772894576509013,0.0,0.30833333333333335,0.5522281297375782,0.7607307186678353,0.9191843195703181,Lung12,
+Simulated ST,slice,eligible_genes_per_query,71286,71286,371.5060320399517,72.4741209680352,241.0,325.0,378.0,424.0,481.0,Lung12,
+Real CosMx,slice,detected_genes,71286,71286,132.5048116039615,82.73796632591892,32.0,71.0,116.0,174.0,296.0,Lung12,
+Real CosMx,slice,non_native_marker_genes,71286,71286,5.379822124961423,3.670793825307072,1.0,3.0,5.0,8.0,12.0,Lung12,
+Real CosMx,slice,achieved_admixture_fraction,71286,0,,,,,,,,Lung12,
+Real CosMx,slice,eligible_genes_per_query,71286,0,,,,,,,,Lung12,
+Mapped scRNA-seq (clean),slice,detected_genes,78992,78992,116.91611808790763,64.25584734498239,29.0,61.0,111.0,168.0,224.0,Lung13,
+Mapped scRNA-seq (clean),slice,non_native_marker_genes,78992,78992,3.1161763216528255,2.5886000261786877,0.0,1.0,3.0,4.0,8.0,Lung13,
+Mapped scRNA-seq (clean),slice,achieved_admixture_fraction,78992,0,,,,,,,,Lung13,
+Mapped scRNA-seq (clean),slice,eligible_genes_per_query,78992,78992,370.0483213489974,64.78631399032005,261.0,324.0,372.0,418.0,472.0,Lung13,
+Simulated ST,slice,detected_genes,78992,78992,183.71184423739112,133.33733172988693,36.0,77.0,151.0,246.0,488.0,Lung13,
+Simulated ST,slice,non_native_marker_genes,78992,78992,5.96302157180474,5.355909025735766,0.0,2.0,4.0,8.0,18.0,Lung13,
+Simulated ST,slice,achieved_admixture_fraction,78992,78992,0.5162394515109193,0.26854793553604395,0.02831733880116641,0.3047619047619048,0.5443694985173755,0.7456140350877193,0.90085913446144,Lung13,
+Simulated ST,slice,eligible_genes_per_query,78992,78992,370.0483213489974,64.78631399032005,261.0,324.0,372.0,418.0,472.0,Lung13,
+Real CosMx,slice,detected_genes,78992,78992,133.72850415231923,76.90437116519315,34.0,74.0,120.0,180.0,281.0,Lung13,
+Real CosMx,slice,non_native_marker_genes,78992,78992,5.246252785092161,3.328810978026851,1.0,3.0,5.0,7.0,11.0,Lung13,
+Real CosMx,slice,achieved_admixture_fraction,78992,0,,,,,,,,Lung13,
+Real CosMx,slice,eligible_genes_per_query,78992,0,,,,,,,,Lung13,
+Mapped scRNA-seq (clean),slice,detected_genes,86337,86337,109.57210697615159,64.4132426466223,28.0,53.0,95.0,157.0,221.0,Lung9_Rep1,
+Mapped scRNA-seq (clean),slice,non_native_marker_genes,86337,86337,2.4508843253761423,2.1178666709207303,0.0,1.0,2.0,3.0,7.0,Lung9_Rep1,
+Mapped scRNA-seq (clean),slice,achieved_admixture_fraction,86337,0,,,,,,,,Lung9_Rep1,
+Mapped scRNA-seq (clean),slice,eligible_genes_per_query,86337,86337,352.0833825590419,79.67345171733464,216.0,296.0,354.0,412.0,477.0,Lung9_Rep1,
+Simulated ST,slice,detected_genes,86337,86337,169.77921401021578,126.45858460936195,34.0,70.0,136.0,232.0,456.0,Lung9_Rep1,
+Simulated ST,slice,non_native_marker_genes,86337,86337,5.1358745381470285,5.025964662707299,0.0,2.0,3.0,7.0,17.0,Lung9_Rep1,
+Simulated ST,slice,achieved_admixture_fraction,86337,86337,0.5237418895209676,0.2728572327812596,0.019586807442400083,0.3080059303187546,0.5546875,0.7568947906026557,0.910657770978645,Lung9_Rep1,
+Simulated ST,slice,eligible_genes_per_query,86337,86337,352.0833825590419,79.67345171733464,216.0,296.0,354.0,412.0,477.0,Lung9_Rep1,
+Real CosMx,slice,detected_genes,86337,86337,128.91867912945781,88.81391532519099,26.0,58.0,104.0,184.0,305.0,Lung9_Rep1,
+Real CosMx,slice,non_native_marker_genes,86337,86337,4.2705908243279245,3.101157110042806,0.0,2.0,4.0,6.0,10.0,Lung9_Rep1,
+Real CosMx,slice,achieved_admixture_fraction,86337,0,,,,,,,,Lung9_Rep1,
+Real CosMx,slice,eligible_genes_per_query,86337,0,,,,,,,,Lung9_Rep1,
+Mapped scRNA-seq (clean),slice,detected_genes,137788,137788,97.48561558335994,66.21792358531185,27.0,42.0,74.0,151.0,225.0,Lung9_Rep2,
+Mapped scRNA-seq (clean),slice,non_native_marker_genes,137788,137788,1.9248700902836242,1.8162289240187979,0.0,1.0,1.0,3.0,5.0,Lung9_Rep2,
+Mapped scRNA-seq (clean),slice,achieved_admixture_fraction,137788,0,,,,,,,,Lung9_Rep2,
+Mapped scRNA-seq (clean),slice,eligible_genes_per_query,137788,137788,391.25820826196764,75.24992613560451,259.0,341.0,398.0,449.0,501.0,Lung9_Rep2,
+Simulated ST,slice,detected_genes,137788,137788,148.695953203472,125.15245440485499,30.0,53.0,105.0,208.0,436.0,Lung9_Rep2,
+Simulated ST,slice,non_native_marker_genes,137788,137788,4.346960548088368,4.95394090164506,0.0,1.0,3.0,6.0,16.0,Lung9_Rep2,
+Simulated ST,slice,achieved_admixture_fraction,137788,137788,0.5298424426228197,0.2810747525499043,0.0,0.3126672865735237,0.5638728365936203,0.769275777284682,0.9227977627498317,Lung9_Rep2,
+Simulated ST,slice,eligible_genes_per_query,137788,137788,391.25820826196764,75.24992613560451,259.0,341.0,398.0,449.0,501.0,Lung9_Rep2,
+Real CosMx,slice,detected_genes,137788,137788,105.00796876360786,65.81096159180666,24.0,51.0,92.0,148.0,229.0,Lung9_Rep2,
+Real CosMx,slice,non_native_marker_genes,137788,137788,3.605502656254536,2.5630973741332177,0.0,2.0,3.0,5.0,8.0,Lung9_Rep2,
+Real CosMx,slice,achieved_admixture_fraction,137788,0,,,,,,,,Lung9_Rep2,
+Real CosMx,slice,eligible_genes_per_query,137788,0,,,,,,,,Lung9_Rep2,
+scRNA-seq reference,cell_type,detected_genes,8043,8043,53.66828297898794,19.48747989203949,25.0,40.0,53.0,65.0,86.0,Reference,T CD4+
+scRNA-seq reference,cell_type,non_native_marker_genes,8043,8043,1.3639189357205024,1.269650775082368,0.0,0.0,1.0,2.0,4.0,Reference,T CD4+
+scRNA-seq reference,cell_type,achieved_admixture_fraction,8043,0,,,,,,,,Reference,T CD4+
+scRNA-seq reference,cell_type,eligible_genes_per_query,8043,0,,,,,,,,Reference,T CD4+
+scRNA-seq reference,cell_type,detected_genes,2368,2368,104.10726351351352,62.97952925199204,25.0,49.0,93.0,153.0,215.0,Reference,Malignant
+scRNA-seq reference,cell_type,non_native_marker_genes,2368,2368,2.675675675675676,2.238326419938883,0.0,1.0,2.0,4.0,7.0,Reference,Malignant
+scRNA-seq reference,cell_type,achieved_admixture_fraction,2368,0,,,,,,,,Reference,Malignant
+scRNA-seq reference,cell_type,eligible_genes_per_query,2368,0,,,,,,,,Reference,Malignant
+scRNA-seq reference,cell_type,detected_genes,1911,1911,48.023547880690735,29.03969066103623,11.0,23.0,45.0,69.0,98.0,Reference,Plasmablast
+scRNA-seq reference,cell_type,non_native_marker_genes,1911,1911,1.1941391941391941,1.41550397274088,0.0,0.0,1.0,2.0,4.0,Reference,Plasmablast
+scRNA-seq reference,cell_type,achieved_admixture_fraction,1911,0,,,,,,,,Reference,Plasmablast
+scRNA-seq reference,cell_type,eligible_genes_per_query,1911,0,,,,,,,,Reference,Plasmablast
+scRNA-seq reference,cell_type,detected_genes,4970,4970,51.978873239436616,18.47761277372392,23.0,38.0,52.0,65.0,82.0,Reference,B cells
+scRNA-seq reference,cell_type,non_native_marker_genes,4970,4970,2.8641851106639837,1.2803234766298148,1.0,2.0,3.0,4.0,5.0,Reference,B cells
+scRNA-seq reference,cell_type,achieved_admixture_fraction,4970,0,,,,,,,,Reference,B cells
+scRNA-seq reference,cell_type,eligible_genes_per_query,4970,0,,,,,,,,Reference,B cells
+scRNA-seq reference,cell_type,detected_genes,2196,2196,97.80145719489981,52.308335182248776,30.0,50.0,89.0,140.0,185.0,Reference,DC
+scRNA-seq reference,cell_type,non_native_marker_genes,2196,2196,3.591530054644809,2.2873926487143468,0.0,2.0,3.0,5.0,8.0,Reference,DC
+scRNA-seq reference,cell_type,achieved_admixture_fraction,2196,0,,,,,,,,Reference,DC
+scRNA-seq reference,cell_type,eligible_genes_per_query,2196,0,,,,,,,,Reference,DC
+scRNA-seq reference,cell_type,detected_genes,2038,2038,51.13493621197252,13.739420306877099,31.0,41.0,50.0,60.0,75.0,Reference,Neutrophil
+scRNA-seq reference,cell_type,non_native_marker_genes,2038,2038,2.520117762512267,1.469819964285214,0.0,1.0,2.0,4.0,5.0,Reference,Neutrophil
+scRNA-seq reference,cell_type,achieved_admixture_fraction,2038,0,,,,,,,,Reference,Neutrophil
+scRNA-seq reference,cell_type,eligible_genes_per_query,2038,0,,,,,,,,Reference,Neutrophil
+scRNA-seq reference,cell_type,detected_genes,4098,4098,125.66032210834554,66.30805315126116,39.0,69.0,112.0,179.75,241.0,Reference,Macrophage
+scRNA-seq reference,cell_type,non_native_marker_genes,4098,4098,4.9287457296242065,2.4830985308973466,1.0,3.0,5.0,7.0,9.0,Reference,Macrophage
+scRNA-seq reference,cell_type,achieved_admixture_fraction,4098,0,,,,,,,,Reference,Macrophage
+scRNA-seq reference,cell_type,eligible_genes_per_query,4098,0,,,,,,,,Reference,Macrophage
+scRNA-seq reference,cell_type,detected_genes,2634,2634,57.419893697798024,21.383567717146732,27.0,44.0,56.0,68.0,94.0,Reference,T CD8+
+scRNA-seq reference,cell_type,non_native_marker_genes,2634,2634,3.0892179195140472,1.6342370223559881,1.0,2.0,3.0,4.0,6.0,Reference,T CD8+
+scRNA-seq reference,cell_type,achieved_admixture_fraction,2634,0,,,,,,,,Reference,T CD8+
+scRNA-seq reference,cell_type,eligible_genes_per_query,2634,0,,,,,,,,Reference,T CD8+
+scRNA-seq reference,cell_type,detected_genes,360,360,91.13888888888889,50.38898980954686,28.0,49.75,81.0,125.0,185.0,Reference,Fibroblast
+scRNA-seq reference,cell_type,non_native_marker_genes,360,360,2.058333333333333,1.7849377539609947,0.0,1.0,2.0,3.0,6.0,Reference,Fibroblast
+scRNA-seq reference,cell_type,achieved_admixture_fraction,360,0,,,,,,,,Reference,Fibroblast
+scRNA-seq reference,cell_type,eligible_genes_per_query,360,0,,,,,,,,Reference,Fibroblast
+scRNA-seq reference,cell_type,detected_genes,477,477,91.59958071278825,50.01576473985882,32.8,50.0,80.0,123.0,188.2,Reference,Endothelial
+scRNA-seq reference,cell_type,non_native_marker_genes,477,477,2.6939203354297696,2.2319831259022753,0.0,1.0,2.0,4.0,7.0,Reference,Endothelial
+scRNA-seq reference,cell_type,achieved_admixture_fraction,477,0,,,,,,,,Reference,Endothelial
+scRNA-seq reference,cell_type,eligible_genes_per_query,477,0,,,,,,,,Reference,Endothelial
+scRNA-seq reference,cell_type,detected_genes,630,630,105.03650793650793,43.33468964258145,43.0,65.0,108.0,141.0,172.0,Reference,Monocyte
+scRNA-seq reference,cell_type,non_native_marker_genes,630,630,4.501587301587302,2.026650110901375,1.0,3.0,4.5,6.0,8.0,Reference,Monocyte
+scRNA-seq reference,cell_type,achieved_admixture_fraction,630,0,,,,,,,,Reference,Monocyte
+scRNA-seq reference,cell_type,eligible_genes_per_query,630,0,,,,,,,,Reference,Monocyte
+scRNA-seq reference,cell_type,detected_genes,567,567,82.61199294532628,35.54772431494992,31.0,54.0,82.0,106.5,143.69999999999993,Reference,Mast
+scRNA-seq reference,cell_type,non_native_marker_genes,567,567,2.4444444444444446,1.8292866786401132,0.0,1.0,2.0,3.0,6.0,Reference,Mast
+scRNA-seq reference,cell_type,achieved_admixture_fraction,567,0,,,,,,,,Reference,Mast
+scRNA-seq reference,cell_type,eligible_genes_per_query,567,0,,,,,,,,Reference,Mast
+scRNA-seq reference,cell_type,detected_genes,830,830,58.0722891566265,21.845207788390944,25.450000000000003,41.0,58.0,72.0,95.0,Reference,NK
+scRNA-seq reference,cell_type,non_native_marker_genes,830,830,2.5963855421686746,1.4183823150293666,1.0,2.0,2.0,3.0,5.0,Reference,NK
+scRNA-seq reference,cell_type,achieved_admixture_fraction,830,0,,,,,,,,Reference,NK
+scRNA-seq reference,cell_type,eligible_genes_per_query,830,0,,,,,,,,Reference,NK
+scRNA-seq reference,cell_type,detected_genes,465,465,97.19569892473119,62.91509041677154,22.0,42.0,82.0,144.0,211.5999999999999,Reference,Epithelial
+scRNA-seq reference,cell_type,non_native_marker_genes,465,465,3.5505376344086024,2.7105566157567784,0.0,1.0,3.0,6.0,8.0,Reference,Epithelial
+scRNA-seq reference,cell_type,achieved_admixture_fraction,465,0,,,,,,,,Reference,Epithelial
+scRNA-seq reference,cell_type,eligible_genes_per_query,465,0,,,,,,,,Reference,Epithelial
+Mapped scRNA-seq (clean),cell_type,detected_genes,16699,16699,41.041739026289,9.094893421672387,31.0,35.0,39.0,44.0,54.0,Lung12,Neutrophil
+Mapped scRNA-seq (clean),cell_type,non_native_marker_genes,16699,16699,1.909455656027307,1.400192844543638,0.0,1.0,2.0,3.0,4.0,Lung12,Neutrophil
+Mapped scRNA-seq (clean),cell_type,achieved_admixture_fraction,16699,0,,,,,,,,Lung12,Neutrophil
+Mapped scRNA-seq (clean),cell_type,eligible_genes_per_query,16699,16699,402.44152344451766,65.46037781786922,281.0,367.0,410.0,447.0,495.0,Lung12,Neutrophil
+Mapped scRNA-seq (clean),cell_type,detected_genes,18512,18512,99.02700950734659,71.5438813364757,20.0,35.0,73.0,167.0,224.0,Lung12,Malignant
+Mapped scRNA-seq (clean),cell_type,non_native_marker_genes,18512,18512,1.5039433880726016,1.6670275106719386,0.0,0.0,1.0,3.0,5.0,Lung12,Malignant
+Mapped scRNA-seq (clean),cell_type,achieved_admixture_fraction,18512,0,,,,,,,,Lung12,Malignant
+Mapped scRNA-seq (clean),cell_type,eligible_genes_per_query,18512,18512,345.90114520311147,75.49286853397454,221.0,291.0,347.5,400.0,470.0,Lung12,Malignant
+Mapped scRNA-seq (clean),cell_type,detected_genes,1291,1291,141.72966692486443,65.19066046769703,39.0,86.0,149.0,192.0,244.0,Lung12,Macrophage
+Mapped scRNA-seq (clean),cell_type,non_native_marker_genes,1291,1291,5.780790085205267,2.602765910148933,1.0,4.0,6.0,8.0,10.0,Lung12,Macrophage
+Mapped scRNA-seq (clean),cell_type,achieved_admixture_fraction,1291,0,,,,,,,,Lung12,Macrophage
+Mapped scRNA-seq (clean),cell_type,eligible_genes_per_query,1291,1291,330.2478698683191,61.54065072125461,232.5,285.0,329.0,372.0,432.0,Lung12,Macrophage
+Mapped scRNA-seq (clean),cell_type,detected_genes,2154,2154,130.36583101207057,71.61347883428753,40.0,75.0,145.0,161.0,272.0,Lung12,Epithelial
+Mapped scRNA-seq (clean),cell_type,non_native_marker_genes,2154,2154,4.4591457753017645,2.9412031078156295,0.0,1.0,5.0,7.0,10.0,Lung12,Epithelial
+Mapped scRNA-seq (clean),cell_type,achieved_admixture_fraction,2154,0,,,,,,,,Lung12,Epithelial
+Mapped scRNA-seq (clean),cell_type,eligible_genes_per_query,2154,2154,337.87511606313836,73.50775701891075,210.0,289.0,341.0,392.0,453.0,Lung12,Epithelial
+Mapped scRNA-seq (clean),cell_type,detected_genes,3121,3121,128.32073053508492,43.453504287350206,38.0,105.0,127.0,161.0,201.0,Lung12,Endothelial
+Mapped scRNA-seq (clean),cell_type,non_native_marker_genes,3121,3121,3.697532842037808,2.61678941833282,0.0,2.0,3.0,6.0,9.0,Lung12,Endothelial
+Mapped scRNA-seq (clean),cell_type,achieved_admixture_fraction,3121,0,,,,,,,,Lung12,Endothelial
+Mapped scRNA-seq (clean),cell_type,eligible_genes_per_query,3121,3121,323.3194488945851,67.868931256891,203.0,281.0,327.0,370.0,429.0,Lung12,Endothelial
+Mapped scRNA-seq (clean),cell_type,detected_genes,16548,16548,134.77743533961808,46.99007126261586,65.0,101.0,141.0,161.0,234.0,Lung12,Fibroblast
+Mapped scRNA-seq (clean),cell_type,non_native_marker_genes,16548,16548,2.789158810732415,1.5809453222940646,1.0,2.0,3.0,3.0,5.0,Lung12,Fibroblast
+Mapped scRNA-seq (clean),cell_type,achieved_admixture_fraction,16548,0,,,,,,,,Lung12,Fibroblast
+Mapped scRNA-seq (clean),cell_type,eligible_genes_per_query,16548,16548,370.8660865361373,61.21303415217771,264.0,334.0,375.0,412.0,464.0,Lung12,Fibroblast
+Mapped scRNA-seq (clean),cell_type,detected_genes,1356,1356,52.13569321533923,19.985696591001897,22.0,38.0,52.0,63.0,88.0,Lung12,B cells
+Mapped scRNA-seq (clean),cell_type,non_native_marker_genes,1356,1356,2.405604719764012,1.2762136699867708,0.0,2.0,2.0,3.0,4.0,Lung12,B cells
+Mapped scRNA-seq (clean),cell_type,achieved_admixture_fraction,1356,0,,,,,,,,Lung12,B cells
+Mapped scRNA-seq (clean),cell_type,eligible_genes_per_query,1356,1356,378.82300884955754,76.2022823753057,239.75,329.0,392.0,437.0,487.0,Lung12,B cells
+Mapped scRNA-seq (clean),cell_type,detected_genes,1188,1188,125.0547138047138,54.51204579711041,37.0,81.0,126.0,171.0,213.0,Lung12,DC
+Mapped scRNA-seq (clean),cell_type,non_native_marker_genes,1188,1188,4.735690235690235,2.4351758652158333,1.0,3.0,5.0,6.0,9.0,Lung12,DC
+Mapped scRNA-seq (clean),cell_type,achieved_admixture_fraction,1188,0,,,,,,,,Lung12,DC
+Mapped scRNA-seq (clean),cell_type,eligible_genes_per_query,1188,1188,335.73148148148147,65.74973191838892,228.35,292.0,335.0,380.25,445.64999999999986,Lung12,DC
+Mapped scRNA-seq (clean),cell_type,detected_genes,1076,1076,91.22583643122677,37.44043482339446,34.0,62.75,91.0,117.0,149.25,Lung12,Mast
+Mapped scRNA-seq (clean),cell_type,non_native_marker_genes,1076,1076,2.7565055762081783,1.7930627198116018,0.0,1.0,2.0,4.0,6.0,Lung12,Mast
+Mapped scRNA-seq (clean),cell_type,achieved_admixture_fraction,1076,0,,,,,,,,Lung12,Mast
+Mapped scRNA-seq (clean),cell_type,eligible_genes_per_query,1076,1076,357.11431226765797,66.27512030704004,241.0,318.0,361.0,402.0,457.0,Lung12,Mast
+Mapped scRNA-seq (clean),cell_type,detected_genes,2276,2276,63.77811950790861,23.641283972043702,28.0,46.0,64.0,80.0,101.0,Lung12,T CD4+
+Mapped scRNA-seq (clean),cell_type,non_native_marker_genes,2276,2276,1.8317223198594024,1.482580116398829,0.0,1.0,2.0,3.0,5.0,Lung12,T CD4+
+Mapped scRNA-seq (clean),cell_type,achieved_admixture_fraction,2276,0,,,,,,,,Lung12,T CD4+
+Mapped scRNA-seq (clean),cell_type,eligible_genes_per_query,2276,2276,379.43014059753955,67.53801661988051,254.75,344.0,387.0,426.0,476.0,Lung12,T CD4+
+Mapped scRNA-seq (clean),cell_type,detected_genes,5045,5045,64.13776015857285,26.01239279732615,19.0,50.0,67.0,80.0,106.0,Lung12,Plasmablast
+Mapped scRNA-seq (clean),cell_type,non_native_marker_genes,5045,5045,1.136769078295342,1.1909010489879557,0.0,0.0,1.0,2.0,4.0,Lung12,Plasmablast
+Mapped scRNA-seq (clean),cell_type,achieved_admixture_fraction,5045,0,,,,,,,,Lung12,Plasmablast
+Mapped scRNA-seq (clean),cell_type,eligible_genes_per_query,5045,5045,420.30049554013874,52.86233758063229,331.0,385.0,423.0,455.0,506.0,Lung12,Plasmablast
+Mapped scRNA-seq (clean),cell_type,detected_genes,567,567,69.11816578483246,22.675973917257487,31.0,54.0,71.0,80.0,113.0,Lung12,NK
+Mapped scRNA-seq (clean),cell_type,non_native_marker_genes,567,567,2.9594356261022927,1.6236258225531524,1.0,2.0,3.0,4.0,6.0,Lung12,NK
+Mapped scRNA-seq (clean),cell_type,achieved_admixture_fraction,567,0,,,,,,,,Lung12,NK
+Mapped scRNA-seq (clean),cell_type,eligible_genes_per_query,567,567,384.4761904761905,68.39124906013969,255.5,345.5,391.0,431.0,484.0,Lung12,NK
+Mapped scRNA-seq (clean),cell_type,detected_genes,1310,1310,63.41984732824427,22.096860943053496,31.0,46.25,62.0,78.0,101.0,Lung12,T CD8+
+Mapped scRNA-seq (clean),cell_type,non_native_marker_genes,1310,1310,3.237404580152672,1.7674519248845466,1.0,2.0,3.0,4.0,6.0,Lung12,T CD8+
+Mapped scRNA-seq (clean),cell_type,achieved_admixture_fraction,1310,0,,,,,,,,Lung12,T CD8+
+Mapped scRNA-seq (clean),cell_type,eligible_genes_per_query,1310,1310,389.92519083969466,59.28975262223931,284.0,355.0,393.0,431.0,480.0,Lung12,T CD8+
+Mapped scRNA-seq (clean),cell_type,detected_genes,143,143,130.12587412587413,50.051222654349935,39.2,99.5,140.0,165.0,198.0,Lung12,Monocyte
+Mapped scRNA-seq (clean),cell_type,non_native_marker_genes,143,143,5.3776223776223775,2.061737937077808,2.0,4.0,5.0,7.0,9.0,Lung12,Monocyte
+Mapped scRNA-seq (clean),cell_type,achieved_admixture_fraction,143,0,,,,,,,,Lung12,Monocyte
+Mapped scRNA-seq (clean),cell_type,eligible_genes_per_query,143,143,346.8111888111888,55.493426973914396,252.3,314.0,347.0,382.5,428.0,Lung12,Monocyte
+Simulated ST,cell_type,detected_genes,16699,16699,62.679681418048986,34.43360265394629,35.0,42.0,52.0,70.0,126.0,Lung12,Neutrophil
+Simulated ST,cell_type,non_native_marker_genes,16699,16699,2.8119049044852984,2.1530853068985416,0.0,1.0,3.0,4.0,7.0,Lung12,Neutrophil
+Simulated ST,cell_type,achieved_admixture_fraction,16699,16699,0.5417842867788228,0.2811675967190697,0.0,0.3314280114972563,0.5701357466063348,0.783678756476684,0.935676908034156,Lung12,Neutrophil
+Simulated ST,cell_type,eligible_genes_per_query,16699,16699,402.44152344451766,65.46037781786922,281.0,367.0,410.0,447.0,495.0,Lung12,Neutrophil
+Simulated ST,cell_type,detected_genes,18512,18512,140.22677182368193,120.14041674163651,23.0,43.0,97.0,206.0,397.0,Lung12,Malignant
+Simulated ST,cell_type,non_native_marker_genes,18512,18512,3.389044943820225,4.232685087736607,0.0,0.0,2.0,5.0,13.0,Lung12,Malignant
+Simulated ST,cell_type,achieved_admixture_fraction,18512,18512,0.533556546047544,0.28918381798113163,0.0,0.3146555463971194,0.5833333333333334,0.7782940779638633,0.9241233561893405,Lung12,Malignant
+Simulated ST,cell_type,eligible_genes_per_query,18512,18512,345.90114520311147,75.49286853397454,221.0,291.0,347.5,400.0,470.0,Lung12,Malignant
+Simulated ST,cell_type,detected_genes,1291,1291,213.68396591789312,132.1669400607977,46.5,109.0,191.0,283.0,487.0,Lung12,Macrophage
+Simulated ST,cell_type,non_native_marker_genes,1291,1291,8.321456235476376,4.8451682687139925,2.0,5.0,8.0,11.0,18.0,Lung12,Macrophage
+Simulated ST,cell_type,achieved_admixture_fraction,1291,1291,0.514137804607579,0.2645958938537923,0.05835846824252827,0.30024857861469056,0.5536912751677853,0.7419193487880535,0.8837421763784288,Lung12,Macrophage
+Simulated ST,cell_type,eligible_genes_per_query,1291,1291,330.2478698683191,61.54065072125461,232.5,285.0,329.0,372.0,432.0,Lung12,Macrophage
+Simulated ST,cell_type,detected_genes,2154,2154,190.68430826369544,129.0709079173465,40.650000000000006,88.0,166.0,248.0,486.0,Lung12,Epithelial
+Simulated ST,cell_type,non_native_marker_genes,2154,2154,7.2038068709377905,5.69374493957236,0.0,2.0,6.0,10.0,19.0,Lung12,Epithelial
+Simulated ST,cell_type,achieved_admixture_fraction,2154,2154,0.5184459314140533,0.2791435069640487,0.0,0.2969559389458209,0.5278681016716281,0.7590752075631779,0.9174170366163227,Lung12,Epithelial
+Simulated ST,cell_type,eligible_genes_per_query,2154,2154,337.87511606313836,73.50775701891075,210.0,289.0,341.0,392.0,453.0,Lung12,Epithelial
+Simulated ST,cell_type,detected_genes,3121,3121,187.35148990708106,97.4416317985034,57.0,126.0,164.0,226.0,402.0,Lung12,Endothelial
+Simulated ST,cell_type,non_native_marker_genes,3121,3121,6.255687279718039,4.701539626124705,1.0,3.0,5.0,9.0,16.0,Lung12,Endothelial
+Simulated ST,cell_type,achieved_admixture_fraction,3121,3121,0.5528806568203647,0.2726864872119706,0.06914893617021277,0.34104046242774566,0.5884476534296029,0.7900067521944631,0.9285397248113626,Lung12,Endothelial
+Simulated ST,cell_type,eligible_genes_per_query,3121,3121,323.3194488945851,67.868931256891,203.0,281.0,327.0,370.0,429.0,Lung12,Endothelial
+Simulated ST,cell_type,detected_genes,16548,16548,248.15186125211505,143.12734061032901,74.0,144.0,203.0,328.0,536.0,Lung12,Fibroblast
+Simulated ST,cell_type,non_native_marker_genes,16548,16548,8.02834179357022,6.37655111826332,1.0,3.0,6.0,12.0,21.0,Lung12,Fibroblast
+Simulated ST,cell_type,achieved_admixture_fraction,16548,16548,0.4987057922349834,0.26223537144802817,0.061224489795918366,0.28612980769230767,0.5118737027080216,0.7280816045860332,0.8895396157266948,Lung12,Fibroblast
+Simulated ST,cell_type,eligible_genes_per_query,16548,16548,370.8660865361373,61.21303415217771,264.0,334.0,375.0,412.0,464.0,Lung12,Fibroblast
+Simulated ST,cell_type,detected_genes,1356,1356,78.85103244837758,51.67678365971482,27.0,49.0,66.0,93.0,171.0,Lung12,B cells
+Simulated ST,cell_type,non_native_marker_genes,1356,1356,3.577433628318584,2.6148694123343956,0.0,2.0,3.0,4.0,8.0,Lung12,B cells
+Simulated ST,cell_type,achieved_admixture_fraction,1356,1356,0.5454606940822593,0.286810932139227,0.0,0.3383319123326145,0.5848679998493579,0.7965895892725161,0.9328079155736908,Lung12,B cells
+Simulated ST,cell_type,eligible_genes_per_query,1356,1356,378.82300884955754,76.2022823753057,239.75,329.0,392.0,437.0,487.0,Lung12,B cells
+Simulated ST,cell_type,detected_genes,1188,1188,188.46464646464648,114.38257947007077,46.0,102.75,169.0,241.25,440.64999999999986,Lung12,DC
+Simulated ST,cell_type,non_native_marker_genes,1188,1188,7.008417508417509,4.45476334376589,1.0,4.0,6.0,9.0,16.0,Lung12,DC
+Simulated ST,cell_type,achieved_admixture_fraction,1188,1188,0.5266238728247499,0.2701614217428701,0.055721806033610044,0.3078441295546559,0.5526233606330792,0.7586192468235178,0.9102833524259628,Lung12,DC
+Simulated ST,cell_type,eligible_genes_per_query,1188,1188,335.73148148148147,65.74973191838892,228.35,292.0,335.0,380.25,445.64999999999986,Lung12,DC
+Simulated ST,cell_type,detected_genes,1076,1076,138.8503717472119,86.67669362906229,42.0,78.0,122.0,170.0,310.5,Lung12,Mast
+Simulated ST,cell_type,non_native_marker_genes,1076,1076,4.823420074349443,3.9013950771518324,1.0,2.0,4.0,6.0,13.0,Lung12,Mast
+Simulated ST,cell_type,achieved_admixture_fraction,1076,1076,0.5463670203693188,0.28083074264807695,0.03685046176929643,0.31701946472019465,0.57468341715387,0.7986248890354941,0.9315413477839936,Lung12,Mast
+Simulated ST,cell_type,eligible_genes_per_query,1076,1076,357.11431226765797,66.27512030704004,241.0,318.0,361.0,402.0,457.0,Lung12,Mast
+Simulated ST,cell_type,detected_genes,2276,2276,90.12609841827768,52.27884159975933,33.0,57.0,80.5,107.0,180.5,Lung12,T CD4+
+Simulated ST,cell_type,non_native_marker_genes,2276,2276,2.9499121265377855,2.6433653194469886,0.0,1.0,2.0,4.0,8.0,Lung12,T CD4+
+Simulated ST,cell_type,achieved_admixture_fraction,2276,2276,0.5490314136966458,0.290054595579858,0.0,0.3260153115532629,0.5811827061827062,0.8069890049585482,0.9404033486927288,Lung12,T CD4+
+Simulated ST,cell_type,eligible_genes_per_query,2276,2276,379.43014059753955,67.53801661988051,254.75,344.0,387.0,426.0,476.0,Lung12,T CD4+
+Simulated ST,cell_type,detected_genes,5045,5045,220.29851337958374,165.53638001483546,29.0,87.0,160.0,360.0,519.0,Lung12,Plasmablast
+Simulated ST,cell_type,non_native_marker_genes,5045,5045,8.438255698711595,7.786836131635837,0.0,2.0,5.0,15.0,23.0,Lung12,Plasmablast
+Simulated ST,cell_type,achieved_admixture_fraction,5045,5045,0.46664046188249514,0.24657529090244557,0.04996203664452924,0.2669769989047098,0.4953942021132484,0.660365389495052,0.8513240209773323,Lung12,Plasmablast
+Simulated ST,cell_type,eligible_genes_per_query,5045,5045,420.30049554013874,52.86233758063229,331.0,385.0,423.0,455.0,506.0,Lung12,Plasmablast
+Simulated ST,cell_type,detected_genes,567,567,93.54673721340389,46.28843568543522,36.0,64.0,86.0,111.0,175.89999999999952,Lung12,NK
+Simulated ST,cell_type,non_native_marker_genes,567,567,4.037037037037037,2.63646025081033,1.0,2.0,4.0,5.0,9.0,Lung12,NK
+Simulated ST,cell_type,achieved_admixture_fraction,567,567,0.5432470132073808,0.2876339875243,0.0,0.3338692390139335,0.5685131195335277,0.7938797107118856,0.9382042797722155,Lung12,NK
+Simulated ST,cell_type,eligible_genes_per_query,567,567,384.4761904761905,68.39124906013969,255.5,345.5,391.0,431.0,484.0,Lung12,NK
+Simulated ST,cell_type,detected_genes,1310,1310,87.89465648854961,46.8809380764072,36.45,58.0,79.0,103.0,171.0999999999999,Lung12,T CD8+
+Simulated ST,cell_type,non_native_marker_genes,1310,1310,4.204580152671756,2.563952455061048,1.0,2.0,4.0,5.0,9.0,Lung12,T CD8+
+Simulated ST,cell_type,achieved_admixture_fraction,1310,1310,0.5604304805210735,0.2819240650788064,0.0,0.35694370685077004,0.5995169082125604,0.806516955086526,0.9348905698673694,Lung12,T CD8+
+Simulated ST,cell_type,eligible_genes_per_query,1310,1310,389.92519083969466,59.28975262223931,284.0,355.0,393.0,431.0,480.0,Lung12,T CD8+
+Simulated ST,cell_type,detected_genes,143,143,214.56643356643357,132.20223301690393,44.2,116.5,182.0,279.5,487.1,Lung12,Monocyte
+Simulated ST,cell_type,non_native_marker_genes,143,143,8.433566433566433,4.7479564774863725,2.0,5.0,7.0,11.0,17.0,Lung12,Monocyte
+Simulated ST,cell_type,achieved_admixture_fraction,143,143,0.5401056927704435,0.28644701695888763,0.055813601570414345,0.2832554213738475,0.6005449591280654,0.7912050223777285,0.9063283352721421,Lung12,Monocyte
+Simulated ST,cell_type,eligible_genes_per_query,143,143,346.8111888111888,55.493426973914396,252.3,314.0,347.0,382.5,428.0,Lung12,Monocyte
+Real CosMx,cell_type,detected_genes,16699,16699,111.68507096233307,62.356016345461335,32.0,65.0,100.0,147.0,230.09999999999854,Lung12,Neutrophil
+Real CosMx,cell_type,non_native_marker_genes,16699,16699,5.376729145457812,3.441701705953887,1.0,3.0,5.0,7.0,12.0,Lung12,Neutrophil
+Real CosMx,cell_type,achieved_admixture_fraction,16699,0,,,,,,,,Lung12,Neutrophil
+Real CosMx,cell_type,eligible_genes_per_query,16699,0,,,,,,,,Lung12,Neutrophil
+Real CosMx,cell_type,detected_genes,18512,18512,167.2982929991357,109.98092978968509,30.0,76.0,145.0,239.0,378.0,Lung12,Malignant
+Real CosMx,cell_type,non_native_marker_genes,18512,18512,5.836214347450302,4.280552171414055,0.0,2.0,5.0,8.0,14.0,Lung12,Malignant
+Real CosMx,cell_type,achieved_admixture_fraction,18512,0,,,,,,,,Lung12,Malignant
+Real CosMx,cell_type,eligible_genes_per_query,18512,0,,,,,,,,Lung12,Malignant
+Real CosMx,cell_type,detected_genes,1291,1291,143.00154918667698,85.39707525854992,31.0,75.0,127.0,199.0,303.5,Lung12,Macrophage
+Real CosMx,cell_type,non_native_marker_genes,1291,1291,6.223082881487219,4.085306638850431,1.0,3.0,6.0,9.0,14.0,Lung12,Macrophage
+Real CosMx,cell_type,achieved_admixture_fraction,1291,0,,,,,,,,Lung12,Macrophage
+Real CosMx,cell_type,eligible_genes_per_query,1291,0,,,,,,,,Lung12,Macrophage
+Real CosMx,cell_type,detected_genes,2154,2154,134.16016713091923,82.47919903384813,28.0,65.25,120.5,187.0,284.0,Lung12,Epithelial
+Real CosMx,cell_type,non_native_marker_genes,2154,2154,5.782265552460538,3.88207993341592,0.0,3.0,5.0,8.0,13.0,Lung12,Epithelial
+Real CosMx,cell_type,achieved_admixture_fraction,2154,0,,,,,,,,Lung12,Epithelial
+Real CosMx,cell_type,eligible_genes_per_query,2154,0,,,,,,,,Lung12,Epithelial
+Real CosMx,cell_type,detected_genes,3121,3121,122.94200576738226,74.82529760202775,30.0,65.0,109.0,167.0,265.0,Lung12,Endothelial
+Real CosMx,cell_type,non_native_marker_genes,3121,3121,5.1605254726049345,3.521480637123566,1.0,2.0,5.0,7.0,12.0,Lung12,Endothelial
+Real CosMx,cell_type,achieved_admixture_fraction,3121,0,,,,,,,,Lung12,Endothelial
+Real CosMx,cell_type,eligible_genes_per_query,3121,0,,,,,,,,Lung12,Endothelial
+Real CosMx,cell_type,detected_genes,16548,16548,135.08853033599226,66.51081386220338,42.0,86.0,126.0,175.0,257.0,Lung12,Fibroblast
+Real CosMx,cell_type,non_native_marker_genes,16548,16548,5.299734106840706,3.2815848468987214,1.0,3.0,5.0,7.0,11.0,Lung12,Fibroblast
+Real CosMx,cell_type,achieved_admixture_fraction,16548,0,,,,,,,,Lung12,Fibroblast
+Real CosMx,cell_type,eligible_genes_per_query,16548,0,,,,,,,,Lung12,Fibroblast
+Real CosMx,cell_type,detected_genes,1356,1356,98.05088495575221,55.478099724411734,25.0,55.75,89.0,132.0,202.0,Lung12,B cells
+Real CosMx,cell_type,non_native_marker_genes,1356,1356,4.847345132743363,3.2161263907437285,1.0,2.0,4.0,7.0,11.0,Lung12,B cells
+Real CosMx,cell_type,achieved_admixture_fraction,1356,0,,,,,,,,Lung12,B cells
+Real CosMx,cell_type,eligible_genes_per_query,1356,0,,,,,,,,Lung12,B cells
+Real CosMx,cell_type,detected_genes,1188,1188,138.11868686868686,75.58025056595181,34.0,78.0,127.0,187.0,279.2999999999997,Lung12,DC
+Real CosMx,cell_type,non_native_marker_genes,1188,1188,6.209595959595959,3.9316839488976023,1.0,3.0,6.0,9.0,13.0,Lung12,DC
+Real CosMx,cell_type,achieved_admixture_fraction,1188,0,,,,,,,,Lung12,DC
+Real CosMx,cell_type,eligible_genes_per_query,1188,0,,,,,,,,Lung12,DC
+Real CosMx,cell_type,detected_genes,1076,1076,120.364312267658,66.91101476807856,30.0,65.75,113.0,164.0,245.0,Lung12,Mast
+Real CosMx,cell_type,non_native_marker_genes,1076,1076,5.728624535315985,3.802906888685471,1.0,3.0,5.0,8.0,13.0,Lung12,Mast
+Real CosMx,cell_type,achieved_admixture_fraction,1076,0,,,,,,,,Lung12,Mast
+Real CosMx,cell_type,eligible_genes_per_query,1076,0,,,,,,,,Lung12,Mast
+Real CosMx,cell_type,detected_genes,2276,2276,105.8207381370826,58.31412797417946,26.0,59.0,99.0,142.0,215.25,Lung12,T CD4+
+Real CosMx,cell_type,non_native_marker_genes,2276,2276,4.723637961335677,3.1900372575370946,0.0,2.0,4.0,7.0,11.0,Lung12,T CD4+
+Real CosMx,cell_type,achieved_admixture_fraction,2276,0,,,,,,,,Lung12,T CD4+
+Real CosMx,cell_type,eligible_genes_per_query,2276,0,,,,,,,,Lung12,T CD4+
+Real CosMx,cell_type,detected_genes,5045,5045,103.10089197224976,50.86990226041879,33.0,65.0,97.0,133.0,196.0,Lung12,Plasmablast
+Real CosMx,cell_type,non_native_marker_genes,5045,5045,4.0886025768087215,2.8481735402704884,0.0,2.0,4.0,6.0,9.0,Lung12,Plasmablast
+Real CosMx,cell_type,achieved_admixture_fraction,5045,0,,,,,,,,Lung12,Plasmablast
+Real CosMx,cell_type,eligible_genes_per_query,5045,0,,,,,,,,Lung12,Plasmablast
+Real CosMx,cell_type,detected_genes,567,567,78.77954144620811,52.07811207586668,22.0,40.0,63.0,107.5,179.0,Lung12,NK
+Real CosMx,cell_type,non_native_marker_genes,567,567,3.7019400352733687,2.9574807425725753,0.0,1.0,3.0,5.0,10.0,Lung12,NK
+Real CosMx,cell_type,achieved_admixture_fraction,567,0,,,,,,,,Lung12,NK
+Real CosMx,cell_type,eligible_genes_per_query,567,0,,,,,,,,Lung12,NK
+Real CosMx,cell_type,detected_genes,1310,1310,109.02137404580152,62.313320298111485,26.450000000000003,59.0,99.0,148.0,224.54999999999995,Lung12,T CD8+
+Real CosMx,cell_type,non_native_marker_genes,1310,1310,5.362595419847328,3.476953169469408,1.0,3.0,5.0,8.0,12.0,Lung12,T CD8+
+Real CosMx,cell_type,achieved_admixture_fraction,1310,0,,,,,,,,Lung12,T CD8+
+Real CosMx,cell_type,eligible_genes_per_query,1310,0,,,,,,,,Lung12,T CD8+
+Real CosMx,cell_type,detected_genes,143,143,111.24475524475524,77.75224436624944,21.1,52.0,87.0,159.0,252.9,Lung12,Monocyte
+Real CosMx,cell_type,non_native_marker_genes,143,143,5.3776223776223775,3.989076979975665,0.0,2.0,5.0,8.5,13.0,Lung12,Monocyte
+Real CosMx,cell_type,achieved_admixture_fraction,143,0,,,,,,,,Lung12,Monocyte
+Real CosMx,cell_type,eligible_genes_per_query,143,0,,,,,,,,Lung12,Monocyte
+Mapped scRNA-seq (clean),cell_type,detected_genes,26311,26311,131.03196381741478,67.84620974158474,28.0,62.0,132.0,193.0,224.0,Lung13,Malignant
+Mapped scRNA-seq (clean),cell_type,non_native_marker_genes,26311,26311,1.8917182927292768,1.4924936395192907,0.0,1.0,2.0,3.0,4.0,Lung13,Malignant
+Mapped scRNA-seq (clean),cell_type,achieved_admixture_fraction,26311,0,,,,,,,,Lung13,Malignant
+Mapped scRNA-seq (clean),cell_type,eligible_genes_per_query,26311,26311,366.22811751738817,57.43862615818375,276.0,324.0,364.0,407.0,462.0,Lung13,Malignant
+Mapped scRNA-seq (clean),cell_type,detected_genes,13609,13609,126.13476375927695,45.66082079634052,65.0,89.0,115.0,150.0,233.0,Lung13,Fibroblast
+Mapped scRNA-seq (clean),cell_type,non_native_marker_genes,13609,13609,2.939819237269454,1.5560210933041503,1.0,2.0,3.0,4.0,5.0,Lung13,Fibroblast
+Mapped scRNA-seq (clean),cell_type,achieved_admixture_fraction,13609,0,,,,,,,,Lung13,Fibroblast
+Mapped scRNA-seq (clean),cell_type,eligible_genes_per_query,13609,13609,378.78595047395106,50.67335792059814,292.0,345.0,382.0,415.0,457.0,Lung13,Fibroblast
+Mapped scRNA-seq (clean),cell_type,detected_genes,17989,17989,147.4559452999055,63.779456011738866,37.0,100.0,157.0,195.0,243.0,Lung13,Macrophage
+Mapped scRNA-seq (clean),cell_type,non_native_marker_genes,17989,17989,6.125298793707265,2.695044172757978,1.0,4.0,7.0,8.0,10.0,Lung13,Macrophage
+Mapped scRNA-seq (clean),cell_type,achieved_admixture_fraction,17989,0,,,,,,,,Lung13,Macrophage
+Mapped scRNA-seq (clean),cell_type,eligible_genes_per_query,17989,17989,324.30079493023516,60.57778810916446,228.0,282.0,323.0,364.0,429.0,Lung13,Macrophage
+Mapped scRNA-seq (clean),cell_type,detected_genes,9406,9406,52.903891133319156,23.071069076767515,21.0,35.0,48.0,68.0,97.0,Lung13,T CD4+
+Mapped scRNA-seq (clean),cell_type,non_native_marker_genes,9406,9406,1.346587284711886,1.3932366995571892,0.0,0.0,1.0,2.0,4.0,Lung13,T CD4+
+Mapped scRNA-seq (clean),cell_type,achieved_admixture_fraction,9406,0,,,,,,,,Lung13,T CD4+
+Mapped scRNA-seq (clean),cell_type,eligible_genes_per_query,9406,9406,422.27992770571973,52.173963648157496,328.0,391.0,426.0,458.0,503.0,Lung13,T CD4+
+Mapped scRNA-seq (clean),cell_type,detected_genes,3251,3251,63.44909258689634,20.588393480294304,34.0,49.0,64.0,78.0,96.5,Lung13,T CD8+
+Mapped scRNA-seq (clean),cell_type,non_native_marker_genes,3251,3251,3.399569363272839,1.701579302350395,1.0,2.0,3.0,4.0,6.0,Lung13,T CD8+
+Mapped scRNA-seq (clean),cell_type,achieved_admixture_fraction,3251,0,,,,,,,,Lung13,T CD8+
+Mapped scRNA-seq (clean),cell_type,eligible_genes_per_query,3251,3251,428.63395878191324,46.34913794219653,345.0,401.0,431.0,462.0,496.0,Lung13,T CD8+
+Mapped scRNA-seq (clean),cell_type,detected_genes,1638,1638,63.905372405372404,25.386545346303706,22.0,41.0,64.0,81.0,105.0,Lung13,Plasmablast
+Mapped scRNA-seq (clean),cell_type,non_native_marker_genes,1638,1638,1.2673992673992673,1.1467941879504242,0.0,0.0,1.0,2.0,3.0,Lung13,Plasmablast
+Mapped scRNA-seq (clean),cell_type,achieved_admixture_fraction,1638,0,,,,,,,,Lung13,Plasmablast
+Mapped scRNA-seq (clean),cell_type,eligible_genes_per_query,1638,1638,409.42429792429795,49.78249645747543,323.85,380.0,411.0,444.0,487.0,Lung13,Plasmablast
+Mapped scRNA-seq (clean),cell_type,detected_genes,70,70,48.77142857142857,19.328713662389696,20.45,34.5,48.0,62.75,80.19999999999999,Lung13,B cells
+Mapped scRNA-seq (clean),cell_type,non_native_marker_genes,70,70,2.5142857142857142,1.442048232754391,1.0,1.0,2.5,3.0,5.549999999999997,Lung13,B cells
+Mapped scRNA-seq (clean),cell_type,achieved_admixture_fraction,70,0,,,,,,,,Lung13,B cells
+Mapped scRNA-seq (clean),cell_type,eligible_genes_per_query,70,70,419.0,59.025172718872696,321.5,381.25,418.5,457.75,512.85,Lung13,B cells
+Mapped scRNA-seq (clean),cell_type,detected_genes,1487,1487,97.85137861466039,30.394602599965868,38.0,82.0,107.0,122.0,133.0,Lung13,Mast
+Mapped scRNA-seq (clean),cell_type,non_native_marker_genes,1487,1487,2.9038332212508404,1.8744668422131239,0.0,1.0,2.0,5.0,5.0,Lung13,Mast
+Mapped scRNA-seq (clean),cell_type,achieved_admixture_fraction,1487,0,,,,,,,,Lung13,Mast
+Mapped scRNA-seq (clean),cell_type,eligible_genes_per_query,1487,1487,386.1607262945528,54.38887559946574,291.3,353.0,389.0,422.0,468.0,Lung13,Mast
+Mapped scRNA-seq (clean),cell_type,detected_genes,1449,1449,101.66252587991718,33.482039127986376,42.0,95.0,105.0,122.0,161.0,Lung13,Endothelial
+Mapped scRNA-seq (clean),cell_type,non_native_marker_genes,1449,1449,2.7322291235334712,2.5994188816063843,0.0,1.0,3.0,3.0,9.0,Lung13,Endothelial
+Mapped scRNA-seq (clean),cell_type,achieved_admixture_fraction,1449,0,,,,,,,,Lung13,Endothelial
+Mapped scRNA-seq (clean),cell_type,eligible_genes_per_query,1449,1449,364.1193926846101,57.16884187561323,263.20000000000005,329.0,367.0,404.0,451.0,Lung13,Endothelial
+Mapped scRNA-seq (clean),cell_type,detected_genes,3040,3040,86.31546052631579,57.088163384393845,25.0,40.0,67.0,129.0,190.0,Lung13,DC
+Mapped scRNA-seq (clean),cell_type,non_native_marker_genes,3040,3040,3.275657894736842,2.5833266153386645,0.0,1.0,3.0,5.0,8.0,Lung13,DC
+Mapped scRNA-seq (clean),cell_type,achieved_admixture_fraction,3040,0,,,,,,,,Lung13,DC
+Mapped scRNA-seq (clean),cell_type,eligible_genes_per_query,3040,3040,370.88190789473686,67.88487487818952,251.95000000000002,322.75,377.0,421.0,474.0,Lung13,DC
+Mapped scRNA-seq (clean),cell_type,detected_genes,412,412,43.3373786407767,10.115645703674469,29.0,36.0,42.0,49.25,60.44999999999999,Lung13,Neutrophil
+Mapped scRNA-seq (clean),cell_type,non_native_marker_genes,412,412,1.703883495145631,1.1857566972322202,0.0,1.0,2.0,2.0,4.0,Lung13,Neutrophil
+Mapped scRNA-seq (clean),cell_type,achieved_admixture_fraction,412,0,,,,,,,,Lung13,Neutrophil
+Mapped scRNA-seq (clean),cell_type,eligible_genes_per_query,412,412,446.54611650485435,42.50044006603161,379.1,419.0,449.5,475.25,516.45,Lung13,Neutrophil
+Mapped scRNA-seq (clean),cell_type,detected_genes,105,105,59.87619047619047,21.010389022729846,28.0,43.0,59.0,75.0,91.8,Lung13,NK
+Mapped scRNA-seq (clean),cell_type,non_native_marker_genes,105,105,2.5238095238095237,1.494188988247716,0.0,1.0,2.0,3.0,5.0,Lung13,NK
+Mapped scRNA-seq (clean),cell_type,achieved_admixture_fraction,105,0,,,,,,,,Lung13,NK
+Mapped scRNA-seq (clean),cell_type,eligible_genes_per_query,105,105,426.42857142857144,51.4138295415919,351.8,390.0,434.0,467.0,496.6,Lung13,NK
+Mapped scRNA-seq (clean),cell_type,detected_genes,93,93,119.96774193548387,44.32524347339963,39.6,89.0,126.0,153.0,184.0,Lung13,Monocyte
+Mapped scRNA-seq (clean),cell_type,non_native_marker_genes,93,93,4.67741935483871,1.8775636984654427,2.0,3.0,5.0,6.0,7.0,Lung13,Monocyte
+Mapped scRNA-seq (clean),cell_type,achieved_admixture_fraction,93,0,,,,,,,,Lung13,Monocyte
+Mapped scRNA-seq (clean),cell_type,eligible_genes_per_query,93,93,352.6559139784946,56.08582216871164,260.6,320.0,358.0,386.0,445.99999999999994,Lung13,Monocyte
+Mapped scRNA-seq (clean),cell_type,detected_genes,132,132,122.82575757575758,68.34516084458416,25.55,54.5,126.0,166.0,234.0,Lung13,Epithelial
+Mapped scRNA-seq (clean),cell_type,non_native_marker_genes,132,132,4.371212121212121,2.719467008371851,0.0,2.0,5.0,6.0,8.449999999999989,Lung13,Epithelial
+Mapped scRNA-seq (clean),cell_type,achieved_admixture_fraction,132,0,,,,,,,,Lung13,Epithelial
+Mapped scRNA-seq (clean),cell_type,eligible_genes_per_query,132,132,378.81060606060606,70.53461416247865,264.55,333.75,379.0,429.5,490.45,Lung13,Epithelial
+Simulated ST,cell_type,detected_genes,26311,26311,193.8652274713998,132.74972323607892,34.0,84.0,170.0,258.0,494.0,Lung13,Malignant
+Simulated ST,cell_type,non_native_marker_genes,26311,26311,4.980426437611645,5.212996213107966,0.0,1.0,3.0,6.0,18.0,Lung13,Malignant
+Simulated ST,cell_type,achieved_admixture_fraction,26311,26311,0.517642928646234,0.26765958737874446,0.03263901263645591,0.3051669193209323,0.5460385438972163,0.7483704173493297,0.8977878176974585,Lung13,Malignant
+Simulated ST,cell_type,eligible_genes_per_query,26311,26311,366.22811751738817,57.43862615818375,276.0,324.0,364.0,407.0,462.0,Lung13,Malignant
+Simulated ST,cell_type,detected_genes,13609,13609,227.55522080975825,136.78329291410677,82.0,124.0,183.0,292.0,526.0,Lung13,Fibroblast
+Simulated ST,cell_type,non_native_marker_genes,13609,13609,7.329708281284444,5.766979626119241,1.0,3.0,5.0,10.0,20.0,Lung13,Fibroblast
+Simulated ST,cell_type,achieved_admixture_fraction,13609,13609,0.4943364499517398,0.2585048087780698,0.06726457399103139,0.2823529411764706,0.5059665871121718,0.7159112459700361,0.8798466252085545,Lung13,Fibroblast
+Simulated ST,cell_type,eligible_genes_per_query,13609,13609,378.78595047395106,50.67335792059814,292.0,345.0,382.0,415.0,457.0,Lung13,Fibroblast
+Simulated ST,cell_type,detected_genes,17989,17989,224.42009005503363,133.52301656162228,44.0,126.0,204.0,294.0,497.0,Lung13,Macrophage
+Simulated ST,cell_type,non_native_marker_genes,17989,17989,8.795319361832231,5.010930713115557,2.0,5.0,8.0,12.0,18.0,Lung13,Macrophage
+Simulated ST,cell_type,achieved_admixture_fraction,17989,17989,0.5148206946390942,0.26325168847117264,0.051060358056266,0.3051643192488263,0.546018614270941,0.7389380530973452,0.8882133450843237,Lung13,Macrophage
+Simulated ST,cell_type,eligible_genes_per_query,17989,17989,324.30079493023516,60.57778810916446,228.0,282.0,323.0,364.0,429.0,Lung13,Macrophage
+Simulated ST,cell_type,detected_genes,9406,9406,73.85200935573039,48.73316991293743,27.0,43.0,62.0,89.0,158.0,Lung13,T CD4+
+Simulated ST,cell_type,non_native_marker_genes,9406,9406,2.2030618753986815,2.3459026190654346,0.0,1.0,2.0,3.0,7.0,Lung13,T CD4+
+Simulated ST,cell_type,achieved_admixture_fraction,9406,9406,0.5373775787533266,0.28828274558755834,0.0,0.33167641090065714,0.5777087646652863,0.782608695652174,0.9262938825529691,Lung13,T CD4+
+Simulated ST,cell_type,eligible_genes_per_query,9406,9406,422.27992770571973,52.173963648157496,328.0,391.0,426.0,458.0,503.0,Lung13,T CD4+
+Simulated ST,cell_type,detected_genes,3251,3251,88.72439249461704,51.563484562311594,39.0,57.0,78.0,102.0,184.5,Lung13,T CD8+
+Simulated ST,cell_type,non_native_marker_genes,3251,3251,4.395262996001231,2.6777192964931595,1.0,3.0,4.0,6.0,9.0,Lung13,T CD8+
+Simulated ST,cell_type,achieved_admixture_fraction,3251,3251,0.5359439751705696,0.27287368803651535,0.0,0.33009640087680014,0.5693527080581242,0.7680951463790446,0.9203633110049159,Lung13,T CD8+
+Simulated ST,cell_type,eligible_genes_per_query,3251,3251,428.63395878191324,46.34913794219653,345.0,401.0,431.0,462.0,496.0,Lung13,T CD8+
+Simulated ST,cell_type,detected_genes,1638,1638,215.3992673992674,159.0928446498037,36.0,87.0,158.0,343.0,507.0,Lung13,Plasmablast
+Simulated ST,cell_type,non_native_marker_genes,1638,1638,7.982905982905983,7.115828560836845,0.0,2.0,5.0,13.75,21.0,Lung13,Plasmablast
+Simulated ST,cell_type,achieved_admixture_fraction,1638,1638,0.4773551564578715,0.23902598295506106,0.0680160054875339,0.29508458489667033,0.5056197352839704,0.6742405179252067,0.8365736247895194,Lung13,Plasmablast
+Simulated ST,cell_type,eligible_genes_per_query,1638,1638,409.42429792429795,49.78249645747543,323.85,380.0,411.0,444.0,487.0,Lung13,Plasmablast
+Simulated ST,cell_type,detected_genes,70,70,71.1,47.65490378830351,21.9,43.0,58.5,84.75,162.64999999999992,Lung13,B cells
+Simulated ST,cell_type,non_native_marker_genes,70,70,3.242857142857143,2.0390088120991052,1.0,2.0,3.0,4.0,6.549999999999997,Lung13,B cells
+Simulated ST,cell_type,achieved_admixture_fraction,70,70,0.5013924098385281,0.30056374537476344,0.0,0.2941826215022091,0.5468715290633099,0.7320772058823529,0.9254294647563371,Lung13,B cells
+Simulated ST,cell_type,eligible_genes_per_query,70,70,419.0,59.025172718872696,321.5,381.25,418.5,457.75,512.85,Lung13,B cells
+Simulated ST,cell_type,detected_genes,1487,1487,150.6072629455279,90.42059134328626,44.3,101.0,132.0,175.0,335.0,Lung13,Mast
+Simulated ST,cell_type,non_native_marker_genes,1487,1487,5.088769334229993,4.0915073424964445,1.0,2.0,5.0,7.0,13.700000000000045,Lung13,Mast
+Simulated ST,cell_type,achieved_admixture_fraction,1487,1487,0.5195428765945014,0.2710759485818259,0.054761904761904755,0.2981872489442785,0.5364154528182394,0.7587713790591958,0.9148488501364382,Lung13,Mast
+Simulated ST,cell_type,eligible_genes_per_query,1487,1487,386.1607262945528,54.38887559946574,291.3,353.0,389.0,422.0,468.0,Lung13,Mast
+Simulated ST,cell_type,detected_genes,1449,1449,151.97239475500345,87.19812526412979,45.0,105.0,129.0,180.0,334.1999999999998,Lung13,Endothelial
+Simulated ST,cell_type,non_native_marker_genes,1449,1449,5.00552104899931,4.589048023518628,0.0,2.0,4.0,7.0,14.0,Lung13,Endothelial
+Simulated ST,cell_type,achieved_admixture_fraction,1449,1449,0.5460982361157114,0.2813210217774941,0.04436467236467238,0.3238095238095238,0.5727470141150923,0.7965477560414269,0.9275631601707542,Lung13,Endothelial
+Simulated ST,cell_type,eligible_genes_per_query,1449,1449,364.1193926846101,57.16884187561323,263.20000000000005,329.0,367.0,404.0,451.0,Lung13,Endothelial
+Simulated ST,cell_type,detected_genes,3040,3040,135.6108552631579,119.85403078008572,31.0,48.0,87.0,189.0,428.0499999999997,Lung13,DC
+Simulated ST,cell_type,non_native_marker_genes,3040,3040,5.198684210526316,4.856478991926836,0.0,2.0,3.0,7.0,16.0,Lung13,DC
+Simulated ST,cell_type,achieved_admixture_fraction,3040,3040,0.5291684312688296,0.27903473965718495,0.0,0.3252259036144578,0.5662884806078016,0.7630727275163828,0.9172564552767549,Lung13,DC
+Simulated ST,cell_type,eligible_genes_per_query,3040,3040,370.88190789473686,67.88487487818952,251.95000000000002,322.75,377.0,421.0,474.0,Lung13,DC
+Simulated ST,cell_type,detected_genes,412,412,68.87621359223301,43.5206326573206,34.0,45.0,56.0,75.0,154.45,Lung13,Neutrophil
+Simulated ST,cell_type,non_native_marker_genes,412,412,2.7645631067961167,2.181632361329037,0.0,1.0,2.0,4.0,7.0,Lung13,Neutrophil
+Simulated ST,cell_type,achieved_admixture_fraction,412,412,0.5321377787331196,0.27556276639323046,0.0,0.3317814569536424,0.5565797273266153,0.7574146141594698,0.9236607665722875,Lung13,Neutrophil
+Simulated ST,cell_type,eligible_genes_per_query,412,412,446.54611650485435,42.50044006603161,379.1,419.0,449.5,475.25,516.45,Lung13,Neutrophil
+Simulated ST,cell_type,detected_genes,105,105,75.8,35.73201537944541,35.4,49.0,71.0,93.0,132.79999999999995,Lung13,NK
+Simulated ST,cell_type,non_native_marker_genes,105,105,3.2285714285714286,2.14949521291155,0.0,2.0,3.0,4.0,7.0,Lung13,NK
+Simulated ST,cell_type,achieved_admixture_fraction,105,105,0.47325377191023926,0.2746199739128165,0.0,0.2777777777777778,0.4711111111111111,0.6931297709923664,0.9018411120316672,Lung13,NK
+Simulated ST,cell_type,eligible_genes_per_query,105,105,426.42857142857144,51.4138295415919,351.8,390.0,434.0,467.0,496.6,Lung13,NK
+Simulated ST,cell_type,detected_genes,93,93,207.93548387096774,137.00411025662325,56.6,113.0,167.0,238.0,496.4,Lung13,Monocyte
+Simulated ST,cell_type,non_native_marker_genes,93,93,7.78494623655914,5.073052126433638,2.0,4.0,7.0,9.0,18.39999999999999,Lung13,Monocyte
+Simulated ST,cell_type,achieved_admixture_fraction,93,93,0.517260935827689,0.29207718433234164,0.06823439295289163,0.26495726495726496,0.5515088449531738,0.7988209285187915,0.8959119388685167,Lung13,Monocyte
+Simulated ST,cell_type,eligible_genes_per_query,93,93,352.6559139784946,56.08582216871164,260.6,320.0,358.0,386.0,445.99999999999994,Lung13,Monocyte
+Simulated ST,cell_type,detected_genes,132,132,182.56060606060606,138.10767221010573,32.55,66.0,159.0,222.0,497.34999999999997,Lung13,Epithelial
+Simulated ST,cell_type,non_native_marker_genes,132,132,6.681818181818182,5.3063668826615595,0.0,3.0,6.0,9.0,18.44999999999999,Lung13,Epithelial
+Simulated ST,cell_type,achieved_admixture_fraction,132,132,0.5079586384700797,0.25398660231529263,0.061366721919646386,0.2877207062600321,0.5201434819139539,0.7133775198054749,0.8814031481865993,Lung13,Epithelial
+Simulated ST,cell_type,eligible_genes_per_query,132,132,378.81060606060606,70.53461416247865,264.55,333.75,379.0,429.5,490.45,Lung13,Epithelial
+Real CosMx,cell_type,detected_genes,26311,26311,186.2616016114933,81.69653276739886,58.0,127.0,182.0,240.0,329.0,Lung13,Malignant
+Real CosMx,cell_type,non_native_marker_genes,26311,26311,5.975371517616206,3.3708457871193542,1.0,3.0,6.0,8.0,12.0,Lung13,Malignant
+Real CosMx,cell_type,achieved_admixture_fraction,26311,0,,,,,,,,Lung13,Malignant
+Real CosMx,cell_type,eligible_genes_per_query,26311,0,,,,,,,,Lung13,Malignant
+Real CosMx,cell_type,detected_genes,13609,13609,91.2339628187229,49.94749084527734,27.0,53.0,82.0,119.0,188.0,Lung13,Fibroblast
+Real CosMx,cell_type,non_native_marker_genes,13609,13609,3.270115364832096,2.5420487312064126,0.0,1.0,3.0,5.0,8.0,Lung13,Fibroblast
+Real CosMx,cell_type,achieved_admixture_fraction,13609,0,,,,,,,,Lung13,Fibroblast
+Real CosMx,cell_type,eligible_genes_per_query,13609,0,,,,,,,,Lung13,Fibroblast
+Real CosMx,cell_type,detected_genes,17989,17989,127.18255600644838,63.20948318059488,38.0,79.0,119.0,167.0,244.0,Lung13,Macrophage
+Real CosMx,cell_type,non_native_marker_genes,17989,17989,5.569459113902941,3.130140520392967,1.0,3.0,5.0,8.0,11.0,Lung13,Macrophage
+Real CosMx,cell_type,achieved_admixture_fraction,17989,0,,,,,,,,Lung13,Macrophage
+Real CosMx,cell_type,eligible_genes_per_query,17989,0,,,,,,,,Lung13,Macrophage
+Real CosMx,cell_type,detected_genes,9406,9406,105.15660216882841,56.94891181242522,31.0,62.0,95.0,139.0,212.0,Lung13,T CD4+
+Real CosMx,cell_type,non_native_marker_genes,9406,9406,5.987135870720817,3.445936105749457,1.0,3.0,6.0,8.0,12.0,Lung13,T CD4+
+Real CosMx,cell_type,achieved_admixture_fraction,9406,0,,,,,,,,Lung13,T CD4+
+Real CosMx,cell_type,eligible_genes_per_query,9406,0,,,,,,,,Lung13,T CD4+
+Real CosMx,cell_type,detected_genes,3251,3251,115.27991387265457,60.27572359486768,31.0,69.0,109.0,152.0,224.0,Lung13,T CD8+
+Real CosMx,cell_type,non_native_marker_genes,3251,3251,6.391879421716395,3.601569983161545,1.0,4.0,6.0,9.0,13.0,Lung13,T CD8+
+Real CosMx,cell_type,achieved_admixture_fraction,3251,0,,,,,,,,Lung13,T CD8+
+Real CosMx,cell_type,eligible_genes_per_query,3251,0,,,,,,,,Lung13,T CD8+
+Real CosMx,cell_type,detected_genes,1638,1638,72.50671550671551,38.49739914680832,23.0,44.0,66.0,92.0,146.0,Lung13,Plasmablast
+Real CosMx,cell_type,non_native_marker_genes,1638,1638,3.393162393162393,2.515778360021455,0.0,2.0,3.0,5.0,8.0,Lung13,Plasmablast
+Real CosMx,cell_type,achieved_admixture_fraction,1638,0,,,,,,,,Lung13,Plasmablast
+Real CosMx,cell_type,eligible_genes_per_query,1638,0,,,,,,,,Lung13,Plasmablast
+Real CosMx,cell_type,detected_genes,70,70,63.25714285714286,47.64290044416816,18.45,25.25,47.5,89.5,153.69999999999996,Lung13,B cells
+Real CosMx,cell_type,non_native_marker_genes,70,70,3.0714285714285716,2.835189989653729,0.0,1.0,2.0,5.0,8.0,Lung13,B cells
+Real CosMx,cell_type,achieved_admixture_fraction,70,0,,,,,,,,Lung13,B cells
+Real CosMx,cell_type,eligible_genes_per_query,70,0,,,,,,,,Lung13,B cells
+Real CosMx,cell_type,detected_genes,1487,1487,96.20578345662408,52.003254830467085,30.0,58.0,87.0,124.0,195.0,Lung13,Mast
+Real CosMx,cell_type,non_native_marker_genes,1487,1487,4.840618695359785,3.1706963531581187,1.0,2.0,4.0,7.0,11.0,Lung13,Mast
+Real CosMx,cell_type,achieved_admixture_fraction,1487,0,,,,,,,,Lung13,Mast
+Real CosMx,cell_type,eligible_genes_per_query,1487,0,,,,,,,,Lung13,Mast
+Real CosMx,cell_type,detected_genes,1449,1449,110.864044168392,54.70521337724569,30.0,72.0,105.0,144.0,208.5999999999999,Lung13,Endothelial
+Real CosMx,cell_type,non_native_marker_genes,1449,1449,4.084886128364389,2.6251228603465018,0.0,2.0,4.0,6.0,9.0,Lung13,Endothelial
+Real CosMx,cell_type,achieved_admixture_fraction,1449,0,,,,,,,,Lung13,Endothelial
+Real CosMx,cell_type,eligible_genes_per_query,1449,0,,,,,,,,Lung13,Endothelial
+Real CosMx,cell_type,detected_genes,3040,3040,96.65,49.915353159917665,29.0,60.0,88.5,125.0,191.0,Lung13,DC
+Real CosMx,cell_type,non_native_marker_genes,3040,3040,4.727302631578947,2.9489979604224046,1.0,3.0,4.0,6.0,10.0,Lung13,DC
+Real CosMx,cell_type,achieved_admixture_fraction,3040,0,,,,,,,,Lung13,DC
+Real CosMx,cell_type,eligible_genes_per_query,3040,0,,,,,,,,Lung13,DC
+Real CosMx,cell_type,detected_genes,412,412,64.20388349514563,38.20895532620872,21.0,35.0,57.0,84.0,140.0,Lung13,Neutrophil
+Real CosMx,cell_type,non_native_marker_genes,412,412,2.686893203883495,2.2380307337499135,0.0,1.0,2.0,4.0,7.0,Lung13,Neutrophil
+Real CosMx,cell_type,achieved_admixture_fraction,412,0,,,,,,,,Lung13,Neutrophil
+Real CosMx,cell_type,eligible_genes_per_query,412,0,,,,,,,,Lung13,Neutrophil
+Real CosMx,cell_type,detected_genes,105,105,65.9047619047619,39.106000869806465,22.2,35.0,51.0,92.0,144.2,Lung13,NK
+Real CosMx,cell_type,non_native_marker_genes,105,105,3.1523809523809523,2.8849108517787205,0.0,1.0,2.0,5.0,8.799999999999997,Lung13,NK
+Real CosMx,cell_type,achieved_admixture_fraction,105,0,,,,,,,,Lung13,NK
+Real CosMx,cell_type,eligible_genes_per_query,105,0,,,,,,,,Lung13,NK
+Real CosMx,cell_type,detected_genes,93,93,73.84946236559139,53.57805079397458,20.200000000000003,30.0,50.0,101.0,164.39999999999998,Lung13,Monocyte
+Real CosMx,cell_type,non_native_marker_genes,93,93,3.6881720430107525,3.064447232315266,0.0,1.0,3.0,6.0,9.0,Lung13,Monocyte
+Real CosMx,cell_type,achieved_admixture_fraction,93,0,,,,,,,,Lung13,Monocyte
+Real CosMx,cell_type,eligible_genes_per_query,93,0,,,,,,,,Lung13,Monocyte
+Real CosMx,cell_type,detected_genes,132,132,63.90151515151515,39.49274932940461,19.0,31.0,55.5,84.0,143.24999999999994,Lung13,Epithelial
+Real CosMx,cell_type,non_native_marker_genes,132,132,2.765151515151515,2.2644273612942056,0.0,1.0,2.0,4.0,6.449999999999989,Lung13,Epithelial
+Real CosMx,cell_type,achieved_admixture_fraction,132,0,,,,,,,,Lung13,Epithelial
+Real CosMx,cell_type,eligible_genes_per_query,132,0,,,,,,,,Lung13,Epithelial
+Mapped scRNA-seq (clean),cell_type,detected_genes,39422,39422,124.06587692151591,71.87030192482499,25.0,54.0,121.0,189.0,238.0,Lung9_Rep1,Malignant
+Mapped scRNA-seq (clean),cell_type,non_native_marker_genes,39422,39422,1.9059915783065293,1.6993053550684882,0.0,1.0,2.0,3.0,5.0,Lung9_Rep1,Malignant
+Mapped scRNA-seq (clean),cell_type,achieved_admixture_fraction,39422,0,,,,,,,,Lung9_Rep1,Malignant
+Mapped scRNA-seq (clean),cell_type,eligible_genes_per_query,39422,39422,315.9942417939222,76.13829187028273,197.0,262.0,311.0,368.0,449.0,Lung9_Rep1,Malignant
+Mapped scRNA-seq (clean),cell_type,detected_genes,3584,3584,136.62862723214286,55.344431130617274,40.0,111.0,135.0,197.0,215.0,Lung9_Rep1,Epithelial
+Mapped scRNA-seq (clean),cell_type,non_native_marker_genes,3584,3584,5.110212053571429,2.344551241576098,1.0,3.0,6.0,7.0,8.0,Lung9_Rep1,Epithelial
+Mapped scRNA-seq (clean),cell_type,achieved_admixture_fraction,3584,0,,,,,,,,Lung9_Rep1,Epithelial
+Mapped scRNA-seq (clean),cell_type,eligible_genes_per_query,3584,3584,358.15011160714283,55.15083531341673,266.0,322.0,359.0,395.0,450.0,Lung9_Rep1,Epithelial
+Mapped scRNA-seq (clean),cell_type,detected_genes,5948,5948,41.731338264963014,8.816446317421144,30.0,35.0,41.0,46.0,55.0,Lung9_Rep1,Neutrophil
+Mapped scRNA-seq (clean),cell_type,non_native_marker_genes,5948,5948,1.6580363147276396,1.1749906256065745,0.0,1.0,2.0,2.0,4.0,Lung9_Rep1,Neutrophil
+Mapped scRNA-seq (clean),cell_type,achieved_admixture_fraction,5948,0,,,,,,,,Lung9_Rep1,Neutrophil
+Mapped scRNA-seq (clean),cell_type,eligible_genes_per_query,5948,5948,451.57262945527907,48.959133385910036,361.35,425.0,457.5,485.0,519.6499999999996,Lung9_Rep1,Neutrophil
+Mapped scRNA-seq (clean),cell_type,detected_genes,13952,13952,124.57038417431193,43.36305723989617,47.0,96.0,126.0,146.0,208.0,Lung9_Rep1,Fibroblast
+Mapped scRNA-seq (clean),cell_type,non_native_marker_genes,13952,13952,2.6218463302752295,1.4604641154373705,1.0,2.0,2.0,3.0,5.0,Lung9_Rep1,Fibroblast
+Mapped scRNA-seq (clean),cell_type,achieved_admixture_fraction,13952,0,,,,,,,,Lung9_Rep1,Fibroblast
+Mapped scRNA-seq (clean),cell_type,eligible_genes_per_query,13952,13952,362.7888474770642,64.26170304873038,241.0,327.0,369.0,407.0,454.0,Lung9_Rep1,Fibroblast
+Mapped scRNA-seq (clean),cell_type,detected_genes,4428,4428,69.80149051490515,21.00067501449688,38.0,71.0,71.0,71.0,95.0,Lung9_Rep1,Endothelial
+Mapped scRNA-seq (clean),cell_type,non_native_marker_genes,4428,4428,1.0654923215898826,1.3173793751448875,0.0,0.0,0.0,2.0,3.0,Lung9_Rep1,Endothelial
+Mapped scRNA-seq (clean),cell_type,achieved_admixture_fraction,4428,0,,,,,,,,Lung9_Rep1,Endothelial
+Mapped scRNA-seq (clean),cell_type,eligible_genes_per_query,4428,4428,405.9744805781391,62.98175991380298,287.0,367.0,419.0,452.25,489.0,Lung9_Rep1,Endothelial
+Mapped scRNA-seq (clean),cell_type,detected_genes,2323,2323,64.48773138183384,19.67882075651612,35.0,52.0,64.0,76.0,102.0,Lung9_Rep1,T CD8+
+Mapped scRNA-seq (clean),cell_type,non_native_marker_genes,2323,2323,3.4365045200172193,1.7475692995717145,1.0,2.0,3.0,5.0,7.0,Lung9_Rep1,T CD8+
+Mapped scRNA-seq (clean),cell_type,achieved_admixture_fraction,2323,0,,,,,,,,Lung9_Rep1,T CD8+
+Mapped scRNA-seq (clean),cell_type,eligible_genes_per_query,2323,2323,405.96814464055103,59.21519334268262,299.1,368.0,413.0,450.0,491.0,Lung9_Rep1,T CD8+
+Mapped scRNA-seq (clean),cell_type,detected_genes,871,871,50.87715269804822,18.638788357180918,21.5,38.0,52.0,66.0,78.0,Lung9_Rep1,B cells
+Mapped scRNA-seq (clean),cell_type,non_native_marker_genes,871,871,2.5763490241102183,1.4136741035845561,0.0,2.0,3.0,3.0,5.0,Lung9_Rep1,B cells
+Mapped scRNA-seq (clean),cell_type,achieved_admixture_fraction,871,0,,,,,,,,Lung9_Rep1,B cells
+Mapped scRNA-seq (clean),cell_type,eligible_genes_per_query,871,871,406.2629161882893,60.047536649665886,302.0,367.0,411.0,450.0,498.0,Lung9_Rep1,B cells
+Mapped scRNA-seq (clean),cell_type,detected_genes,4036,4036,58.91947472745292,24.664292875931906,25.0,38.0,59.0,75.0,98.0,Lung9_Rep1,T CD4+
+Mapped scRNA-seq (clean),cell_type,non_native_marker_genes,4036,4036,1.6954905847373638,1.408133386917316,0.0,1.0,1.0,3.0,4.0,Lung9_Rep1,T CD4+
+Mapped scRNA-seq (clean),cell_type,achieved_admixture_fraction,4036,0,,,,,,,,Lung9_Rep1,T CD4+
+Mapped scRNA-seq (clean),cell_type,eligible_genes_per_query,4036,4036,388.94970267591674,62.203445219581134,284.0,345.0,394.0,437.0,481.0,Lung9_Rep1,T CD4+
+Mapped scRNA-seq (clean),cell_type,detected_genes,746,746,67.62868632707774,21.592633161857567,32.0,54.0,68.0,79.0,106.0,Lung9_Rep1,NK
+Mapped scRNA-seq (clean),cell_type,non_native_marker_genes,746,746,2.8739946380697052,1.5535866690423952,1.0,2.0,3.0,4.0,6.0,Lung9_Rep1,NK
+Mapped scRNA-seq (clean),cell_type,achieved_admixture_fraction,746,0,,,,,,,,Lung9_Rep1,NK
+Mapped scRNA-seq (clean),cell_type,eligible_genes_per_query,746,746,411.4986595174263,56.50800856301469,309.0,379.0,417.0,453.0,491.0,Lung9_Rep1,NK
+Mapped scRNA-seq (clean),cell_type,detected_genes,1702,1702,136.52820211515865,50.05049858064119,45.0,110.25,142.0,168.0,212.0,Lung9_Rep1,Monocyte
+Mapped scRNA-seq (clean),cell_type,non_native_marker_genes,1702,1702,5.685663924794359,2.063488225441178,2.0,4.0,6.0,7.0,9.0,Lung9_Rep1,Monocyte
+Mapped scRNA-seq (clean),cell_type,achieved_admixture_fraction,1702,0,,,,,,,,Lung9_Rep1,Monocyte
+Mapped scRNA-seq (clean),cell_type,eligible_genes_per_query,1702,1702,350.95828437132786,60.22792314818191,246.05,312.25,352.0,391.0,453.0,Lung9_Rep1,Monocyte
+Mapped scRNA-seq (clean),cell_type,detected_genes,4080,4080,150.8174019607843,61.978103837944985,40.0,107.0,161.0,196.0,240.04999999999973,Lung9_Rep1,Macrophage
+Mapped scRNA-seq (clean),cell_type,non_native_marker_genes,4080,4080,6.088235294117647,2.5351771420326985,2.0,4.0,6.0,8.0,10.0,Lung9_Rep1,Macrophage
+Mapped scRNA-seq (clean),cell_type,achieved_admixture_fraction,4080,0,,,,,,,,Lung9_Rep1,Macrophage
+Mapped scRNA-seq (clean),cell_type,eligible_genes_per_query,4080,4080,343.1735294117647,63.12091064319105,239.0,302.0,340.0,385.0,451.0,Lung9_Rep1,Macrophage
+Mapped scRNA-seq (clean),cell_type,detected_genes,2895,2895,66.21865284974093,24.85726073913598,21.0,52.0,64.0,81.0,106.0,Lung9_Rep1,Plasmablast
+Mapped scRNA-seq (clean),cell_type,non_native_marker_genes,2895,2895,1.2732297063903282,1.1463224004163728,0.0,0.0,1.0,2.0,4.0,Lung9_Rep1,Plasmablast
+Mapped scRNA-seq (clean),cell_type,achieved_admixture_fraction,2895,0,,,,,,,,Lung9_Rep1,Plasmablast
+Mapped scRNA-seq (clean),cell_type,eligible_genes_per_query,2895,2895,382.04663212435236,63.586982322584,271.0,339.0,387.0,428.0,480.0,Lung9_Rep1,Plasmablast
+Mapped scRNA-seq (clean),cell_type,detected_genes,2059,2059,113.7804759592035,59.61349749953524,33.0,57.5,108.0,161.0,210.0,Lung9_Rep1,DC
+Mapped scRNA-seq (clean),cell_type,non_native_marker_genes,2059,2059,4.224866440019427,2.6463836407976347,0.0,2.0,4.0,6.0,9.0,Lung9_Rep1,DC
+Mapped scRNA-seq (clean),cell_type,achieved_admixture_fraction,2059,0,,,,,,,,Lung9_Rep1,DC
+Mapped scRNA-seq (clean),cell_type,eligible_genes_per_query,2059,2059,352.3278290432249,67.59109936241845,243.0,307.0,350.0,401.0,462.0999999999999,Lung9_Rep1,DC
+Mapped scRNA-seq (clean),cell_type,detected_genes,291,291,96.79725085910653,38.00503767881157,33.0,72.0,99.0,119.0,160.0,Lung9_Rep1,Mast
+Mapped scRNA-seq (clean),cell_type,non_native_marker_genes,291,291,3.0,1.847645286154319,0.0,1.0,3.0,4.0,6.0,Lung9_Rep1,Mast
+Mapped scRNA-seq (clean),cell_type,achieved_admixture_fraction,291,0,,,,,,,,Lung9_Rep1,Mast
+Mapped scRNA-seq (clean),cell_type,eligible_genes_per_query,291,291,375.27147766323026,61.34064167908652,273.0,333.0,386.0,418.0,464.0,Lung9_Rep1,Mast
+Simulated ST,cell_type,detected_genes,39422,39422,175.27215767845365,123.83670852265193,30.0,70.0,151.0,245.0,435.0,Lung9_Rep1,Malignant
+Simulated ST,cell_type,non_native_marker_genes,39422,39422,4.3970118208107145,4.690814248281071,0.0,1.0,3.0,6.0,15.0,Lung9_Rep1,Malignant
+Simulated ST,cell_type,achieved_admixture_fraction,39422,39422,0.5295243790160523,0.2731180564546261,0.0,0.3158279473253929,0.5644776917888533,0.7641263477394219,0.9092308913372842,Lung9_Rep1,Malignant
+Simulated ST,cell_type,eligible_genes_per_query,39422,39422,315.9942417939222,76.13829187028273,197.0,262.0,311.0,368.0,449.0,Lung9_Rep1,Malignant
+Simulated ST,cell_type,detected_genes,3584,3584,207.310546875,123.28235492031878,49.0,129.0,181.0,262.0,485.8499999999999,Lung9_Rep1,Epithelial
+Simulated ST,cell_type,non_native_marker_genes,3584,3584,8.089564732142858,5.160668621396518,1.0,5.0,7.0,10.0,19.84999999999991,Lung9_Rep1,Epithelial
+Simulated ST,cell_type,achieved_admixture_fraction,3584,3584,0.5168956818670338,0.27047055567994216,0.050729286449192036,0.297155500952763,0.5448661298769311,0.7584158415841584,0.8953712289750227,Lung9_Rep1,Epithelial
+Simulated ST,cell_type,eligible_genes_per_query,3584,3584,358.15011160714283,55.15083531341673,266.0,322.0,359.0,395.0,450.0,Lung9_Rep1,Epithelial
+Simulated ST,cell_type,detected_genes,5948,5948,65.2014122394082,39.28868272034986,34.0,43.0,53.0,72.0,134.0,Lung9_Rep1,Neutrophil
+Simulated ST,cell_type,non_native_marker_genes,5948,5948,2.6454270342972426,2.1486386371751167,0.0,1.0,2.0,3.0,6.0,Lung9_Rep1,Neutrophil
+Simulated ST,cell_type,achieved_admixture_fraction,5948,5948,0.5305746739464726,0.27263725658436494,0.0,0.3293665158371041,0.5625,0.7617647058823529,0.9137102272727272,Lung9_Rep1,Neutrophil
+Simulated ST,cell_type,eligible_genes_per_query,5948,5948,451.57262945527907,48.959133385910036,361.35,425.0,457.5,485.0,519.6499999999996,Lung9_Rep1,Neutrophil
+Simulated ST,cell_type,detected_genes,13952,13952,221.30511754587155,130.85664833069706,65.0,129.0,183.0,280.0,511.0,Lung9_Rep1,Fibroblast
+Simulated ST,cell_type,non_native_marker_genes,13952,13952,6.818950688073395,5.530288612675967,1.0,3.0,5.0,9.0,19.0,Lung9_Rep1,Fibroblast
+Simulated ST,cell_type,achieved_admixture_fraction,13952,13952,0.5198820586151424,0.2737687905657013,0.06289750778128518,0.2895896579639749,0.5445694211863346,0.7574912266767004,0.9176983070333522,Lung9_Rep1,Fibroblast
+Simulated ST,cell_type,eligible_genes_per_query,13952,13952,362.7888474770642,64.26170304873038,241.0,327.0,369.0,407.0,454.0,Lung9_Rep1,Fibroblast
+Simulated ST,cell_type,detected_genes,4428,4428,105.23351400180668,65.16650416843537,40.0,73.0,88.0,118.0,237.0,Lung9_Rep1,Endothelial
+Simulated ST,cell_type,non_native_marker_genes,4428,4428,2.7484191508581755,3.195523570701587,0.0,1.0,2.0,4.0,9.0,Lung9_Rep1,Endothelial
+Simulated ST,cell_type,achieved_admixture_fraction,4428,4428,0.5275277841192545,0.2776885640955365,0.0,0.3132530120481928,0.5615384615384615,0.7651905252317199,0.9168219997812814,Lung9_Rep1,Endothelial
+Simulated ST,cell_type,eligible_genes_per_query,4428,4428,405.9744805781391,62.98175991380298,287.0,367.0,419.0,452.25,489.0,Lung9_Rep1,Endothelial
+Simulated ST,cell_type,detected_genes,2323,2323,90.84718037021094,50.17802394053437,40.0,61.0,79.0,102.0,191.9000000000001,Lung9_Rep1,T CD8+
+Simulated ST,cell_type,non_native_marker_genes,2323,2323,4.53594489883771,2.7621588226066294,1.0,3.0,4.0,6.0,10.0,Lung9_Rep1,T CD8+
+Simulated ST,cell_type,achieved_admixture_fraction,2323,2323,0.5378515580820817,0.28616506429893634,0.0,0.32475791006932264,0.575591985428051,0.781972421850108,0.9282907233430874,Lung9_Rep1,T CD8+
+Simulated ST,cell_type,eligible_genes_per_query,2323,2323,405.96814464055103,59.21519334268262,299.1,368.0,413.0,450.0,491.0,Lung9_Rep1,T CD8+
+Simulated ST,cell_type,detected_genes,871,871,76.14810562571756,49.41033786351325,26.0,46.0,65.0,89.0,167.5,Lung9_Rep1,B cells
+Simulated ST,cell_type,non_native_marker_genes,871,871,3.5614236509758896,2.497461661867397,0.0,2.0,3.0,4.0,8.0,Lung9_Rep1,B cells
+Simulated ST,cell_type,achieved_admixture_fraction,871,871,0.5425494604557135,0.28019635119241093,0.0,0.33988887169966997,0.5807522123893806,0.7803297229109574,0.9213641019075662,Lung9_Rep1,B cells
+Simulated ST,cell_type,eligible_genes_per_query,871,871,406.2629161882893,60.047536649665886,302.0,367.0,411.0,450.0,498.0,Lung9_Rep1,B cells
+Simulated ST,cell_type,detected_genes,4036,4036,82.16798810703666,52.843558372595666,29.0,47.0,72.0,99.0,179.0,Lung9_Rep1,T CD4+
+Simulated ST,cell_type,non_native_marker_genes,4036,4036,2.6461843409316153,2.491559543006061,0.0,1.0,2.0,4.0,7.0,Lung9_Rep1,T CD4+
+Simulated ST,cell_type,achieved_admixture_fraction,4036,4036,0.5422503606969938,0.28363561657501857,0.0,0.3386075188692851,0.5738640178926544,0.7822776199431796,0.9350301608579089,Lung9_Rep1,T CD4+
+Simulated ST,cell_type,eligible_genes_per_query,4036,4036,388.94970267591674,62.203445219581134,284.0,345.0,394.0,437.0,481.0,Lung9_Rep1,T CD4+
+Simulated ST,cell_type,detected_genes,746,746,95.43833780160858,55.06010947825002,39.0,63.0,83.0,109.0,193.0,Lung9_Rep1,NK
+Simulated ST,cell_type,non_native_marker_genes,746,746,4.018766756032171,2.7115802533497773,1.0,2.0,4.0,5.0,9.0,Lung9_Rep1,NK
+Simulated ST,cell_type,achieved_admixture_fraction,746,746,0.5324642365996948,0.2820182987839262,0.0,0.32214070547079976,0.575971007782309,0.7670902515206313,0.9291966114461716,Lung9_Rep1,NK
+Simulated ST,cell_type,eligible_genes_per_query,746,746,411.4986595174263,56.50800856301469,309.0,379.0,417.0,453.0,491.0,Lung9_Rep1,NK
+Simulated ST,cell_type,detected_genes,1702,1702,219.70975323149236,125.74576737136896,52.0,136.0,193.0,276.0,496.9499999999998,Lung9_Rep1,Monocyte
+Simulated ST,cell_type,non_native_marker_genes,1702,1702,8.829024676850764,4.913193923833491,3.0,5.0,8.0,11.0,19.0,Lung9_Rep1,Monocyte
+Simulated ST,cell_type,achieved_admixture_fraction,1702,1702,0.5082592511016126,0.27036223245178437,0.04887458282766991,0.2854601919819311,0.5409712749844142,0.7394664549943287,0.8990664239368902,Lung9_Rep1,Monocyte
+Simulated ST,cell_type,eligible_genes_per_query,1702,1702,350.95828437132786,60.22792314818191,246.05,312.25,352.0,391.0,453.0,Lung9_Rep1,Monocyte
+Simulated ST,cell_type,detected_genes,4080,4080,249.77524509803922,148.14236086632516,49.0,138.0,218.5,340.0,529.0,Lung9_Rep1,Macrophage
+Simulated ST,cell_type,non_native_marker_genes,4080,4080,9.916176470588235,5.819364170684974,2.0,6.0,9.0,13.0,21.0,Lung9_Rep1,Macrophage
+Simulated ST,cell_type,achieved_admixture_fraction,4080,4080,0.4881379488745068,0.2569187974591328,0.050206072466346445,0.2777683231223054,0.5076135506973238,0.6970786727723144,0.8709475973720205,Lung9_Rep1,Macrophage
+Simulated ST,cell_type,eligible_genes_per_query,4080,4080,343.1735294117647,63.12091064319105,239.0,302.0,340.0,385.0,451.0,Lung9_Rep1,Macrophage
+Simulated ST,cell_type,detected_genes,2895,2895,196.93920552677028,143.67938673118272,36.0,86.0,141.0,297.5,483.0,Lung9_Rep1,Plasmablast
+Simulated ST,cell_type,non_native_marker_genes,2895,2895,6.721243523316062,6.059314154071554,0.0,2.0,4.0,11.0,19.0,Lung9_Rep1,Plasmablast
+Simulated ST,cell_type,achieved_admixture_fraction,2895,2895,0.47377996663246325,0.24687842749846922,0.05641857602770239,0.2716658771189059,0.49820887296775973,0.6804494741868417,0.8358755876940345,Lung9_Rep1,Plasmablast
+Simulated ST,cell_type,eligible_genes_per_query,2895,2895,382.04663212435236,63.586982322584,271.0,339.0,387.0,428.0,480.0,Lung9_Rep1,Plasmablast
+Simulated ST,cell_type,detected_genes,2059,2059,184.19232637202526,135.3021092127294,36.0,76.0,149.0,242.5,485.1999999999998,Lung9_Rep1,DC
+Simulated ST,cell_type,non_native_marker_genes,2059,2059,6.947547353084022,5.43663628972999,1.0,3.0,6.0,10.0,19.0,Lung9_Rep1,DC
+Simulated ST,cell_type,achieved_admixture_fraction,2059,2059,0.5153494978194099,0.26499294631054693,0.043006238516429526,0.31209894842717834,0.5349977708426215,0.7344637842563154,0.9081866317146827,Lung9_Rep1,DC
+Simulated ST,cell_type,eligible_genes_per_query,2059,2059,352.3278290432249,67.59109936241845,243.0,307.0,350.0,401.0,462.0999999999999,Lung9_Rep1,DC
+Simulated ST,cell_type,detected_genes,291,291,142.94501718213058,90.12143379093669,38.5,86.5,125.0,172.0,348.5,Lung9_Rep1,Mast
+Simulated ST,cell_type,non_native_marker_genes,291,291,5.072164948453608,4.104448610993247,1.0,2.0,4.0,6.5,14.0,Lung9_Rep1,Mast
+Simulated ST,cell_type,achieved_admixture_fraction,291,291,0.5106715798118462,0.27583581765364656,0.0,0.29107280431432975,0.5370370370370371,0.7492038216560509,0.8963430668218734,Lung9_Rep1,Mast
+Simulated ST,cell_type,eligible_genes_per_query,291,291,375.27147766323026,61.34064167908652,273.0,333.0,386.0,418.0,464.0,Lung9_Rep1,Mast
+Real CosMx,cell_type,detected_genes,39422,39422,190.8725077367967,89.40821440177356,46.0,125.0,189.0,253.75,341.0,Lung9_Rep1,Malignant
+Real CosMx,cell_type,non_native_marker_genes,39422,39422,5.552178986352798,3.2451252790590868,1.0,3.0,5.0,8.0,11.0,Lung9_Rep1,Malignant
+Real CosMx,cell_type,achieved_admixture_fraction,39422,0,,,,,,,,Lung9_Rep1,Malignant
+Real CosMx,cell_type,eligible_genes_per_query,39422,0,,,,,,,,Lung9_Rep1,Malignant
+Real CosMx,cell_type,detected_genes,3584,3584,89.10491071428571,48.335476863598174,25.0,52.0,82.0,118.0,178.0,Lung9_Rep1,Epithelial
+Real CosMx,cell_type,non_native_marker_genes,3584,3584,3.892857142857143,2.7524559425287047,0.0,2.0,3.0,5.0,9.0,Lung9_Rep1,Epithelial
+Real CosMx,cell_type,achieved_admixture_fraction,3584,0,,,,,,,,Lung9_Rep1,Epithelial
+Real CosMx,cell_type,eligible_genes_per_query,3584,0,,,,,,,,Lung9_Rep1,Epithelial
+Real CosMx,cell_type,detected_genes,5948,5948,72.17501681237391,37.393392677815996,24.0,44.0,66.0,93.0,142.0,Lung9_Rep1,Neutrophil
+Real CosMx,cell_type,non_native_marker_genes,5948,5948,3.2742098184263617,2.403187299314275,0.0,1.0,3.0,5.0,8.0,Lung9_Rep1,Neutrophil
+Real CosMx,cell_type,achieved_admixture_fraction,5948,0,,,,,,,,Lung9_Rep1,Neutrophil
+Real CosMx,cell_type,eligible_genes_per_query,5948,0,,,,,,,,Lung9_Rep1,Neutrophil
+Real CosMx,cell_type,detected_genes,13952,13952,75.29816513761467,42.265778998305024,22.0,43.0,67.0,99.0,155.0,Lung9_Rep1,Fibroblast
+Real CosMx,cell_type,non_native_marker_genes,13952,13952,2.516198394495413,2.108285316226031,0.0,1.0,2.0,4.0,7.0,Lung9_Rep1,Fibroblast
+Real CosMx,cell_type,achieved_admixture_fraction,13952,0,,,,,,,,Lung9_Rep1,Fibroblast
+Real CosMx,cell_type,eligible_genes_per_query,13952,0,,,,,,,,Lung9_Rep1,Fibroblast
+Real CosMx,cell_type,detected_genes,4428,4428,78.20302619692863,42.57619030515826,23.0,45.0,71.0,102.25,158.0,Lung9_Rep1,Endothelial
+Real CosMx,cell_type,non_native_marker_genes,4428,4428,3.142953929539295,2.4169283899696246,0.0,1.0,3.0,4.0,8.0,Lung9_Rep1,Endothelial
+Real CosMx,cell_type,achieved_admixture_fraction,4428,0,,,,,,,,Lung9_Rep1,Endothelial
+Real CosMx,cell_type,eligible_genes_per_query,4428,0,,,,,,,,Lung9_Rep1,Endothelial
+Real CosMx,cell_type,detected_genes,2323,2323,68.7705553164012,38.58304636536476,22.0,40.0,61.0,90.0,145.0,Lung9_Rep1,T CD8+
+Real CosMx,cell_type,non_native_marker_genes,2323,2323,3.6616444253120966,2.6760214241457807,0.0,2.0,3.0,5.0,9.0,Lung9_Rep1,T CD8+
+Real CosMx,cell_type,achieved_admixture_fraction,2323,0,,,,,,,,Lung9_Rep1,T CD8+
+Real CosMx,cell_type,eligible_genes_per_query,2323,0,,,,,,,,Lung9_Rep1,T CD8+
+Real CosMx,cell_type,detected_genes,871,871,74.62571756601608,46.74745040593949,21.0,39.5,65.0,99.0,168.0,Lung9_Rep1,B cells
+Real CosMx,cell_type,non_native_marker_genes,871,871,3.6590126291618827,3.0194249949022285,0.0,1.0,3.0,5.0,10.0,Lung9_Rep1,B cells
+Real CosMx,cell_type,achieved_admixture_fraction,871,0,,,,,,,,Lung9_Rep1,B cells
+Real CosMx,cell_type,eligible_genes_per_query,871,0,,,,,,,,Lung9_Rep1,B cells
+Real CosMx,cell_type,detected_genes,4036,4036,73.56590683845391,42.07660291312785,22.75,41.0,65.0,96.0,153.0,Lung9_Rep1,T CD4+
+Real CosMx,cell_type,non_native_marker_genes,4036,4036,3.7237363726461843,2.783602457386543,0.0,2.0,3.0,5.0,9.0,Lung9_Rep1,T CD4+
+Real CosMx,cell_type,achieved_admixture_fraction,4036,0,,,,,,,,Lung9_Rep1,T CD4+
+Real CosMx,cell_type,eligible_genes_per_query,4036,0,,,,,,,,Lung9_Rep1,T CD4+
+Real CosMx,cell_type,detected_genes,746,746,61.120643431635386,33.20704101958974,21.0,36.0,55.0,78.0,124.0,Lung9_Rep1,NK
+Real CosMx,cell_type,non_native_marker_genes,746,746,2.8176943699731902,2.289516942784464,0.0,1.0,2.0,4.0,7.0,Lung9_Rep1,NK
+Real CosMx,cell_type,achieved_admixture_fraction,746,0,,,,,,,,Lung9_Rep1,NK
+Real CosMx,cell_type,eligible_genes_per_query,746,0,,,,,,,,Lung9_Rep1,NK
+Real CosMx,cell_type,detected_genes,1702,1702,83.86427732079906,41.78223583146894,25.0,52.25,79.0,109.0,163.94999999999982,Lung9_Rep1,Monocyte
+Real CosMx,cell_type,non_native_marker_genes,1702,1702,3.8513513513513513,2.677380581739901,0.0,2.0,3.0,5.0,9.0,Lung9_Rep1,Monocyte
+Real CosMx,cell_type,achieved_admixture_fraction,1702,0,,,,,,,,Lung9_Rep1,Monocyte
+Real CosMx,cell_type,eligible_genes_per_query,1702,0,,,,,,,,Lung9_Rep1,Monocyte
+Real CosMx,cell_type,detected_genes,4080,4080,97.39240196078431,49.41858763898075,27.0,59.0,92.0,130.0,186.0,Lung9_Rep1,Macrophage
+Real CosMx,cell_type,non_native_marker_genes,4080,4080,4.008088235294117,2.711544200455906,0.0,2.0,4.0,6.0,9.0,Lung9_Rep1,Macrophage
+Real CosMx,cell_type,achieved_admixture_fraction,4080,0,,,,,,,,Lung9_Rep1,Macrophage
+Real CosMx,cell_type,eligible_genes_per_query,4080,0,,,,,,,,Lung9_Rep1,Macrophage
+Real CosMx,cell_type,detected_genes,2895,2895,57.295682210708115,33.33517506098923,17.0,33.0,51.0,74.0,118.0,Lung9_Rep1,Plasmablast
+Real CosMx,cell_type,non_native_marker_genes,2895,2895,2.4504317789291883,2.1404257951990298,0.0,1.0,2.0,3.0,7.0,Lung9_Rep1,Plasmablast
+Real CosMx,cell_type,achieved_admixture_fraction,2895,0,,,,,,,,Lung9_Rep1,Plasmablast
+Real CosMx,cell_type,eligible_genes_per_query,2895,0,,,,,,,,Lung9_Rep1,Plasmablast
+Real CosMx,cell_type,detected_genes,2059,2059,81.87858183584264,43.12831244139115,23.900000000000006,48.0,77.0,109.0,158.0,Lung9_Rep1,DC
+Real CosMx,cell_type,non_native_marker_genes,2059,2059,3.744536182612919,2.612635257615659,0.0,2.0,3.0,5.0,8.0,Lung9_Rep1,DC
+Real CosMx,cell_type,achieved_admixture_fraction,2059,0,,,,,,,,Lung9_Rep1,DC
+Real CosMx,cell_type,eligible_genes_per_query,2059,0,,,,,,,,Lung9_Rep1,DC
+Real CosMx,cell_type,detected_genes,291,291,63.80068728522337,36.57248069728927,20.0,34.0,54.0,90.0,130.5,Lung9_Rep1,Mast
+Real CosMx,cell_type,non_native_marker_genes,291,291,2.9072164948453607,2.3492440789802007,0.0,1.0,2.0,4.0,7.0,Lung9_Rep1,Mast
+Real CosMx,cell_type,achieved_admixture_fraction,291,0,,,,,,,,Lung9_Rep1,Mast
+Real CosMx,cell_type,eligible_genes_per_query,291,0,,,,,,,,Lung9_Rep1,Mast
+Mapped scRNA-seq (clean),cell_type,detected_genes,96822,96822,103.60241474045155,69.98894558912895,24.0,42.0,81.0,163.0,229.0,Lung9_Rep2,Malignant
+Mapped scRNA-seq (clean),cell_type,non_native_marker_genes,96822,96822,1.6858358637499742,1.6270827718557344,0.0,0.0,1.0,3.0,5.0,Lung9_Rep2,Malignant
+Mapped scRNA-seq (clean),cell_type,achieved_admixture_fraction,96822,0,,,,,,,,Lung9_Rep2,Malignant
+Mapped scRNA-seq (clean),cell_type,eligible_genes_per_query,96822,96822,385.6343806159757,73.3452225059748,260.0,335.0,389.0,442.0,497.0,Lung9_Rep2,Malignant
+Mapped scRNA-seq (clean),cell_type,detected_genes,11249,11249,43.14205707173971,11.162039539051605,30.0,36.0,40.0,48.0,66.0,Lung9_Rep2,Neutrophil
+Mapped scRNA-seq (clean),cell_type,non_native_marker_genes,11249,11249,2.1239221264112365,1.4439274345772795,0.0,1.0,2.0,3.0,5.0,Lung9_Rep2,Neutrophil
+Mapped scRNA-seq (clean),cell_type,achieved_admixture_fraction,11249,0,,,,,,,,Lung9_Rep2,Neutrophil
+Mapped scRNA-seq (clean),cell_type,eligible_genes_per_query,11249,11249,454.08205173793226,52.059013989997595,365.0,429.0,460.0,487.0,527.0,Lung9_Rep2,Neutrophil
+Mapped scRNA-seq (clean),cell_type,detected_genes,3302,3302,103.27377347062387,17.774671883107224,59.200000000000045,105.0,105.0,105.0,105.0,Lung9_Rep2,Endothelial
+Mapped scRNA-seq (clean),cell_type,non_native_marker_genes,3302,3302,1.2816474863718958,1.3142967311486662,1.0,1.0,1.0,1.0,2.0,Lung9_Rep2,Endothelial
+Mapped scRNA-seq (clean),cell_type,achieved_admixture_fraction,3302,0,,,,,,,,Lung9_Rep2,Endothelial
+Mapped scRNA-seq (clean),cell_type,eligible_genes_per_query,3302,3302,375.8985463355542,63.210148519063004,257.0,344.0,385.0,418.0,463.0,Lung9_Rep2,Endothelial
+Mapped scRNA-seq (clean),cell_type,detected_genes,5788,5788,60.73790601243953,23.011463636345734,21.0,43.0,64.0,75.0,105.0,Lung9_Rep2,Plasmablast
+Mapped scRNA-seq (clean),cell_type,non_native_marker_genes,5788,5788,1.1757083621285418,1.1535255307599221,0.0,0.0,1.0,2.0,4.0,Lung9_Rep2,Plasmablast
+Mapped scRNA-seq (clean),cell_type,achieved_admixture_fraction,5788,0,,,,,,,,Lung9_Rep2,Plasmablast
+Mapped scRNA-seq (clean),cell_type,eligible_genes_per_query,5788,5788,439.70196959225984,51.26595879105996,347.0,408.0,444.0,475.0,517.0,Lung9_Rep2,Plasmablast
+Mapped scRNA-seq (clean),cell_type,detected_genes,499,499,124.312625250501,46.3932732638946,42.0,89.0,132.0,157.0,193.0,Lung9_Rep2,Monocyte
+Mapped scRNA-seq (clean),cell_type,non_native_marker_genes,499,499,4.955911823647295,2.0194983571915275,2.0,3.0,5.0,6.0,8.099999999999966,Lung9_Rep2,Monocyte
+Mapped scRNA-seq (clean),cell_type,achieved_admixture_fraction,499,0,,,,,,,,Lung9_Rep2,Monocyte
+Mapped scRNA-seq (clean),cell_type,eligible_genes_per_query,499,499,366.96793587174346,62.30955703211224,265.6,328.0,367.0,408.0,469.0,Lung9_Rep2,Monocyte
+Mapped scRNA-seq (clean),cell_type,detected_genes,2101,2101,155.17467872441694,60.92872843744465,51.0,111.0,155.0,189.0,248.0,Lung9_Rep2,Epithelial
+Mapped scRNA-seq (clean),cell_type,non_native_marker_genes,2101,2101,5.338410280818658,2.3527481692225303,1.0,4.0,6.0,7.0,8.0,Lung9_Rep2,Epithelial
+Mapped scRNA-seq (clean),cell_type,achieved_admixture_fraction,2101,0,,,,,,,,Lung9_Rep2,Epithelial
+Mapped scRNA-seq (clean),cell_type,eligible_genes_per_query,2101,2101,320.5283198476916,70.84767551709615,203.0,271.0,324.0,371.0,434.0,Lung9_Rep2,Epithelial
+Mapped scRNA-seq (clean),cell_type,detected_genes,7941,7941,130.1366326659111,56.22326933131824,50.0,88.0,128.0,172.0,242.0,Lung9_Rep2,Fibroblast
+Mapped scRNA-seq (clean),cell_type,non_native_marker_genes,7941,7941,2.8176552071527516,1.9893914091590716,0.0,1.0,2.0,4.0,6.0,Lung9_Rep2,Fibroblast
+Mapped scRNA-seq (clean),cell_type,achieved_admixture_fraction,7941,0,,,,,,,,Lung9_Rep2,Fibroblast
+Mapped scRNA-seq (clean),cell_type,eligible_genes_per_query,7941,7941,353.83654451580406,76.5538382807423,206.0,308.0,361.0,409.0,467.0,Lung9_Rep2,Fibroblast
+Mapped scRNA-seq (clean),cell_type,detected_genes,2975,2975,52.45344537815126,23.83321123338148,24.0,34.0,47.0,67.0,95.0,Lung9_Rep2,T CD4+
+Mapped scRNA-seq (clean),cell_type,non_native_marker_genes,2975,2975,1.4087394957983193,1.27346473532436,0.0,0.0,1.0,2.0,4.0,Lung9_Rep2,T CD4+
+Mapped scRNA-seq (clean),cell_type,achieved_admixture_fraction,2975,0,,,,,,,,Lung9_Rep2,T CD4+
+Mapped scRNA-seq (clean),cell_type,eligible_genes_per_query,2975,2975,423.40672268907565,60.23241766448432,313.70000000000005,390.0,430.0,464.0,511.2999999999997,Lung9_Rep2,T CD4+
+Mapped scRNA-seq (clean),cell_type,detected_genes,1679,1679,63.17510422870756,20.569636940398567,33.0,49.0,62.0,74.0,98.0,Lung9_Rep2,T CD8+
+Mapped scRNA-seq (clean),cell_type,non_native_marker_genes,1679,1679,3.2519356759976175,1.6711873707874603,1.0,2.0,3.0,4.0,6.0,Lung9_Rep2,T CD8+
+Mapped scRNA-seq (clean),cell_type,achieved_admixture_fraction,1679,0,,,,,,,,Lung9_Rep2,T CD8+
+Mapped scRNA-seq (clean),cell_type,eligible_genes_per_query,1679,1679,424.4824300178678,56.00013425663674,322.0,395.0,431.0,461.0,503.0,Lung9_Rep2,T CD8+
+Mapped scRNA-seq (clean),cell_type,detected_genes,561,561,103.77896613190731,39.572279976021555,34.0,73.0,109.0,126.0,160.0,Lung9_Rep2,Mast
+Mapped scRNA-seq (clean),cell_type,non_native_marker_genes,561,561,3.2032085561497325,1.8949341416179928,0.0,2.0,3.0,5.0,6.0,Lung9_Rep2,Mast
+Mapped scRNA-seq (clean),cell_type,achieved_admixture_fraction,561,0,,,,,,,,Lung9_Rep2,Mast
+Mapped scRNA-seq (clean),cell_type,eligible_genes_per_query,561,561,379.2317290552585,68.34267485074774,259.0,338.0,388.0,429.0,480.0,Lung9_Rep2,Mast
+Mapped scRNA-seq (clean),cell_type,detected_genes,1182,1182,69.12774957698815,21.077288317592597,36.0,57.0,67.0,80.0,106.0,Lung9_Rep2,NK
+Mapped scRNA-seq (clean),cell_type,non_native_marker_genes,1182,1182,2.906937394247039,1.4973199635116554,1.0,2.0,3.0,4.0,5.0,Lung9_Rep2,NK
+Mapped scRNA-seq (clean),cell_type,achieved_admixture_fraction,1182,0,,,,,,,,Lung9_Rep2,NK
+Mapped scRNA-seq (clean),cell_type,eligible_genes_per_query,1182,1182,424.7927241962775,55.66921946757274,325.05,397.0,431.0,461.0,505.0,Lung9_Rep2,NK
+Mapped scRNA-seq (clean),cell_type,detected_genes,757,757,51.29194187582563,18.208466577023014,24.0,39.0,48.0,63.0,82.0,Lung9_Rep2,B cells
+Mapped scRNA-seq (clean),cell_type,non_native_marker_genes,757,757,2.483487450462351,1.4670289925518865,0.0,1.0,3.0,3.0,5.0,Lung9_Rep2,B cells
+Mapped scRNA-seq (clean),cell_type,achieved_admixture_fraction,757,0,,,,,,,,Lung9_Rep2,B cells
+Mapped scRNA-seq (clean),cell_type,eligible_genes_per_query,757,757,412.80449141347424,76.50283620921834,252.4,374.0,430.0,464.0,513.0,Lung9_Rep2,B cells
+Mapped scRNA-seq (clean),cell_type,detected_genes,1569,1569,143.61504142766094,66.03717975766271,38.0,87.0,153.0,194.0,244.0,Lung9_Rep2,Macrophage
+Mapped scRNA-seq (clean),cell_type,non_native_marker_genes,1569,1569,5.850860420650096,2.64781163715186,1.0,4.0,6.0,8.0,10.0,Lung9_Rep2,Macrophage
+Mapped scRNA-seq (clean),cell_type,achieved_admixture_fraction,1569,0,,,,,,,,Lung9_Rep2,Macrophage
+Mapped scRNA-seq (clean),cell_type,eligible_genes_per_query,1569,1569,352.9904397705545,65.67042818602266,247.4,309.0,351.0,399.0,466.0,Lung9_Rep2,Macrophage
+Mapped scRNA-seq (clean),cell_type,detected_genes,1363,1363,99.64123257520176,60.605689547501235,30.0,44.0,85.0,150.0,210.0,Lung9_Rep2,DC
+Mapped scRNA-seq (clean),cell_type,non_native_marker_genes,1363,1363,3.7131327953044755,2.556101066083331,0.0,2.0,3.0,6.0,8.0,Lung9_Rep2,DC
+Mapped scRNA-seq (clean),cell_type,achieved_admixture_fraction,1363,0,,,,,,,,Lung9_Rep2,DC
+Mapped scRNA-seq (clean),cell_type,eligible_genes_per_query,1363,1363,336.55172413793105,90.51015918610726,173.0,275.0,346.0,402.0,474.0,Lung9_Rep2,DC
+Simulated ST,cell_type,detected_genes,96822,96822,149.14308731486645,123.96945216321437,29.0,51.0,107.0,214.0,417.0,Lung9_Rep2,Malignant
+Simulated ST,cell_type,non_native_marker_genes,96822,96822,3.9580363966867034,4.822069831776728,0.0,1.0,2.0,5.0,15.0,Lung9_Rep2,Malignant
+Simulated ST,cell_type,achieved_admixture_fraction,96822,96822,0.5324347379441603,0.28402280736908103,0.0,0.3139305787480145,0.5714285714285714,0.7756476025114876,0.9228262644373997,Lung9_Rep2,Malignant
+Simulated ST,cell_type,eligible_genes_per_query,96822,96822,385.6343806159757,73.3452225059748,260.0,335.0,389.0,442.0,497.0,Lung9_Rep2,Malignant
+Simulated ST,cell_type,detected_genes,11249,11249,67.18499422170859,41.110254068788485,35.0,44.0,54.0,76.0,143.0,Lung9_Rep2,Neutrophil
+Simulated ST,cell_type,non_native_marker_genes,11249,11249,3.1853498088718997,2.467940700009709,0.0,1.0,3.0,4.0,7.600000000000364,Lung9_Rep2,Neutrophil
+Simulated ST,cell_type,achieved_admixture_fraction,11249,11249,0.5291961417379429,0.27581066595581477,0.0,0.32142857142857145,0.5589519650655022,0.7598499061913696,0.9231142225662774,Lung9_Rep2,Neutrophil
+Simulated ST,cell_type,eligible_genes_per_query,11249,11249,454.08205173793226,52.059013989997595,365.0,429.0,460.0,487.0,527.0,Lung9_Rep2,Neutrophil
+Simulated ST,cell_type,detected_genes,3302,3302,147.4642640823743,67.64340468861568,100.05000000000001,112.0,126.0,162.0,281.9499999999998,Lung9_Rep2,Endothelial
+Simulated ST,cell_type,non_native_marker_genes,3302,3302,3.399152029073289,3.5156601069764903,1.0,1.0,2.0,4.0,11.0,Lung9_Rep2,Endothelial
+Simulated ST,cell_type,achieved_admixture_fraction,3302,3302,0.5398866831097091,0.2801377103379076,0.06325301204819277,0.3046388123202301,0.5586711389101096,0.7865110502915067,0.9428694388717378,Lung9_Rep2,Endothelial
+Simulated ST,cell_type,eligible_genes_per_query,3302,3302,375.8985463355542,63.210148519063004,257.0,344.0,385.0,418.0,463.0,Lung9_Rep2,Endothelial
+Simulated ST,cell_type,detected_genes,5788,5788,207.831202487906,163.59970560666133,35.0,80.0,142.0,314.0,529.0,Lung9_Rep2,Plasmablast
+Simulated ST,cell_type,non_native_marker_genes,5788,5788,7.249827228749136,6.876942361333056,0.0,2.0,5.0,12.0,21.0,Lung9_Rep2,Plasmablast
+Simulated ST,cell_type,achieved_admixture_fraction,5788,5788,0.48075532116129727,0.2444465222080337,0.06170491635948603,0.28515268745196387,0.5089615827321401,0.681290388733703,0.840713691045164,Lung9_Rep2,Plasmablast
+Simulated ST,cell_type,eligible_genes_per_query,5788,5788,439.70196959225984,51.26595879105996,347.0,408.0,444.0,475.0,517.0,Lung9_Rep2,Plasmablast
+Simulated ST,cell_type,detected_genes,499,499,193.45290581162325,119.81540054351424,49.900000000000006,112.5,169.0,227.5,478.19999999999993,Lung9_Rep2,Monocyte
+Simulated ST,cell_type,non_native_marker_genes,499,499,7.525050100200401,4.743297294540219,2.0,4.0,6.0,9.0,18.099999999999966,Lung9_Rep2,Monocyte
+Simulated ST,cell_type,achieved_admixture_fraction,499,499,0.5334051903663751,0.2757098848393316,0.07471649484536083,0.30714819751864475,0.5721977484092021,0.77242028813358,0.9138006027532605,Lung9_Rep2,Monocyte
+Simulated ST,cell_type,eligible_genes_per_query,499,499,366.96793587174346,62.30955703211224,265.6,328.0,367.0,408.0,469.0,Lung9_Rep2,Monocyte
+Simulated ST,cell_type,detected_genes,2101,2101,224.80104712041884,121.2978719196522,62.0,145.0,199.0,278.0,495.0,Lung9_Rep2,Epithelial
+Simulated ST,cell_type,non_native_marker_genes,2101,2101,8.415516420752024,5.197172040761962,1.0,5.0,7.0,11.0,19.0,Lung9_Rep2,Epithelial
+Simulated ST,cell_type,achieved_admixture_fraction,2101,2101,0.5311363701339419,0.2722606579770404,0.05834683954619125,0.31635710005991613,0.5431192660550459,0.7671938212578153,0.9308066440304671,Lung9_Rep2,Epithelial
+Simulated ST,cell_type,eligible_genes_per_query,2101,2101,320.5283198476916,70.84767551709615,203.0,271.0,324.0,371.0,434.0,Lung9_Rep2,Epithelial
+Simulated ST,cell_type,detected_genes,7941,7941,233.12114343281704,145.61174414430937,66.0,119.0,189.0,313.0,533.0,Lung9_Rep2,Fibroblast
+Simulated ST,cell_type,non_native_marker_genes,7941,7941,7.471225286487848,6.215146394699963,1.0,3.0,5.0,11.0,20.0,Lung9_Rep2,Fibroblast
+Simulated ST,cell_type,achieved_admixture_fraction,7941,7941,0.5170657333478169,0.2733560409556403,0.061971830985915494,0.29534109816971715,0.5191283292978208,0.7541470661054717,0.9243428571428571,Lung9_Rep2,Fibroblast
+Simulated ST,cell_type,eligible_genes_per_query,7941,7941,353.83654451580406,76.5538382807423,206.0,308.0,361.0,409.0,467.0,Lung9_Rep2,Fibroblast
+Simulated ST,cell_type,detected_genes,2975,2975,72.80201680672269,47.90010897459205,27.0,42.0,61.0,88.0,158.0,Lung9_Rep2,T CD4+
+Simulated ST,cell_type,non_native_marker_genes,2975,2975,2.216470588235294,2.161797128830407,0.0,1.0,2.0,3.0,6.0,Lung9_Rep2,T CD4+
+Simulated ST,cell_type,achieved_admixture_fraction,2975,2975,0.5547166510056973,0.28977816784072963,0.0,0.349757281553398,0.6064690026954178,0.7965680127079675,0.9392557392114766,Lung9_Rep2,T CD4+
+Simulated ST,cell_type,eligible_genes_per_query,2975,2975,423.40672268907565,60.23241766448432,313.70000000000005,390.0,430.0,464.0,511.2999999999997,Lung9_Rep2,T CD4+
+Simulated ST,cell_type,detected_genes,1679,1679,87.85050625372246,49.4454074478265,39.0,59.0,77.0,101.0,180.0,Lung9_Rep2,T CD8+
+Simulated ST,cell_type,non_native_marker_genes,1679,1679,4.273377010125074,2.7584003189598887,1.0,2.0,4.0,5.0,9.0,Lung9_Rep2,T CD8+
+Simulated ST,cell_type,achieved_admixture_fraction,1679,1679,0.5332751936288896,0.28355678865084133,0.0,0.3272677595628415,0.5640394088669951,0.7675890265103937,0.93387865716252,Lung9_Rep2,T CD8+
+Simulated ST,cell_type,eligible_genes_per_query,1679,1679,424.4824300178678,56.00013425663674,322.0,395.0,431.0,461.0,503.0,Lung9_Rep2,T CD8+
+Simulated ST,cell_type,detected_genes,561,561,159.7843137254902,96.8015357570838,41.0,100.0,136.0,197.0,344.0,Lung9_Rep2,Mast
+Simulated ST,cell_type,non_native_marker_genes,561,561,5.634581105169341,4.30242645960221,0.0,3.0,5.0,7.0,14.0,Lung9_Rep2,Mast
+Simulated ST,cell_type,achieved_admixture_fraction,561,561,0.5230400935924553,0.28691037662348545,0.03937007874015748,0.2775947281713344,0.5417536534446764,0.7820641282565131,0.9341886653129038,Lung9_Rep2,Mast
+Simulated ST,cell_type,eligible_genes_per_query,561,561,379.2317290552585,68.34267485074774,259.0,338.0,388.0,429.0,480.0,Lung9_Rep2,Mast
+Simulated ST,cell_type,detected_genes,1182,1182,96.99492385786802,54.93791407271875,42.0,67.0,84.0,109.75,191.95000000000005,Lung9_Rep2,NK
+Simulated ST,cell_type,non_native_marker_genes,1182,1182,4.077834179357022,2.7024057484732307,1.0,2.0,4.0,5.0,9.0,Lung9_Rep2,NK
+Simulated ST,cell_type,achieved_admixture_fraction,1182,1182,0.5294814623932348,0.2718075638316117,0.0,0.32733011096617404,0.5527254158660919,0.7550666642078669,0.9256583627462815,Lung9_Rep2,NK
+Simulated ST,cell_type,eligible_genes_per_query,1182,1182,424.7927241962775,55.66921946757274,325.05,397.0,431.0,461.0,505.0,Lung9_Rep2,NK
+Simulated ST,cell_type,detected_genes,757,757,77.57199471598415,54.458679621298295,28.0,47.0,66.0,90.0,161.19999999999993,Lung9_Rep2,B cells
+Simulated ST,cell_type,non_native_marker_genes,757,757,3.586525759577279,2.9244414658584623,0.0,2.0,3.0,4.0,8.0,Lung9_Rep2,B cells
+Simulated ST,cell_type,achieved_admixture_fraction,757,757,0.5342072013140065,0.28237581669204453,0.0,0.32608695652173914,0.5574712643678161,0.7733333333333333,0.9207830501261514,Lung9_Rep2,B cells
+Simulated ST,cell_type,eligible_genes_per_query,757,757,412.80449141347424,76.50283620921834,252.4,374.0,430.0,464.0,513.0,Lung9_Rep2,B cells
+Simulated ST,cell_type,detected_genes,1569,1569,223.10771191841937,139.073461896973,46.0,112.0,200.0,294.0,512.0,Lung9_Rep2,Macrophage
+Simulated ST,cell_type,non_native_marker_genes,1569,1569,8.739961759082219,5.282691244455896,1.4000000000000057,5.0,8.0,12.0,19.0,Lung9_Rep2,Macrophage
+Simulated ST,cell_type,achieved_admixture_fraction,1569,1569,0.5206532411838981,0.2721899880025809,0.030799958592384654,0.3039533376539209,0.5581395348837209,0.7479946524064172,0.904996417995552,Lung9_Rep2,Macrophage
+Simulated ST,cell_type,eligible_genes_per_query,1569,1569,352.9904397705545,65.67042818602266,247.4,309.0,351.0,399.0,466.0,Lung9_Rep2,Macrophage
+Simulated ST,cell_type,detected_genes,1363,1363,150.6683785766691,116.88818315832162,36.0,59.0,118.0,207.5,395.89999999999986,Lung9_Rep2,DC
+Simulated ST,cell_type,non_native_marker_genes,1363,1363,5.702861335289802,4.696255486586673,0.0,2.0,4.0,8.0,15.0,Lung9_Rep2,DC
+Simulated ST,cell_type,achieved_admixture_fraction,1363,1363,0.5590316324967872,0.2892186923351681,0.0,0.354129875300374,0.6197916666666666,0.8082562057080898,0.9379202036971971,Lung9_Rep2,DC
+Simulated ST,cell_type,eligible_genes_per_query,1363,1363,336.55172413793105,90.51015918610726,173.0,275.0,346.0,402.0,474.0,Lung9_Rep2,DC
+Real CosMx,cell_type,detected_genes,96822,96822,127.8296668112619,63.9821159906261,35.0,79.0,122.0,169.0,243.0,Lung9_Rep2,Malignant
+Real CosMx,cell_type,non_native_marker_genes,96822,96822,4.216314473983186,2.585411108936705,1.0,2.0,4.0,6.0,9.0,Lung9_Rep2,Malignant
+Real CosMx,cell_type,achieved_admixture_fraction,96822,0,,,,,,,,Lung9_Rep2,Malignant
+Real CosMx,cell_type,eligible_genes_per_query,96822,0,,,,,,,,Lung9_Rep2,Malignant
+Real CosMx,cell_type,detected_genes,11249,11249,60.488843452751354,27.909903897799417,23.0,40.0,56.0,76.0,113.0,Lung9_Rep2,Neutrophil
+Real CosMx,cell_type,non_native_marker_genes,11249,11249,2.7010400924526623,1.9638355018387388,0.0,1.0,2.0,4.0,6.0,Lung9_Rep2,Neutrophil
+Real CosMx,cell_type,achieved_admixture_fraction,11249,0,,,,,,,,Lung9_Rep2,Neutrophil
+Real CosMx,cell_type,eligible_genes_per_query,11249,0,,,,,,,,Lung9_Rep2,Neutrophil
+Real CosMx,cell_type,detected_genes,3302,3302,48.11871592973955,25.638714332649077,20.0,29.25,42.0,61.0,99.0,Lung9_Rep2,Endothelial
+Real CosMx,cell_type,non_native_marker_genes,3302,3302,1.862810417928528,1.6374566249284748,0.0,1.0,2.0,3.0,5.0,Lung9_Rep2,Endothelial
+Real CosMx,cell_type,achieved_admixture_fraction,3302,0,,,,,,,,Lung9_Rep2,Endothelial
+Real CosMx,cell_type,eligible_genes_per_query,3302,0,,,,,,,,Lung9_Rep2,Endothelial
+Real CosMx,cell_type,detected_genes,5788,5788,42.80597788527989,23.627433047005603,15.0,25.0,38.0,54.0,88.0,Lung9_Rep2,Plasmablast
+Real CosMx,cell_type,non_native_marker_genes,5788,5788,1.7387698686938493,1.628702931867536,0.0,1.0,1.0,3.0,5.0,Lung9_Rep2,Plasmablast
+Real CosMx,cell_type,achieved_admixture_fraction,5788,0,,,,,,,,Lung9_Rep2,Plasmablast
+Real CosMx,cell_type,eligible_genes_per_query,5788,0,,,,,,,,Lung9_Rep2,Plasmablast
+Real CosMx,cell_type,detected_genes,499,499,47.48697394789579,24.367857941640636,19.0,28.0,42.0,62.0,92.0,Lung9_Rep2,Monocyte
+Real CosMx,cell_type,non_native_marker_genes,499,499,2.0220440881763526,1.6408181394435606,0.0,1.0,2.0,3.0,5.0,Lung9_Rep2,Monocyte
+Real CosMx,cell_type,achieved_admixture_fraction,499,0,,,,,,,,Lung9_Rep2,Monocyte
+Real CosMx,cell_type,eligible_genes_per_query,499,0,,,,,,,,Lung9_Rep2,Monocyte
+Real CosMx,cell_type,detected_genes,2101,2101,52.49833412660638,28.361503454082353,20.0,31.0,46.0,68.0,107.0,Lung9_Rep2,Epithelial
+Real CosMx,cell_type,non_native_marker_genes,2101,2101,2.1861018562589245,1.766383738468265,0.0,1.0,2.0,3.0,6.0,Lung9_Rep2,Epithelial
+Real CosMx,cell_type,achieved_admixture_fraction,2101,0,,,,,,,,Lung9_Rep2,Epithelial
+Real CosMx,cell_type,eligible_genes_per_query,2101,0,,,,,,,,Lung9_Rep2,Epithelial
+Real CosMx,cell_type,detected_genes,7941,7941,48.03463039919406,26.743391746293995,19.0,28.0,41.0,61.0,101.0,Lung9_Rep2,Fibroblast
+Real CosMx,cell_type,non_native_marker_genes,7941,7941,1.7511648407001636,1.5386007957616321,0.0,1.0,1.0,3.0,5.0,Lung9_Rep2,Fibroblast
+Real CosMx,cell_type,achieved_admixture_fraction,7941,0,,,,,,,,Lung9_Rep2,Fibroblast
+Real CosMx,cell_type,eligible_genes_per_query,7941,0,,,,,,,,Lung9_Rep2,Fibroblast
+Real CosMx,cell_type,detected_genes,2975,2975,48.54924369747899,26.813514091370983,19.0,29.0,42.0,61.0,99.29999999999973,Lung9_Rep2,T CD4+
+Real CosMx,cell_type,non_native_marker_genes,2975,2975,2.424873949579832,2.0111457527104517,0.0,1.0,2.0,3.0,6.0,Lung9_Rep2,T CD4+
+Real CosMx,cell_type,achieved_admixture_fraction,2975,0,,,,,,,,Lung9_Rep2,T CD4+
+Real CosMx,cell_type,eligible_genes_per_query,2975,0,,,,,,,,Lung9_Rep2,T CD4+
+Real CosMx,cell_type,detected_genes,1679,1679,45.89696247766528,25.571200167662873,19.0,28.0,40.0,57.0,92.09999999999991,Lung9_Rep2,T CD8+
+Real CosMx,cell_type,non_native_marker_genes,1679,1679,2.195949970220369,1.8678849842909573,0.0,1.0,2.0,3.0,6.0,Lung9_Rep2,T CD8+
+Real CosMx,cell_type,achieved_admixture_fraction,1679,0,,,,,,,,Lung9_Rep2,T CD8+
+Real CosMx,cell_type,eligible_genes_per_query,1679,0,,,,,,,,Lung9_Rep2,T CD8+
+Real CosMx,cell_type,detected_genes,561,561,43.529411764705884,24.092669480343513,19.0,26.0,37.0,53.0,90.0,Lung9_Rep2,Mast
+Real CosMx,cell_type,non_native_marker_genes,561,561,1.928698752228164,1.664303774474655,0.0,1.0,2.0,3.0,5.0,Lung9_Rep2,Mast
+Real CosMx,cell_type,achieved_admixture_fraction,561,0,,,,,,,,Lung9_Rep2,Mast
+Real CosMx,cell_type,eligible_genes_per_query,561,0,,,,,,,,Lung9_Rep2,Mast
+Real CosMx,cell_type,detected_genes,1182,1182,44.09137055837564,22.416127087020463,20.0,28.0,39.0,55.0,85.0,Lung9_Rep2,NK
+Real CosMx,cell_type,non_native_marker_genes,1182,1182,1.8730964467005076,1.6188361158652536,0.0,1.0,2.0,3.0,5.0,Lung9_Rep2,NK
+Real CosMx,cell_type,achieved_admixture_fraction,1182,0,,,,,,,,Lung9_Rep2,NK
+Real CosMx,cell_type,eligible_genes_per_query,1182,0,,,,,,,,Lung9_Rep2,NK
+Real CosMx,cell_type,detected_genes,757,757,39.68824306472919,17.28000133818628,19.0,26.0,36.0,49.0,72.0,Lung9_Rep2,B cells
+Real CosMx,cell_type,non_native_marker_genes,757,757,1.8190224570673712,1.4720527350560573,0.0,1.0,2.0,3.0,4.0,Lung9_Rep2,B cells
+Real CosMx,cell_type,achieved_admixture_fraction,757,0,,,,,,,,Lung9_Rep2,B cells
+Real CosMx,cell_type,eligible_genes_per_query,757,0,,,,,,,,Lung9_Rep2,B cells
+Real CosMx,cell_type,detected_genes,1569,1569,57.73932441045252,32.4924675698535,20.0,34.0,49.0,75.0,120.59999999999991,Lung9_Rep2,Macrophage
+Real CosMx,cell_type,non_native_marker_genes,1569,1569,2.2976418100701084,1.9720627335836907,0.0,1.0,2.0,3.0,6.0,Lung9_Rep2,Macrophage
+Real CosMx,cell_type,achieved_admixture_fraction,1569,0,,,,,,,,Lung9_Rep2,Macrophage
+Real CosMx,cell_type,eligible_genes_per_query,1569,0,,,,,,,,Lung9_Rep2,Macrophage
+Real CosMx,cell_type,detected_genes,1363,1363,52.03228173147469,28.520886279844518,20.0,30.0,45.0,66.0,105.0,Lung9_Rep2,DC
+Real CosMx,cell_type,non_native_marker_genes,1363,1363,2.404255319148936,2.005545783748506,0.0,1.0,2.0,3.0,6.0,Lung9_Rep2,DC
+Real CosMx,cell_type,achieved_admixture_fraction,1363,0,,,,,,,,Lung9_Rep2,DC
+Real CosMx,cell_type,eligible_genes_per_query,1363,0,,,,,,,,Lung9_Rep2,DC

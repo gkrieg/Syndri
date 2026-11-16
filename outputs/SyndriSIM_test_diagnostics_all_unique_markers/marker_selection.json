@@ -1,0 +1,25 @@
+{
+  "marker_padj": 0.05,
+  "log2_fold_change_greater_than": 0,
+  "markers_per_cell_type": null,
+  "unique_markers_only": true,
+  "uniqueness_scope": "all cell types in the supplied DESeq2 table, before ranking/truncation",
+  "n_selected_markers": 267,
+  "n_unique_genes": 267,
+  "n_markers_by_cell_type": {
+    "B cells": 9,
+    "DC": 10,
+    "Endothelial": 17,
+    "Epithelial": 10,
+    "Fibroblast": 39,
+    "Macrophage": 50,
+    "Malignant": 65,
+    "Mast": 12,
+    "Monocyte": 4,
+    "NK": 2,
+    "Neutrophil": 10,
+    "Plasmablast": 21,
+    "T CD4+": 14,
+    "T CD8+": 4
+  }
+}

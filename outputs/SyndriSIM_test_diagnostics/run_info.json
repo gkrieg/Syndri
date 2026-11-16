@@ -1,0 +1,9 @@
+{
+  "elapsed_seconds": 130.33997858315706,
+  "n_cells_by_dataset": {
+    "Mapped scRNA-seq (clean)": 374403,
+    "Real CosMx": 374403,
+    "Simulated ST": 374403,
+    "scRNA-seq reference": 31587
+  }
+}

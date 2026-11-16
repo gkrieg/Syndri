@@ -156,6 +156,21 @@ Outputs under `outputs/predictions/` contain input counts in `.X`, probabilities
 
 Edit `correction` in the paper parameter file to change the rule. Batches default to 16; reduce `--batch-size` if needed. `--max-cells` writes development outputs under `outputs/.checks/`.
 
+### Simulated transcript locations
+
+Generate transcript coordinates from an existing admixed **held-out SIM test slice**. This step reads the saved native and added counts; it does not rerun or change admixture sampling. Supply the corresponding original spatial AnnData and CosMx flat-file directory, including `CellLabels/`, FOV positions, and the original transcript CSV. These raw image files must be available locally.
+
+```bash
+python scripts/simulate_test_transcripts.py \
+  --admixed-slice data/test_admixture/slices/Lung12.h5ad \
+  --spatial-adata data/spatial/st_integrated_slice-Lung12.h5ad \
+  --raw-dir data/raw/Lung12/Lung12-Flat_files_and_images \
+  --output-dir outputs/simulated_transcripts \
+  --fov 1 --max-cells 100 --seed 20261113 --decay-um 2
+```
+
+This example writes 100 recipient cells from one FOV; the complete input slice remains available as their donor pool. Outputs include a CosMx-style transcript CSV, donor–recipient–gene allocations, the matching count matrix, coordinate metadata, and validation results. Original coordinate units and discrete z-plane indices are retained. Instrument attributes that are not simulated are left empty. See [transcript simulation definitions](REPRODUCIBILITY.md#simulated-transcript-locations) for the sampling and validation rules.
+
 ## Figures and evaluation
 
 ```bash

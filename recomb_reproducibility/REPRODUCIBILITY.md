@@ -53,6 +53,20 @@ Within each cell type, the analysis computes gene-wise sample variance of normal
 
 Synthetic admixture uses K=9 neighbors and tau uniformly sampled from [0, 0.95]. The default test cohort is listed above. Its membership is defined by `simulation.test_slices` in the analysis configuration.
 
+### Simulated transcript locations
+
+Transcript coordinates are generated only for held-out test slices, using the saved `original_counts` and `synthetic_admixture_counts` layers. The original admixture algorithm is unchanged. Cells are joined to spatial metadata by `matched_st_id`, and segmentation regions are identified by `(fov, cell_ID)`. If the neighbor graph was removed from the saved input, the original graph builder reconstructs it from the complete native slice and its recorded settings. Every added whole-gene count must equal the corresponding pooled neighbor count; inconsistent inputs fail validation.
+
+For recipient i, donor j, and gene g, donor attribution uses the gene-specific proportion `X[j,g] / sum_j X[j,g]` in the original neighbor pool. The current sampler adds entire pooled genes, so the exact allocation is `A[j->i,g] = X[j,g]` for each selected gene. Allocations are saved before generating transcript positions. No donor identities are inferred from transcript positions.
+
+Native transcripts are sampled uniformly over the recipient's labeled pixels, with independent uniform subpixel offsets. Positions for a cell are sampled together, and its native gene counts determine a randomly ordered gene assignment. Donated transcripts remain inside the recipient region, with pixel sampling weights proportional to `exp(-distance_to_donor_region / 2 micrometers)` evaluated at recipient pixel centers, followed by uniform subpixel offsets. Distances use the donor mask's raster boundary in global coordinates, including across FOV boundaries. Cached pixel indices and boundary geometry avoid per-transcript polygon operations.
+
+For these legacy CosMx exports, local/global coordinates are pixels with **0.18 micrometers per pixel**, as specified in the [NanoString export documentation](https://nanostring-public-share.s3.us-west-2.amazonaws.com/SMI-Compressed/SMI-ReadMe.html). FOV origins provide the local-to-global translation. Image-row orientation is checked against the real assigned transcripts, and coordinate offsets are checked against both original transcripts and spatial centroids. Pixel size is used only for distance weighting; exported coordinates retain the original units. Discrete z-plane indices are sampled from their empirical distribution over the complete original slice, identically for native and donated transcripts.
+
+The CSV retains the original column order and adds `gene_id`, `source_cell`, `assigned_cell`, `is_admixed`, and explicit source/assigned FOV and cell IDs. When available, `source_sc_id` and `assigned_sc_id` retain the biological scRNA-seq reference IDs. `CellComp` and other unsimulated instrument fields are empty. Recipient and source composite IDs refer to rows of the saved pseudo-spatial slice.
+
+After writing, a separate streaming pass verifies exact reconstruction of admixed and native cell–gene matrices, every donor–recipient–gene allocation, mask containment through both local and inverse global transforms, valid z planes, consistent cell/FOV IDs, and the total transcript count. Missing masks, ambiguous gene mappings, and incompatible coordinate transforms raise errors. The seed controls cell selection, gene ordering, and coordinate sampling; the CLI supports cell batches and persistent geometry/profile caches.
+
 ### MMD before and after admixture
 
 The analysis compares distributions of normalized, log-transformed single-cell expression vectors within each section/cell-type stratum. It reports the biased, nonnegative RBF **MMD²** estimate. A bandwidth based on median squared distance is shared between the before- and after-admixture comparisons.

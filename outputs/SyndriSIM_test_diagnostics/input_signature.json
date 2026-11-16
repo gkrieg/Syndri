@@ -1,0 +1,65 @@
+{
+  "files": [
+    [
+      "/work/magroup/skrieger/Syndri/data/datasets/nsclc_cosmx/spillover-benchmark/test_admixture/train_val_sc_reference_unique.h5ad",
+      72487527,
+      1793721201470229911
+    ],
+    [
+      "/work/magroup/skrieger/Syndri/data/datasets/nsclc_cosmx/results/markers/pydeseq2/candidate_cell_type_markers_deseq2.csv",
+      142131,
+      1790717234835409467
+    ],
+    [
+      "/work/magroup/skrieger/Syndri/data/datasets/nsclc_cosmx/spillover-benchmark/test_admixture/slices/Lung12.h5ad",
+      192061348,
+      1793721314142016322
+    ],
+    [
+      "/work/magroup/skrieger/Syndri/data/datasets/nsclc_cosmx/spillover-benchmark/test_admixture/slices/Lung13.h5ad",
+      238094550,
+      1793721434716857895
+    ],
+    [
+      "/work/magroup/skrieger/Syndri/data/datasets/nsclc_cosmx/spillover-benchmark/test_admixture/slices/Lung9_Rep1.h5ad",
+      241472676,
+      1793721570861808141
+    ],
+    [
+      "/work/magroup/skrieger/Syndri/data/datasets/nsclc_cosmx/spillover-benchmark/test_admixture/slices/Lung9_Rep2.h5ad",
+      332424322,
+      1793721846400731310
+    ],
+    [
+      "/work/magroup/skrieger/Syndri/data/datasets/nsclc_cosmx/results/final/st_integrated_slice-Lung12.h5ad",
+      311152448,
+      1789958839160280472
+    ],
+    [
+      "/work/magroup/skrieger/Syndri/data/datasets/nsclc_cosmx/results/final/st_integrated_slice-Lung13.h5ad",
+      354540044,
+      1789958910215763341
+    ],
+    [
+      "/work/magroup/skrieger/Syndri/data/datasets/nsclc_cosmx/results/final/st_integrated_slice-Lung9_Rep1.h5ad",
+      371639966,
+      1789959210971807175
+    ],
+    [
+      "/work/magroup/skrieger/Syndri/data/datasets/nsclc_cosmx/results/final/st_integrated_slice-Lung9_Rep2.h5ad",
+      498320408,
+      1789959276826254698
+    ]
+  ],
+  "settings": {
+    "slices": [
+      "Lung12",
+      "Lung13",
+      "Lung9_Rep1",
+      "Lung9_Rep2"
+    ],
+    "markers_per_cell_type": 3,
+    "marker_padj": 0.05
+  },
+  "script_sha256": "ace0bff901427937d728845e889b687473701f5be3cedfed9f5706b26aa221f5"
+}
