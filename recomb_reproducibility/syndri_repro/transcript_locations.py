@@ -389,6 +389,61 @@ def donor_allocations(obj, native, added, recipients, seed):
     return table, origin
 
 
+def saved_donor_allocations(path, obj, native, added, recipients):
+    """Read the simulator's authoritative integer transfers without reassigning donors."""
+    import pyarrow.parquet as pq
+    columns = ['assigned_row', 'source_row', 'gene_index', 'count',
+               'assigned_cell', 'source_cell', 'gene_id',
+               'native_donor_count', 'donor_weight']
+    source = pq.ParquetFile(path)
+    if not set(columns).issubset(source.schema_arrow.names):
+        raise ValueError('Saved donor allocations lack the weighted simulator identifiers/counts')
+    ids, genes = obj.obs_names.astype(str).to_numpy(), obj.var_names.astype(str).to_numpy()
+    inverse = np.full(obj.n_obs, -1, dtype=np.int64)
+    inverse[recipients] = np.arange(len(recipients))
+    recovered = sparse.csr_matrix((len(recipients), obj.n_vars), dtype=np.int64)
+    parts = []
+    for batch in source.iter_batches(batch_size=250000, columns=columns):
+        frame = batch.to_pandas()
+        q = frame.assigned_row.to_numpy(np.int64)
+        if (q < 0).any() or (q >= obj.n_obs).any():
+            raise AssertionError('Invalid saved recipient row')
+        frame = frame.loc[inverse[q] >= 0].copy()
+        if frame.empty:
+            continue
+        q, d, g = (frame[key].to_numpy(np.int64) for key in
+                   ['assigned_row', 'source_row', 'gene_index'])
+        count = frame['count'].to_numpy()
+        if (d < 0).any() or (d >= obj.n_obs).any() or (g < 0).any() or (g >= obj.n_vars).any():
+            raise AssertionError('Invalid saved donor/gene row')
+        if (q == d).any() or not np.equal(count, np.rint(count)).all() or (count <= 0).any():
+            raise AssertionError('Saved transfers must be positive integers from another cell')
+        for column, expected in [('assigned_cell', ids[q]), ('source_cell', ids[d]), ('gene_id', genes[g])]:
+            if not np.array_equal(frame[column].to_numpy(), expected):
+                raise AssertionError(f'Saved allocation identifiers differ: {column}')
+        if not np.array_equal(np.asarray(native[d, g]).ravel(), frame.native_donor_count):
+            raise AssertionError('Saved donor native counts differ from the clean input')
+        if np.asarray(native[q, g]).any():
+            raise AssertionError('Saved donation touches a native-positive gene')
+        if not np.isfinite(frame.donor_weight).all() or (frame.donor_weight < 0).any():
+            raise AssertionError('Invalid saved donor weight')
+        expectation = frame.native_donor_count.to_numpy() * frame.donor_weight.to_numpy()
+        if ((count < np.floor(expectation)) | (count > np.ceil(expectation))).any():
+            raise AssertionError('Saved integer contribution differs from weighted stochastic rounding')
+        recovered += sparse.coo_matrix((count.astype(np.int64), (inverse[q], g)),
+                                      shape=recovered.shape).tocsr()
+        amounts = np.asarray(added[q, g]).ravel()
+        if (amounts <= 0).any():
+            raise AssertionError('Saved transfer has no corresponding added gene count')
+        frame['gene_specific_source_proportion'] = count / amounts
+        parts.append(frame)
+    _same_counts(recovered, added[recipients], 'Saved donor allocations do not reconstruct added counts')
+    table = pd.concat(parts, ignore_index=True) if parts else pd.DataFrame(
+        {key: pd.Series(dtype='object' if key in ['assigned_cell', 'source_cell', 'gene_id'] else 'float64')
+         for key in columns + ['gene_specific_source_proportion']})
+    return table, 'saved donor-recipient-gene integer allocations; neighbor graph not reconstructed'
+
+
 def gene_targets(obj, spatial_var, observed_targets):
     observed = set(observed_targets)
     mapping = obj.uns.get('gene_mapping:ensembl_to_symbol', {})
@@ -436,6 +491,48 @@ def _frame(obj, cells, recipient, donor, genes, geometry, profile, symbols, rng,
         data['assigned_sc_id'] = np.full(n, str(obj.obs.source_sc_id.iloc[recipient]), dtype=object)
     # CellComp and any other unmodeled instrument fields remain empty.
     return pd.DataFrame(data)
+
+
+_TRANSCRIPT_WORKER_CONTEXT = None
+
+
+def _write_recipient_transcripts(stream, recipients, context):
+    """Stream one bounded batch; random streams depend on cell IDs, not workers."""
+    obj, native, cells, allocations, by_recipient, geometry, profile, symbols, seed, decay_um = context
+    header = True
+    for recipient in recipients:
+        rng = np.random.default_rng(np.random.SeedSequence([seed, int(recipient), 101]))
+        clean = native[recipient]
+        genes = np.repeat(clean.indices, clean.data)
+        rng.shuffle(genes)
+        if len(genes):
+            frame = _frame(obj,cells,recipient,recipient,genes,geometry,profile,symbols,rng,decay_um)
+            frame.to_csv(stream, header=header, index=False)
+            header = False
+        indices = by_recipient.get(str(obj.obs_names[recipient]))
+        if indices is not None:
+            part = allocations.iloc[indices]
+            for source, group in part.groupby('source_cell', sort=False):
+                donor = int(obj.obs_names.get_loc(source))
+                rng = np.random.default_rng(np.random.SeedSequence([seed, int(recipient), donor, 211]))
+                genes = np.repeat(obj.var_names.get_indexer(group.gene_id), group['count'].to_numpy(np.int64))
+                rng.shuffle(genes)
+                frame = _frame(obj,cells,recipient,donor,genes,geometry,profile,symbols,rng,decay_um)
+                frame.to_csv(stream, header=header, index=False)
+                header = False
+    if header:
+        empty = _frame(obj,cells,int(recipients[0]),int(recipients[0]),np.array([],dtype=int),
+                       geometry,profile,symbols,np.random.default_rng(seed),decay_um)
+        empty.to_csv(stream, index=False)
+
+
+def _write_transcript_chunk(task):
+    number, recipients, path = task
+    if _TRANSCRIPT_WORKER_CONTEXT is None:
+        raise RuntimeError('Transcript worker context was not initialized')
+    with Path(path).open('x', newline='') as stream:
+        _write_recipient_transcripts(stream, recipients, _TRANSCRIPT_WORKER_CONTEXT)
+    return number, len(recipients)
 
 
 def validate_transcripts(path, obj, native, added, recipients, cells, allocations,
@@ -515,9 +612,10 @@ def validate_transcripts(path, obj, native, added, recipients, cells, allocation
 
 
 def simulate_transcripts(input_path, spatial_path, raw_dir, output_dir, fov=None,
-                         max_cells=None, seed=20261113, decay_um=2., batch_cells=16):
-    if decay_um <= 0 or batch_cells <= 0 or (max_cells is not None and max_cells <= 0):
-        raise ValueError('Decay length, batch size, and cell limit must be positive')
+                         max_cells=None, seed=20261113, decay_um=2., batch_cells=16,
+                         donor_allocations_path=None, workers=1):
+    if decay_um <= 0 or batch_cells <= 0 or workers <= 0 or (max_cells is not None and max_cells <= 0):
+        raise ValueError('Decay length, batch size, worker count, and cell limit must be positive')
     input_path, raw_dir, output_dir = Path(input_path), Path(raw_dir), Path(output_dir)
     signature = _signature(input_path)
     obj, native, added, cells, spatial_var, slice_name = load_inputs(input_path, spatial_path)
@@ -529,6 +627,9 @@ def simulate_transcripts(input_path, spatial_path, raw_dir, output_dir, fov=None
         recipients = np.sort(selection_rng.choice(recipients, max_cells, replace=False))
     if not len(recipients):
         raise ValueError('No selected recipients')
+    # Spatial ordering improves mask-cache locality; per-cell seeds keep the
+    # same coordinates independent of ordering and process count.
+    recipients = recipients[np.lexsort((cells.cell_ID.to_numpy()[recipients], cells.fov.to_numpy()[recipients]))]
     name = f'fov_{int(fov):03d}' if fov is not None else 'all_fovs'
     if max_cells is not None:
         name += f'_n{max_cells}'
@@ -540,7 +641,14 @@ def simulate_transcripts(input_path, spatial_path, raw_dir, output_dir, fov=None
     cache = output_dir / 'cache' / slice_name
     cache.mkdir(parents=True, exist_ok=True)
     print('Attributing existing admixture to its source gene pools...', flush=True)
-    allocations, graph_origin = donor_allocations(obj, native, added, recipients, seed)
+    allocation_signature = _signature(donor_allocations_path) if donor_allocations_path is not None else None
+    if donor_allocations_path is not None:
+        allocations, graph_origin = saved_donor_allocations(donor_allocations_path, obj, native, added, recipients)
+    else:
+        config = obj.uns.get('synthetic_admixture_config', {})
+        if 'donor_type_weights' in config or config.get('admixture_target_mode') == 'pool_fraction':
+            raise ValueError('Weighted simulations require --donor-allocations; donor identities cannot be reconstructed from an unweighted pool')
+        allocations, graph_origin = donor_allocations(obj, native, added, recipients, seed)
     for prefix in ['source', 'assigned']:
         rows = obj.obs_names.get_indexer(allocations[prefix+'_cell'])
         allocations[prefix+'_fov'] = cells.fov.to_numpy()[rows]
@@ -553,42 +661,58 @@ def simulate_transcripts(input_path, spatial_path, raw_dir, output_dir, fov=None
     donors = obj.obs_names.get_indexer(allocations.source_cell.unique())
     used = np.unique(np.r_[recipients, donors])
     calibration = [geometry.calibrate(int(number), cells, examples) for number in np.unique(cells.fov.iloc[used])]
-    for row in used:
+    # Visit each FOV together to avoid repeatedly evicting its memory-mapped mask.
+    for row in used[np.lexsort((cells.cell_ID.to_numpy()[used], cells.fov.to_numpy()[used]))]:
         geometry.pixels(int(cells.fov.iloc[row]), int(cells.cell_ID.iloc[row]))
-    by_recipient = {str(key): part for key, part in allocations.groupby('assigned_cell', sort=False)}
-    header = True
-    with path.open('w', newline='') as stream:
-        for start in range(0, len(recipients), batch_cells):
-            for recipient in recipients[start:start+batch_cells]:
-                rng = np.random.default_rng(np.random.SeedSequence([seed, int(recipient), 101]))
-                clean = native[recipient]
-                genes = np.repeat(clean.indices, clean.data)
-                rng.shuffle(genes)
-                if len(genes):
-                    frame = _frame(obj,cells,recipient,recipient,genes,geometry,profile,symbols,rng,decay_um)
-                    frame.to_csv(stream, header=header, index=False)
-                    header = False
-                part = by_recipient.get(str(obj.obs_names[recipient]))
-                if part is not None:
-                    for source, group in part.groupby('source_cell', sort=False):
-                        donor = int(obj.obs_names.get_loc(source))
-                        rng = np.random.default_rng(np.random.SeedSequence([seed, int(recipient), donor, 211]))
-                        genes = np.repeat(obj.var_names.get_indexer(group.gene_id), group['count'].to_numpy(np.int64))
-                        rng.shuffle(genes)
-                        frame = _frame(obj,cells,recipient,donor,genes,geometry,profile,symbols,rng,decay_um)
-                        frame.to_csv(stream, header=header, index=False)
-                        header = False
-            print(f'Sampled {min(start+batch_cells,len(recipients))}/{len(recipients)} recipients', flush=True)
-        if header:
-            empty = _frame(obj,cells,int(recipients[0]),int(recipients[0]),np.array([],dtype=int),
-                           geometry,profile,symbols,np.random.default_rng(seed),decay_um)
-            empty.to_csv(stream, index=False)
+    by_recipient = allocations.groupby('assigned_cell', sort=False).indices
+    context = obj, native, cells, allocations, by_recipient, geometry, profile, symbols, seed, decay_um
+    if workers == 1:
+        with path.open('x', newline='') as stream:
+            _write_recipient_transcripts(stream, recipients, context)
+        print(f'Sampled {len(recipients)}/{len(recipients)} recipients', flush=True)
+    else:
+        import multiprocessing as mp
+        import shutil
+        from concurrent.futures import ProcessPoolExecutor, as_completed
+        if 'fork' not in mp.get_all_start_methods():
+            raise ValueError('Multiple transcript workers require fork support; use --workers 1 here')
+        # Fork shares immutable count/allocation arrays. Do not send full
+        # AnnData objects through the multiprocessing task queue.
+        global _TRANSCRIPT_WORKER_CONTEXT
+        _TRANSCRIPT_WORKER_CONTEXT = context
+        parts = output/'.transcript_parts'
+        parts.mkdir()
+        tasks = [(i, recipients[start:start+batch_cells], parts/f'{i:06d}.csv')
+                 for i, start in enumerate(range(0, len(recipients), batch_cells))]
+        print(f'Sampling with {workers} processes and {batch_cells} recipients per batch...', flush=True)
+        completed = 0
+        try:
+            with ProcessPoolExecutor(max_workers=workers, mp_context=mp.get_context('fork')) as pool:
+                futures = [pool.submit(_write_transcript_chunk, task) for task in tasks]
+                for future in as_completed(futures):
+                    _, size = future.result()
+                    completed += size
+                    print(f'Sampled {completed}/{len(recipients)} recipients', flush=True)
+        finally:
+            _TRANSCRIPT_WORKER_CONTEXT = None
+        print('Combining transcript batches in deterministic cell order...', flush=True)
+        with path.open('xb') as destination:
+            for number, _, source in tasks:
+                with source.open('rb') as stream:
+                    if number:
+                        stream.readline()  # All fragments have the same header.
+                    shutil.copyfileobj(stream, destination, length=8*1024**2)
+                source.unlink()
+        parts.rmdir()
     print('Validating the written transcript table...', flush=True)
-    saved_allocations = pd.read_parquet(output/'donor_allocations.parquet')
-    report = validate_transcripts(path,obj,native,added,recipients,cells,saved_allocations,
+    # Transfers were checked against the source sidecar before writing; avoid
+    # holding a second copy of millions of allocation records during validation.
+    report = validate_transcripts(path,obj,native,added,recipients,cells,allocations,
                                   geometry,profile,symbols)
     if signature != _signature(input_path):
         raise AssertionError('The source simulation file changed during coordinate generation')
+    if allocation_signature is not None and allocation_signature != _signature(donor_allocations_path):
+        raise AssertionError('The source donor allocations changed during coordinate generation')
     selected = ad.AnnData(native[recipients]+added[recipients], obs=obj.obs.iloc[recipients].copy(), var=obj.var.copy())
     selected.layers['original_counts'] = native[recipients]
     selected.layers['synthetic_admixture_counts'] = added[recipients]
@@ -600,10 +724,13 @@ def simulate_transcripts(input_path, spatial_path, raw_dir, output_dir, fov=None
     _json(output/'validation.json', report)
     _json(output/'simulation.json', dict(input_signature=signature, spatial_signature=_signature(spatial_path),
         seed=seed, decay_length_um=decay_um, pixel_size_um=PIXEL_SIZE_UM,
+        workers=workers, batch_cells=batch_cells,
         pixel_size_source=FORMAT_SOURCE, coordinate_units='legacy global/local pixels',
         z_convention='observed discrete image-plane indices, global slice distribution',
         z_planes=profile['z_planes'], z_counts=profile['z_counts'],
-        graph_origin=graph_origin, donor_attribution='gene-specific proportions in original neighbor pool; conditional sampling without replacement',
+        graph_origin=graph_origin, donor_allocations_signature=allocation_signature,
+        donor_attribution=('existing saved integer transfers; no donor resampling' if allocation_signature is not None
+                           else 'gene-specific proportions in original neighbor pool; conditional sampling without replacement'),
         xy_method='uniform native pixels; exponential donor-region distance at recipient pixel centers; uniform subpixel offsets',
         unmodeled_columns_left_empty=[x for x in profile['columns'] if x not in
             ['fov','cell_ID','x_global_px','y_global_px','x_local_px','y_local_px','z','target']],
@@ -625,6 +752,10 @@ def main(argv=None):
     parser.add_argument('--seed', type=int, default=20261113)
     parser.add_argument('--decay-um', type=float, default=2.)
     parser.add_argument('--batch-cells', type=int, default=16)
+    parser.add_argument('--donor-allocations', type=Path,
+                        help='Use authoritative donor allocations from a weighted whole-gene simulation')
+    parser.add_argument('--workers', type=int, default=1,
+                        help='Parallel sampling processes (fork); cell-specific random streams are unchanged')
     args = parser.parse_args(argv)
     simulate_transcripts(args.admixed_slice,args.spatial_adata,args.raw_dir,args.output_dir,
-                         args.fov,args.max_cells,args.seed,args.decay_um,args.batch_cells)
+                         args.fov,args.max_cells,args.seed,args.decay_um,args.batch_cells,args.donor_allocations,args.workers)
